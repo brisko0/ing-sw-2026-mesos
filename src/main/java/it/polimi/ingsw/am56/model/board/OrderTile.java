@@ -1,4 +1,4 @@
-package it.polimi.ingsw.am56.model.tile;
+package it.polimi.ingsw.am56.model.board;
 
 public class OrderTile {
     private final int OrderTileId;

@@ -1,5 +1,5 @@
 package it.polimi.ingsw.am56.model.card;
 
-public enum evType {
+public enum EvType {
     SHAMANSEV, ARTISTSEV, SUSTENANCEEV, HUNTINGEV
 }

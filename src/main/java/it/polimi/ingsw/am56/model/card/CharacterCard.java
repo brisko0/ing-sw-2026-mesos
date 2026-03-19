@@ -1,7 +1,7 @@
 package it.polimi.ingsw.am56.model.card;
 
 public class CharacterCard extends Card{
-    private final charType type;
+    private final CharType type;
     private final int shamanStars;
     private final int buildingSale;
     private final int builderPoints;
@@ -9,7 +9,7 @@ public class CharacterCard extends Card{
     private final String invention;
     private final boolean providesFood;
 
-    public CharacterCard(int era, int numPlayers, charType type,
+    public CharacterCard(int era, int numPlayers, CharType type,
                          int shamanStars, int buildingSale, int builderPoints,
                          int feedingSale, String invention, boolean providesFood) {
         super(era, numPlayers);

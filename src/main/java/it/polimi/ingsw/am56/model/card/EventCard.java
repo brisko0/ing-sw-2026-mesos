@@ -1,7 +1,7 @@
 package it.polimi.ingsw.am56.model.card;
 
 public class EventCard extends Card{
-    private final evType type;
+    private final EvType type;
     private final int winPointsUpdateShamans;
     private final int losePointsUpdateShamans;
     private final int minArtists;
@@ -10,7 +10,7 @@ public class EventCard extends Card{
     private final int losePointsPerCharSustenance;
     private final int winPointsUpdatePerHunter;
 
-    public EventCard(int era, int numPlayers, evType type, int winPointsUpdateShamans,
+    public EventCard(int era, int numPlayers, EvType type, int winPointsUpdateShamans,
                      int losePointsUpdateShamans, int minArtists,
                      int losePointsUpdateArtists, int winPointsUpdatePerArtist,
                      int losePointsPerCharSustenance, int winPointsUpdatePerHunter) {

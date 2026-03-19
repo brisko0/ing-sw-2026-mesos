@@ -1,8 +1,8 @@
 package it.polimi.ingsw.am56.model.state;
 
 import it.polimi.ingsw.am56.model.GameModel;
-import it.polimi.ingsw.am56.model.player.Player;
-import it.polimi.ingsw.am56.model.tile.OfferTile;
+import it.polimi.ingsw.am56.model.Player;
+import it.polimi.ingsw.am56.model.board.OfferTile;
 
 public class TotemPlacement extends GameState{
 

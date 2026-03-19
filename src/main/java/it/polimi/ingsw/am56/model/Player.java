@@ -1,9 +1,10 @@
-package it.polimi.ingsw.am56.model.player;
+package it.polimi.ingsw.am56.model;
 
 public class Player {
     private final String nickname;
     private final String totemColor;
     private PlayerStats stats;
+
 
     public Player(String nickname, String color){
         this.nickname = nickname;
