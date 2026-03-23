@@ -1,0 +1,9 @@
+[
+  { "letter": "A", "food": 3, "upperCards": 0, "lowerCards": 0, "minPlayers": 5 },
+  { "letter": "B", "food": 0, "upperCards": 0, "lowerCards": 1, "minPlayers": 2 },
+  { "letter": "C", "food": 0, "upperCards": 1, "lowerCards": 0, "minPlayers": 2 },
+  { "letter": "D", "food": 0, "upperCards": 0, "lowerCards": 2, "minPlayers": 3 },
+  { "letter": "E", "food": 0, "upperCards": 1, "lowerCards": 1, "minPlayers": 2 },
+  { "letter": "F", "food": 0, "upperCards": 2, "lowerCards": 0, "minPlayers": 2 },
+  { "letter": "G", "food": 0, "upperCards": 2, "lowerCards": 1, "minPlayers": 4 }
+]
