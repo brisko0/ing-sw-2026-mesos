@@ -1,6 +1,7 @@
 package it.polimi.ingsw.am56.model.card;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Deck {
@@ -14,10 +15,11 @@ public class Deck {
         this.cards = new ArrayList<>(cards);
     }
 
-    public void shuffle() { }
+    public void shuffle() { Collections.shuffle(cards); }
 
     public Card drawCard() {
-        return cards.get(0);
+        if(isEmpty()) return null;
+        return cards.remove(0);
     }
 
     public int getRemainingCards() {
@@ -27,4 +29,9 @@ public class Deck {
     public boolean isEmpty() {
         return getRemainingCards() == 0;
     }
+
+    public int getDeckId() { return deckId; }
+
+    public int getEra() { return era; }
+
 }

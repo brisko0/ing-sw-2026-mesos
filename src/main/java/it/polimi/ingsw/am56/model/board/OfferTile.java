@@ -29,3 +29,4 @@ public class OfferTile {
         return isFree;
     }
 }
+

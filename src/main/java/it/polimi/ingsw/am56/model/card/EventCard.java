@@ -10,11 +10,11 @@ public class EventCard extends Card{
     private final int losePointsPerCharSustenance;
     private final int winPointsUpdatePerHunter;
 
-    public EventCard(int era, int numPlayers, EvType type, int winPointsUpdateShamans,
+    public EventCard(int idCard, int era, int numPlayers, EvType type, int winPointsUpdateShamans,
                      int losePointsUpdateShamans, int minArtists,
                      int losePointsUpdateArtists, int winPointsUpdatePerArtist,
                      int losePointsPerCharSustenance, int winPointsUpdatePerHunter) {
-        super(era, numPlayers);
+        super(idCard, era, numPlayers);
         this.type = type;
         this.winPointsUpdateShamans = winPointsUpdateShamans;
         this.losePointsUpdateShamans = losePointsUpdateShamans;

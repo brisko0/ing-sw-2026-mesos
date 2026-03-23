@@ -4,8 +4,8 @@ public class BuildingCard extends Card{
     private final int cost;
     private final int points;
 
-    public BuildingCard(int era, int numPlayers, int cost, int points) {
-        super(era, numPlayers);
+    public BuildingCard(int idCard, int era, int numPlayers, int cost, int points) {
+        super(idCard,era, numPlayers);
         this.cost = cost;
         this.points = points;
     }
