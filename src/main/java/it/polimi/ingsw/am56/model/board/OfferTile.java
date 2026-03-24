@@ -56,6 +56,7 @@ public class OfferTile {
         } catch (Exception e) {
             throw new RuntimeException("Impossibile inizializzare il gioco: file di configurazione mancante o corrotto", e);
         }
+
         return filteredTiles;
     }
 

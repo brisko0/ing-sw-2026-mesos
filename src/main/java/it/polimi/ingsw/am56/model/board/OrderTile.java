@@ -65,7 +65,7 @@ public class OrderTile {
         return pointsEffect;
     }
 
-    public int numPlayers() {
+    public int getNumPlayers() {
         return numPlayers;
     }
 
