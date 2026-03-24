@@ -6,5 +6,19 @@ public class RoundEnding extends GameState{
 
     public RoundEnding(GameModel model) {
         super(model);
+        endRoundActions();
+    }
+
+    private void endRoundActions(){
+        model.endRound();
+
+        if(model.getCurrentRound() == 11){
+            model.setState(new GameEnding(model));
+        }
+        else {
+            model.setState(new TotemPlacement(model));
+        }
+
+        model.updateCurrentPlayer();
     }
 }

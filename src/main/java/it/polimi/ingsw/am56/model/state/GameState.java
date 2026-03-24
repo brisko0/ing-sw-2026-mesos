@@ -24,4 +24,8 @@ public abstract class GameState {
     public void pickUpCard(Player p, Card c) throws InvalidActionException {
         throw new InvalidActionException("Cannot pick up cards right now.");
     }
+
+    public void setGameSize(int gameSize) throws InvalidActionException {
+        throw new InvalidActionException("Cannot change the game size.");
+    }
 }
