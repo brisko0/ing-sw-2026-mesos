@@ -1,7 +1,10 @@
 package it.polimi.ingsw.am56.model;
 
 import it.polimi.ingsw.am56.model.card.Card;
+import it.polimi.ingsw.am56.model.card.CharacterCard;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,9 +17,25 @@ public class PlayerStats {
     private int shamanStars;
     private int feedingSale;
     private int buildingSale;
+    private int builderPoints;
+    private Set<String>  inventions;
     private List<Card> characterCards;
     private List<Card> buildingCards;
-    private Set<String>  inventions;
+
+    public PlayerStats(){
+        this.food = 0;
+        this.points = 0;
+        this.huntersNum = 0;
+        this.artistsNum = 0;
+        this.inventorsNum = 0;
+        this.shamanStars = 0;
+        this.feedingSale = 0;
+        this.buildingSale = 0;
+        this.builderPoints = 0;
+        this.inventions = new HashSet<String>();
+        this.characterCards = new ArrayList<Card>();
+        this.buildingCards = new ArrayList<Card>();
+    }
 
     public int getFood() {
         return food;
@@ -50,6 +69,14 @@ public class PlayerStats {
         return buildingSale;
     }
 
+    public int getBuilderPoints() {
+        return builderPoints;
+    }
+
+    public Set<String> getInventions() {
+        return inventions;
+    }
+
     public List<Card> getCharacterCards() {
         return characterCards;
     }
@@ -58,17 +85,41 @@ public class PlayerStats {
         return buildingCards;
     }
 
-    public Set<String> getInventions() {
-        return inventions;
+    public void setInitialFood(int position){
+        switch(position){
+            case 1 -> this.food = 2;
+            case 2,3 -> this.food = 3;
+            case 4,5 -> this.food = 4;
+        }
     }
 
     public void addPoints(int points) {
         this.points += points;
     }
+
     public void addFood(int food) {
         this.food += food;
     }
-    public void AddCardStats(Card card) {
-        this.characterCards.add(card);
+
+    public void subtractFood(int food) {
+        this.food -= food;
+    }
+
+    public void updateStatsCardChar(CharacterCard c) {
+        this.shamanStars += c.getShamanStars();
+        this.feedingSale += c.getFeedingSale();
+        this.buildingSale += c.getBuildingSale();
+        this.builderPoints += c.getBuilderPoints();
+        if (c.getInvention() != null && !c.getInvention().isEmpty()) {
+            inventions.add(c.getInvention());
+        }
+        switch(c.getType()){
+            case INVENTOR -> inventorsNum += 1;
+            case ARTIST -> artistsNum += 1;
+            case HUNTER -> huntersNum += 1;
+        }
+        if(c.doesProvideFood()){
+            addFood(huntersNum);
+        }
     }
 }

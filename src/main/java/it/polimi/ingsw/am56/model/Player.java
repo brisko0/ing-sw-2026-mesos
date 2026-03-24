@@ -3,17 +3,17 @@ package it.polimi.ingsw.am56.model;
 public class Player {
     private final String nickname;
     private final String totemColor;
-    private PlayerStats stats;
+    private int pickedUpper;
+    private int pickedLower;
+    private final PlayerStats stats;
 
 
     public Player(String nickname, String color){
         this.nickname = nickname;
         this.totemColor = color;
+        pickedUpper = 0;
+        pickedLower = 0;
         this.stats = new PlayerStats();
-    }
-
-    public PlayerStats getStats() {
-        return stats;
     }
 
     public String getNickname() {
@@ -22,5 +22,25 @@ public class Player {
 
     public String getTotemColor() {
         return totemColor;
+    }
+
+    public int getPickedUpper() {
+        return pickedUpper;
+    }
+
+    public int getPickedLower() {
+        return pickedLower;
+    }
+
+    public PlayerStats getStats() {
+        return stats;
+    }
+
+    public void setPickedUpper(int pickedUpper) {
+        this.pickedUpper = pickedUpper;
+    }
+
+    public void setPickedLower(int pickedLower) {
+        this.pickedLower = pickedLower;
     }
 }
