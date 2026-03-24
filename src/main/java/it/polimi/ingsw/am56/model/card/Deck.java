@@ -1,5 +1,13 @@
 package it.polimi.ingsw.am56.model.card;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import it.polimi.ingsw.am56.model.board.OfferTile;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,12 +21,37 @@ public class Deck {
         this.deckId = deckId;
         this.era = era;
         this.cards = new ArrayList<>(cards);
+        shuffle();
     }
 
-    public void shuffle() { Collections.shuffle(cards); }
+    public static Deck createCharEvDeck(int era, int gameSize){
+        List<CharacterCard> characters = CharacterCard.createCharCards(era, gameSize);
+        List<EventCard> events = EventCard.createEvCards(era, gameSize);
+
+        List<Card> fullList = new ArrayList<>();
+        fullList.addAll(characters);
+        fullList.addAll(events);
+
+        Deck deck = new Deck(era,era,fullList);
+        return deck;
+    }
+
+    public static Deck createBuildingsDeck(int era, int gameSize){
+        List<Card> buildings = BuildingCard.createBuildingCards(era, gameSize);
+
+        Deck deck = new Deck(era + 3,era, buildings);
+
+        return deck;
+    }
+
+    public void shuffle() {
+        Collections.shuffle(cards);
+    }
 
     public Card drawCard() {
-        if(isEmpty()) return null;
+        if(cards == null || cards.isEmpty()) {
+            return null;
+        }
         return cards.remove(0);
     }
 
@@ -29,9 +62,4 @@ public class Deck {
     public boolean isEmpty() {
         return getRemainingCards() == 0;
     }
-
-    public int getDeckId() { return deckId; }
-
-    public int getEra() { return era; }
-
 }
