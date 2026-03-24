@@ -1,0 +1,580 @@
+[
+  {
+    "idCard": 1,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "HUNTER",
+    "providesFood": true
+  },
+  {
+    "idCard": 2,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "HUNTER",
+    "providesFood": true
+  },
+  {
+    "idCard": 3,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "HUNTER"
+  },
+  {
+    "idCard": 4,
+    "era": 1,
+    "minPlayers": 3,
+    "charType": "HUNTER"
+  },
+  {
+    "idCard": 5,
+    "era": 1,
+    "minPlayers": 3,
+    "charType": "HUNTER"
+  },
+  {
+    "idCard": 6,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "BUILDER",
+    "buildingSale": 1,
+    "builderPoints": 3
+  },
+  {
+    "idCard": 7,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "BUILDER",
+    "buildingSale": 2
+  },
+  {
+    "idCard": 8,
+    "era": 1,
+    "minPlayers": 5,
+    "charType": "BUILDER",
+    "buildingSale": 2,
+    "builderPoints": 1
+  },
+  {
+    "idCard": 9,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "BUILDER",
+    "buildingSale": 1,
+    "builderPoints": 2
+  },
+  {
+    "idCard": 10,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "COLLECTOR",
+    "feedingSale": 3
+  },
+  {
+    "idCard": 11,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "COLLECTOR",
+    "feedingSale": 3
+  },
+  {
+    "idCard": 12,
+    "era": 1,
+    "minPlayers": 3,
+    "charType": "COLLECTOR",
+    "feedingSale": 3
+  },
+  {
+    "idCard": 13,
+    "era": 1,
+    "minPlayers": 5,
+    "charType": "COLLECTOR",
+    "feedingSale": 3
+  },
+  {
+    "idCard": 14,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 15,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 16,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 17,
+    "era": 1,
+    "minPlayers": 3,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 18,
+    "era": 1,
+    "minPlayers": 4,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 19,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "PELLE"
+  },
+  {
+    "idCard": 20,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "CANOA"
+  },
+  {
+    "idCard": 21,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "MICROLITO"
+  },
+  {
+    "idCard": 22,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "PANE"
+  },
+  {
+    "idCard": 23,
+    "era": 1,
+    "minPlayers": 4,
+    "charType": "INVENTOR",
+    "invention": "CORDA"
+  },
+  {
+    "idCard": 24,
+    "era": 1,
+    "minPlayers": 4,
+    "charType": "INVENTOR",
+    "invention": "FLAUTO"
+  },
+  {
+    "idCard": 25,
+    "era": 1,
+    "minPlayers": 4,
+    "charType": "INVENTOR",
+    "invention": "MORTAIO"
+  },
+  {
+    "idCard": 26,
+    "era": 1,
+    "minPlayers": 5,
+    "charType": "SHAMAN",
+    "shamanStars": 2
+  },
+  {
+    "idCard": 27,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "SHAMAN",
+    "shamanStars": 2
+  },
+  {
+    "idCard": 28,
+    "era": 1,
+    "minPlayers": 2,
+    "charType": "SHAMAN",
+    "shamanStars": 1
+  },
+  {
+    "idCard": 29,
+    "era": 1,
+    "minPlayers": 4,
+    "charType": "SHAMAN",
+    "shamanStars": 1
+  },
+  {
+    "idCard": 30,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "HUNTER"
+  },
+  {
+    "idCard": 31,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "HUNTER"
+  },
+  {
+    "idCard": 32,
+    "era": 2,
+    "minPlayers": 3,
+    "charType": "HUNTER",
+    "providesFood": true
+  },
+  {
+    "idCard": 33,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "HUNTER",
+    "providesFood": true
+  },
+  {
+    "idCard": 34,
+    "era": 2,
+    "minPlayers": 4,
+    "charType": "HUNTER",
+    "providesFood": true
+  },
+  {
+    "idCard": 35,
+    "era": 2,
+    "minPlayers": 5,
+    "charType": "HUNTER"
+  },
+  {
+    "idCard": 36,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "BUILDER",
+    "buildingSale": 1,
+    "builderPoints": 4
+  },
+  {
+    "idCard": 37,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "BUILDER",
+    "buildingSale": 2,
+    "builderPoints": 1
+  },
+  {
+    "idCard": 38,
+    "era": 2,
+    "minPlayers": 3,
+    "charType": "BUILDER",
+    "buildingSale": 1,
+    "builderPoints": 2
+  },
+  {
+    "idCard": 39,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "BUILDER",
+    "buildingSale": 2,
+    "builderPoints": 3
+  },
+  {
+    "idCard": 40,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "COLLECTOR",
+    "feedingSale": 3
+  },
+  {
+    "idCard": 41,
+    "era": 2,
+    "minPlayers": 3,
+    "charType": "COLLECTOR",
+    "feedingSale": 3
+  },
+  {
+    "idCard": 42,
+    "era": 2,
+    "minPlayers": 4,
+    "charType": "COLLECTOR",
+    "feedingSale": 3
+  },
+  {
+    "idCard": 43,
+    "era": 2,
+    "minPlayers": 5,
+    "charType": "COLLECTOR",
+    "feedingSale": 3
+  },
+  {
+    "idCard": 44,
+    "era": 2,
+    "minPlayers": 3,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 45,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 46,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 47,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 48,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "STATUETTA"
+  },
+  {
+    "idCard": 49,
+    "era": 2,
+    "minPlayers": 4,
+    "charType": "INVENTOR",
+    "invention": "AMO"
+  },
+  {
+    "idCard": 50,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "CORDA"
+  },
+  {
+    "idCard": 51,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "FLAUTO"
+  },
+  {
+    "idCard": 52,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "MORTAIO"
+  },
+  {
+    "idCard": 53,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "PELLE"
+  },
+  {
+    "idCard": 54,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "SHAMAN",
+    "shamanStars": 2
+  },
+  {
+    "idCard": 55,
+    "era": 2,
+    "minPlayers": 2,
+    "charType": "SHAMAN",
+    "shamanStars": 2
+  },
+  {
+    "idCard": 56,
+    "era": 2,
+    "minPlayers": 5,
+    "charType": "SHAMAN",
+    "shamanStars": 1
+  },
+  {
+    "idCard": 57,
+    "era": 2,
+    "minPlayers": 5,
+    "charType": "SHAMAN",
+    "shamanStars": 2
+  },
+  {
+    "idCard": 58,
+    "era": 3,
+    "minPlayers": 5,
+    "charType": "HUNTER",
+    "providesFood": true
+  },
+  {
+    "idCard": 59,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "HUNTER"
+  },
+  {
+    "idCard": 60,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "HUNTER"
+  },
+  {
+    "idCard": 61,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "HUNTER",
+    "providesFood": true
+  },
+  {
+    "idCard": 62,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "BUILDER",
+    "buildingSale": 1,
+    "builderPoints": 5
+  },
+  {
+    "idCard": 63,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "BUILDER",
+    "buildingSale": 2,
+    "builderPoints": 3
+  },
+  {
+    "idCard": 64,
+    "era": 3,
+    "minPlayers": 5,
+    "charType": "BUILDER",
+    "buildingSale": 1,
+    "builderPoints": 4
+  },
+  {
+    "idCard": 65,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "BUILDER",
+    "buildingSale": 2,
+    "builderPoints": 2
+  },
+  {
+    "idCard": 66,
+    "era": 3,
+    "minPlayers": 5,
+    "charType": "COLLECTOR",
+    "feedingSale": 3
+  },
+  {
+    "idCard": 67,
+    "era": 3,
+    "minPlayers": 4,
+    "charType": "COLLECTOR",
+    "feedingSale": 3
+  },
+  {
+    "idCard": 68,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "COLLECTOR",
+    "feedingSale": 3
+  },
+  {
+    "idCard": 69,
+    "era": 3,
+    "minPlayers": 5,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 70,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 71,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 72,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "ARTIST"
+  },
+  {
+    "idCard": 73,
+    "era": 3,
+    "minPlayers": 4,
+    "charType": "INVENTOR",
+    "invention": "ORNAMENTI"
+  },
+  {
+    "idCard": 74,
+    "era": 3,
+    "minPlayers": 3,
+    "charType": "INVENTOR",
+    "invention": "CANOA"
+  },
+  {
+    "idCard": 75,
+    "era": 3,
+    "minPlayers": 3,
+    "charType": "INVENTOR",
+    "invention": "MICROLITO"
+  },
+  {
+    "idCard": 76,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "STATUETTA"
+  },
+  {
+    "idCard": 77,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "AMO"
+  },
+  {
+    "idCard": 78,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "ORNAMENTI"
+  },
+  {
+    "idCard": 79,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "INVENTOR",
+    "invention": "PANE"
+  },
+  {
+    "idCard": 80,
+    "era": 3,
+    "minPlayers": 3,
+    "charType": "SHAMAN",
+    "shamanStars": 2
+  },
+  {
+    "idCard": 81,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "SHAMAN",
+    "shamanStars": 3
+  },
+  {
+    "idCard": 82,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "SHAMAN",
+    "shamanStars": 2
+  },
+  {
+    "idCard": 83,
+    "era": 3,
+    "minPlayers": 2,
+    "charType": "SHAMAN",
+    "shamanStars": 3
+  },
+  {
+    "idCard": 84,
+    "era": 3,
+    "minPlayers": 4,
+    "charType": "SHAMAN",
+    "shamanStars": 2
+  }
+]

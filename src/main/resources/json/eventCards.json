@@ -1,0 +1,95 @@
+[
+  {
+    "idCard": 85,
+    "era": 1,
+    "minPlayers": 2,
+    "type": "HUNTINGEV",
+    "winPointsUpdatePerHunter": 1
+  },
+  {
+    "idCard": 86,
+    "era": 1,
+    "minPlayers": 2,
+    "type": "SUSTENANCEEV",
+    "losePointsPerCharSustenance": 1
+  },
+  {
+    "idCard": 87,
+    "era": 1,
+    "minPlayers": 2,
+    "type": "SHAMANSEV",
+    "winPointsUpdateShamans": 5,
+    "losePointsUpdateShamans": 3
+  },
+  {
+    "idCard": 88,
+    "era": 1,
+    "minPlayers": 2,
+    "type": "ARTISTSEV",
+    "minArtists": 1,
+    "losePointsUpdateArtists": 2,
+    "winPointsUpdatePerArtist": 1
+  },
+  {
+    "idCard": 89,
+    "era": 2,
+    "minPlayers": 2,
+    "type": "HUNTINGEV",
+    "winPointsUpdatePerHunter": 2
+  },
+  {
+    "idCard": 90,
+    "era": 2,
+    "minPlayers": 2,
+    "type": "SUSTENANCEEV",
+    "losePointsPerCharSustenance": 2
+  },
+  {
+    "idCard": 91,
+    "era": 2,
+    "minPlayers": 2,
+    "type": "SHAMANSEV",
+    "winPointsUpdateShamans": 10,
+    "losePointsUpdateShamans": 5
+  },
+  {
+    "idCard": 92,
+    "era": 2,
+    "minPlayers": 2,
+    "type": "ARTISTSEV",
+    "minArtists": 2,
+    "losePointsUpdateArtists": 2,
+    "winPointsUpdatePerArtist": 2
+  },
+  {
+    "idCard": 93,
+    "era": 3,
+    "minPlayers": 2,
+    "type": "HUNTINGEV",
+    "winPointsUpdatePerHunter": 3
+  },
+  {
+    "idCard": 94,
+    "era": 3,
+    "minPlayers": 2,
+    "type": "ARTISTSEV",
+    "minArtists": 3,
+    "losePointsUpdateArtists": 2,
+    "winPointsUpdatePerArtist": 3
+  },
+  {
+    "idCard": 95,
+    "era": 3,
+    "minPlayers": 2,
+    "type": "SUSTENANCEEV",
+    "losePointsPerCharSustenance": 3
+  },
+  {
+    "idCard": 96,
+    "era": 3,
+    "minPlayers": 2,
+    "type": "SHAMANSEV",
+    "winPointsUpdateShamans": 15,
+    "losePointsUpdateShamans": 7
+  }
+]
