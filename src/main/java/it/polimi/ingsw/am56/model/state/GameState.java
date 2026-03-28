@@ -2,8 +2,10 @@ package it.polimi.ingsw.am56.model.state;
 
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.Player;
+import it.polimi.ingsw.am56.model.card.BuildingCard;
 import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.board.OfferTile;
+import it.polimi.ingsw.am56.model.card.CharacterCard;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
 public abstract class GameState {
@@ -21,8 +23,12 @@ public abstract class GameState {
         throw new InvalidActionException("Cannot place totems right now.");
     }
 
-    public void pickUpCard(Player p, Card c) throws InvalidActionException {
-        throw new InvalidActionException("Cannot pick up cards right now.");
+    public void pickUpCharacterCard(Player p, CharacterCard c) throws InvalidActionException {
+        throw new InvalidActionException("Cannot pick up character cards right now.");
+    }
+
+    public void pickUpBuildingCard(Player p, BuildingCard c) throws InvalidActionException {
+        throw new InvalidActionException("Cannot pick up building cards right now.");
     }
 
     public void setGameSize(int gameSize) throws InvalidActionException {

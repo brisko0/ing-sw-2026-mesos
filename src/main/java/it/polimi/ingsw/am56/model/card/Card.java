@@ -1,5 +1,7 @@
 package it.polimi.ingsw.am56.model.card;
 
+import it.polimi.ingsw.am56.model.GameModel;
+
 public abstract class Card {
     private final int cardId;
     private final int era;
@@ -13,7 +15,7 @@ public abstract class Card {
         this.type = type;
     }
 
-    public abstract void resolveEffect();
+    public abstract void resolveEffect(GameModel gameModel);
 
     public int getEra() {
         return era;

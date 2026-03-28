@@ -100,26 +100,27 @@ public class PlayerStats {
     public void addFood(int food) {
         this.food += food;
     }
-
     public void subtractFood(int food) {
         this.food -= food;
     }
-
-    public void updateStatsCardChar(CharacterCard c) {
-        this.shamanStars += c.getShamanStars();
-        this.feedingSale += c.getFeedingSale();
-        this.buildingSale += c.getBuildingSale();
-        this.builderPoints += c.getBuilderPoints();
-        if (c.getInvention() != null && !c.getInvention().isEmpty()) {
-            inventions.add(c.getInvention());
-        }
-        switch(c.getType()){
-            case INVENTOR -> inventorsNum += 1;
-            case ARTIST -> artistsNum += 1;
-            case HUNTER -> huntersNum += 1;
-        }
-        if(c.doesProvideFood()){
-            addFood(huntersNum);
-        }
+    public void addShamanStars(int shamanStars) {
+        this.shamanStars += shamanStars;
     }
+    public void addFeedingSale(int feedingSale) {
+        this.feedingSale += feedingSale;
+    }
+    public void addBuildingSale(int buildingSale) { this.buildingSale += buildingSale; }
+    public void addBuilderPoints(int builderPoints) {
+        this.builderPoints += builderPoints;
+    }
+    public void addInventor() {
+        this.inventorsNum++;
+    }
+    public void addArtist() {
+        this.artistsNum++;
+    }
+    public void addHunter() {
+        this.huntersNum++;
+    }
+
 }

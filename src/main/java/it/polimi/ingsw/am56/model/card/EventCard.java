@@ -2,6 +2,7 @@ package it.polimi.ingsw.am56.model.card;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import it.polimi.ingsw.am56.model.GameModel;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -68,5 +69,5 @@ public class EventCard extends Card{
     }
 
     @Override
-    public void resolveEffect() {}
+    public void resolveEffect(GameModel gameModel) {}
 }

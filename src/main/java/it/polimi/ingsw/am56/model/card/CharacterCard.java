@@ -2,6 +2,7 @@ package it.polimi.ingsw.am56.model.card;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import it.polimi.ingsw.am56.model.GameModel;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -65,36 +66,24 @@ public class CharacterCard extends Card{
         return filteredCards;
     }
 
-    public CharType getType() {
-        return type;
-    }
-
-    public int getShamanStars() {
-        return shamanStars;
-    }
-
-    public int getBuildingSale() {
-        return buildingSale;
-    }
-
-    public int getBuilderPoints() {
-        return builderPoints;
-    }
-
-    public int getFeedingSale() {
-        return feedingSale;
-    }
-
-    public String getInvention() {
-        return invention;
-    }
-
-    public boolean doesProvideFood() {
-        return providesFood;
-    }
-
     @Override
-    public void resolveEffect(){
+    public void resolveEffect(GameModel gameModel){
 
+        gameModel.getCurrentPlayer().getStats().addShamanStars(shamanStars);
+        gameModel.getCurrentPlayer().getStats().addFeedingSale(feedingSale);
+        gameModel.getCurrentPlayer().getStats().addBuildingSale(buildingSale);
+        gameModel.getCurrentPlayer().getStats().addBuilderPoints(builderPoints);
+        gameModel.getCurrentPlayer().getStats().getInventions().add(invention);
+
+        switch(type){
+            case INVENTOR -> gameModel.getCurrentPlayer().getStats().addInventor();
+            case ARTIST -> gameModel.getCurrentPlayer().getStats().addArtist();
+            case HUNTER -> gameModel.getCurrentPlayer().getStats().addHunter();
+        }
+
+        if(providesFood){
+            gameModel.getCurrentPlayer().getStats().addFood(
+                    gameModel.getCurrentPlayer().getStats().getHuntersNum());
+        }
     }
 }

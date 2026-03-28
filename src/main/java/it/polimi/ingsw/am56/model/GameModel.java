@@ -3,10 +3,7 @@ package it.polimi.ingsw.am56.model;
 import it.polimi.ingsw.am56.model.board.Board;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.board.OrderTile;
-import it.polimi.ingsw.am56.model.card.BuildingCard;
-import it.polimi.ingsw.am56.model.card.Card;
-import it.polimi.ingsw.am56.model.card.CardType;
-import it.polimi.ingsw.am56.model.card.Deck;
+import it.polimi.ingsw.am56.model.card.*;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import it.polimi.ingsw.am56.model.state.GameState;
 import it.polimi.ingsw.am56.model.state.PlayersFilling;
@@ -199,20 +196,17 @@ public class GameModel {
         return canPickUpper || canPickLower;
     }
 
-    public void pickUpCard(Player p, Card c) throws InvalidActionException {
-        state.pickUpCard(p, c);
+    public void pickUpCharacterCard(Player p, CharacterCard c) throws InvalidActionException {
+        state.pickUpCharacterCard(p, c);
     }
 
-    public void executeCardPick(Player p, Card c, boolean isUpper, int cost) {
-        if(c instanceof BuildingCard building) {
-            p.getStats().getBuildingCards().add(building);
-            p.getStats().subtractFood(Math.max(0, cost));
-            c.resolveEffect();
-        }
-        else{
-            p.getStats().getCharacterCards().add(c);
-            c.resolveEffect();
-        }
+    public void pickUpBuildingCard(Player p, BuildingCard c) throws InvalidActionException {
+        state.pickUpBuildingCard(p, c);
+    }
+
+    public void executeCharacterCardPick(Player p, CharacterCard c, boolean isUpper) {
+
+        p.getStats().getCharacterCards().add(c);
         if(isUpper) {
             p.setPickedUpper(p.getPickedUpper() + 1);
         }
@@ -220,6 +214,22 @@ public class GameModel {
             p.setPickedLower(p.getPickedLower() + 1);
         }
         board.removeCard(c);
+        c.resolveEffect(this);
+    }
+
+    public void executeBuildingCardPick(Player p, BuildingCard c, boolean isUpper) {
+
+        // ricordare di aggiungere la sottrazione del cibo nella resolveEffect di BuildingCard
+
+        p.getStats().getBuildingCards().add(c);
+        if(isUpper) {
+            p.setPickedUpper(p.getPickedUpper() + 1);
+        }
+        else {
+            p.setPickedLower(p.getPickedLower() + 1);
+        }
+        board.removeCard(c);
+        c.resolveEffect(this);
     }
 
     public void resetTotemToOrder(Player p){
@@ -251,7 +261,7 @@ public class GameModel {
     private void resolveEvents() {
         for(Card c : board.getLowerRowCharEv()){
             if(c.getCardType() == CardType.EVENT){
-                c.resolveEffect();
+                c.resolveEffect(this);
             }
         }
     }

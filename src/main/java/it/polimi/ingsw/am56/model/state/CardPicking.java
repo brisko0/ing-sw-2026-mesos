@@ -6,6 +6,7 @@ import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.card.BuildingCard;
 import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.card.CardType;
+import it.polimi.ingsw.am56.model.card.CharacterCard;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
 public class CardPicking extends GameState {
@@ -34,15 +35,15 @@ public class CardPicking extends GameState {
     }
 
     @Override
-    public void pickUpCard(Player p, Card c) throws InvalidActionException {
+    public void pickUpCharacterCard(Player p, CharacterCard c) throws InvalidActionException {
+
         if (!p.equals(model.getCurrentPlayer())) {
             throw new InvalidActionException("Non è il tuo turno! Deve muovere il player " + model.getCurrentPlayer().getNickname());
         }
 
-        boolean isUpper = ( model.getBoard().getUpperRowBuildings().contains(c) ||
-                model.getBoard().getUpperRowCharEv().contains(c));
+        boolean isUpper = model.getBoard().getUpperRowCharEv().contains(c);
 
-        if (!isUpper & !model.getBoard().getLowerRowCharEv().contains(c) && !model.getBoard().getLowerRowBuildings().contains(c)) {
+        if (!isUpper & !model.getBoard().getLowerRowCharEv().contains(c)) {
             throw new InvalidActionException("La carta selezionata non è disponibile sulla board.");
         }
 
@@ -58,15 +59,41 @@ public class CardPicking extends GameState {
             }
         }
 
-        int cost = 0;
-        if (c instanceof BuildingCard building) {
-            cost = building.getCost() - p.getStats().getBuildingSale();
-            if (p.getStats().getFood() < cost) {
-                throw new InvalidActionException("Cibo insufficiente! Ti servono " + cost + " unità di cibo.");
+        model.executeCharacterCardPick(p, c, isUpper);
+
+        checkTurnFlow();
+    }
+
+    public void pickUpBuildingCard(Player p, BuildingCard c) throws InvalidActionException {
+
+        if (!p.equals(model.getCurrentPlayer())) {
+            throw new InvalidActionException("Non è il tuo turno! Deve muovere il player " + model.getCurrentPlayer().getNickname());
+        }
+
+        boolean isUpper = model.getBoard().getUpperRowBuildings().contains(c);
+
+        if (!isUpper & !model.getBoard().getLowerRowBuildings().contains(c)) {
+            throw new InvalidActionException("La carta selezionata non è disponibile sulla board.");
+        }
+
+        OfferTile ot = model.getPlayerToOfferTile().get(p);
+
+        if (isUpper) {
+            if (p.getPickedUpper() >= ot.getUpperCards()) {
+                throw new InvalidActionException("Hai già pescato il numero massimo di carte dalla riga superiore!");
+            }
+        } else {
+            if (p.getPickedLower() >= ot.getLowerCards()) {
+                throw new InvalidActionException("Hai già pescato il numero massimo di carte dalla riga inferiore!");
             }
         }
 
-        model.executeCardPick(p, c, isUpper, cost);
+
+        if (p.getStats().getFood() < c.getCost()) {
+            throw new InvalidActionException("Cibo insufficiente! non è possibile prendere la carta edificio.");
+        }
+
+        model.executeBuildingCardPick(p, c, isUpper);
 
         checkTurnFlow();
 
