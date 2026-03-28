@@ -3,6 +3,7 @@ package it.polimi.ingsw.am56.model.card;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import it.polimi.ingsw.am56.model.GameModel;
+import it.polimi.ingsw.am56.model.Player;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -69,5 +70,60 @@ public class EventCard extends Card{
     }
 
     @Override
-    public void resolveEffect(GameModel gameModel) {}
+    public void resolveEffect(GameModel gameModel) {
+        switch (type) {
+
+            case SHAMANSEV -> {
+                int minStars = 10;
+                int maxStars = 0;
+                for(Player p : gameModel.getPlayers()) {
+                    int playerStars = p.getStats().getShamanStars();
+                    if (playerStars < minStars)
+                        minStars = playerStars;
+                    if (playerStars > maxStars)
+                        maxStars = playerStars;
+                }
+                for(Player p : gameModel.getPlayers()) {
+                    int playerStars = p.getStats().getShamanStars();
+                    if(playerStars == minStars)
+                        p.getStats().addPoints(-losePointsUpdateShamans);
+                    if(playerStars == maxStars)
+                        p.getStats().addPoints(winPointsUpdateShamans);
+                }
+            }
+
+            case ARTISTSEV ->  {
+                for(Player p : gameModel.getPlayers()) {
+                    int artistNum = p.getStats().getArtistsNum();
+                    if(artistNum < minArtists)
+                        p.getStats().addPoints(-losePointsUpdateArtists);
+                    else
+                        p.getStats().addPoints(winPointsUpdatePerArtist * artistNum);
+                }
+            }
+
+            case HUNTINGEV ->  {
+                for(Player p : gameModel.getPlayers()) {
+                    int huntersNum = p.getStats().getHuntersNum();
+                    p.getStats().addFood(huntersNum);
+                    p.getStats().addPoints(winPointsUpdatePerHunter * huntersNum);
+                }
+            }
+
+            case SUSTENANCEEV ->   {
+                for(Player p : gameModel.getPlayers()) {
+                    int haveToPay = Math.max(p.getStats().getCharacterCards().size() -
+                            p.getStats().getFeedingSale(), 0);
+                    int playerFood = p.getStats().getFood();
+                    if(playerFood >= haveToPay)
+                        p.getStats().addFood(-haveToPay);
+                    else {
+                        p.getStats().addFood(-playerFood);
+                        p.getStats().addPoints(-losePointsPerCharSustenance * (haveToPay - playerFood));
+                    }
+
+                }
+            }
+        }
+    }
 }

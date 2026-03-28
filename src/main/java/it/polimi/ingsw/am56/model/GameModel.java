@@ -251,7 +251,7 @@ public class GameModel {
     public void endRound(){
         resolveEvents();
         board.endRound(gameSize, eraToCharEvdeck.get(currentEra));
-        if(eraToCharEvdeck.get(currentEra).isEmpty() && board.getUpperRowCharEv().size() < gameSize + 4){
+        if(currentEra < 3 && board.getUpperRowCharEv().size() < gameSize + 4){
             currentEra ++;
             board.endEra(gameSize, eraToCharEvdeck.get(currentEra), eraToBuildingsdeck.get(currentEra));
         }
