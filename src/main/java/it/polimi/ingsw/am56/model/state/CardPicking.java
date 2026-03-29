@@ -18,17 +18,16 @@ public class CardPicking extends GameState {
 
     private void checkTurnFlow() {
 
-        // Se non c'è più nessuno che deve pescare, passiamo alla fine round
-        if (model.getPlayerToOfferTile().isEmpty()) {
-            model.setState(new RoundEnding(model));
-            model.setCurrentPlayer(null);
-            return;
-        }
-
         // Se il giocatore attuale non può più pescare (slot pieni o cibo finito)
         if (!model.checkCanPick()) {
             model.resetTotemToOrder();
-            model.updateCurrentPlayer();
+
+            if(model.getPlayerToOfferTile().isEmpty()) {
+                model.setState(new RoundEnding(model));
+                return;
+            }
+
+            model.setCurrentPlayerOffer();
             checkTurnFlow();
         }
     }
@@ -42,7 +41,7 @@ public class CardPicking extends GameState {
 
         boolean isUpper = model.getBoard().getUpperRowCharEv().contains(c);
 
-        if (!isUpper & !model.getBoard().getLowerRowCharEv().contains(c)) {
+        if (!isUpper && !model.getBoard().getLowerRowCharEv().contains(c)) {
             throw new InvalidActionException("La carta selezionata non è disponibile sulla board.");
         }
 
@@ -71,7 +70,7 @@ public class CardPicking extends GameState {
 
         boolean isUpper = model.getBoard().getUpperRowBuildings().contains(c);
 
-        if (!isUpper & !model.getBoard().getLowerRowBuildings().contains(c)) {
+        if (!isUpper && !model.getBoard().getLowerRowBuildings().contains(c)) {
             throw new InvalidActionException("La carta selezionata non è disponibile sulla board.");
         }
 

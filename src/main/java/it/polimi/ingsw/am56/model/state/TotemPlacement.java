@@ -33,11 +33,12 @@ public class TotemPlacement extends GameState{
         // chiama metodo stupido
         model.executeTotemPlacement(p, t);
 
-        if(model.getPlayerToOrderTile().isEmpty()) {
-            model.setState(new CardPicking(model));
+        if(!model.getPlayerToOrderTile().isEmpty()) {
+            model.setCurrentPlayerOrder();
+            return;
         }
 
-        model.updateCurrentPlayer();
-
+        model.setCurrentPlayerOffer();
+        model.setState(new CardPicking(model));
     }
 }

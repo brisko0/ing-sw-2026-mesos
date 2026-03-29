@@ -14,11 +14,11 @@ public class RoundEnding extends GameState{
 
         if(model.getCurrentRound() == 11){
             model.setState(new GameEnding(model));
-        }
-        else {
-            model.setState(new TotemPlacement(model));
+            return;
         }
 
-        model.updateCurrentPlayer();
+        model.setState(new TotemPlacement(model));
+        model.setCurrentPlayerOrder();
+
     }
 }

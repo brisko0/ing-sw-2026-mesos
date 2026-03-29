@@ -120,19 +120,10 @@ public class GameModel {
             board.getOrderTiles().get(i).setIsFree(false);
         }
         this.setState(new TotemPlacement(this));
-        updateCurrentPlayer();
+        setCurrentPlayerOrder();
     }
 
-    public void updateCurrentPlayer() {
-        // prima si controlla se qualcuno deve ancora piazzare il suo totem
-        if (state instanceof TotemPlacement) {
-            setCurrentPlayerOrder();
-        } else {
-            setCurrentPlayerOffer();
-        }
-    }
-
-    private void setCurrentPlayerOrder(){
+    public void setCurrentPlayerOrder(){
         List<Player> needingToPlace = players.stream()
                 .filter(p -> !playerToOfferTile.containsKey(p))
                 .toList();
@@ -144,7 +135,7 @@ public class GameModel {
         }
     }
 
-    private void setCurrentPlayerOffer(){
+    public void setCurrentPlayerOffer(){
         List<Player> needingToAct = players.stream()
                 .filter(p -> !playerToOrderTile.containsKey(p))
                 .toList();
