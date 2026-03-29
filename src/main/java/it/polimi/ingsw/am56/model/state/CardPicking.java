@@ -17,7 +17,6 @@ public class CardPicking extends GameState {
     }
 
     private void checkTurnFlow() {
-        Player current = model.getCurrentPlayer();
 
         // Se non c'è più nessuno che deve pescare, passiamo alla fine round
         if (model.getPlayerToOfferTile().isEmpty()) {
@@ -27,8 +26,8 @@ public class CardPicking extends GameState {
         }
 
         // Se il giocatore attuale non può più pescare (slot pieni o cibo finito)
-        if (!model.checkCanPick(current)) {
-            model.resetTotemToOrder(current);
+        if (!model.checkCanPick()) {
+            model.resetTotemToOrder();
             model.updateCurrentPlayer();
             checkTurnFlow();
         }
@@ -89,7 +88,7 @@ public class CardPicking extends GameState {
         }
 
 
-        if (p.getStats().getFood() < c.getCost()) {
+        if (p.getStats().getFood() < (c.getCost() - p.getStats().getBuildingSale())) {
             throw new InvalidActionException("Cibo insufficiente! non è possibile prendere la carta edificio.");
         }
 

@@ -169,28 +169,24 @@ public class GameModel {
         oldOrderTile.setIsFree(true);
     }
 
-    public boolean checkCanPick(Player p) {
-        OfferTile ot = playerToOfferTile.get(p);
+    public boolean checkCanPick() {
+        OfferTile ot = playerToOfferTile.get(currentPlayer);
         if (ot == null) return false;
 
-        boolean hasUpperSlot = p.getPickedUpper() < ot.getUpperCards();
+        boolean hasUpperSlot = currentPlayer.getPickedUpper() < ot.getUpperCards();
 
         boolean canPickUpper = hasUpperSlot && (
                 !board.getUpperRowCharEv().isEmpty() ||
                         board.getUpperRowBuildings().stream()
-                                .filter(BuildingCard.class::isInstance) // Filtra solo se è un edificio
-                                .map(BuildingCard.class::cast)         // Lo trasforma in BuildingCard
-                                .anyMatch(b -> p.getStats().getFood() >= Math.max(0, b.getCost() - p.getStats().getBuildingSale()))
+                                .anyMatch(b -> currentPlayer.getStats().getFood() >= (b.getCost() - currentPlayer.getStats().getBuildingSale()))
         );
 
-        boolean hasLowerSlot = p.getPickedLower() < ot.getLowerCards();
+        boolean hasLowerSlot = currentPlayer.getPickedLower() < ot.getLowerCards();
 
         boolean canPickLower = hasLowerSlot && (
                 !board.getLowerRowCharEv().isEmpty() ||
                         board.getLowerRowBuildings().stream()
-                                .filter(BuildingCard.class::isInstance)
-                                .map(BuildingCard.class::cast)
-                                .anyMatch(b -> p.getStats().getFood() >= Math.max(0, b.getCost() - p.getStats().getBuildingSale()))
+                                .anyMatch(b -> currentPlayer.getStats().getFood() >= (b.getCost() - currentPlayer.getStats().getBuildingSale()))
         );
 
         return canPickUpper || canPickLower;
@@ -232,8 +228,8 @@ public class GameModel {
         c.resolveEffect(this);
     }
 
-    public void resetTotemToOrder(Player p){
-        OfferTile oldOffer = playerToOfferTile.remove(p);
+    public void resetTotemToOrder(){
+        OfferTile oldOffer = playerToOfferTile.remove(currentPlayer);
         oldOffer.setIsFree(true);
 
         OrderTile firstFreeOrder = board.getOrderTiles().stream()
@@ -241,11 +237,11 @@ public class GameModel {
                 .findFirst()
                 .orElse(null);
 
-        playerToOrderTile.put(p, firstFreeOrder);
+        playerToOrderTile.put(currentPlayer, firstFreeOrder);
         firstFreeOrder.setIsFree(false);
 
-        p.setPickedUpper(0);
-        p.setPickedLower(0);
+        currentPlayer.setPickedUpper(0);
+        currentPlayer.setPickedLower(0);
     }
 
     public void endRound(){
