@@ -1,13 +1,7 @@
 package it.polimi.ingsw.am56.model.card;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import it.polimi.ingsw.am56.model.board.OfferTile;
+import it.polimi.ingsw.am56.model.card.eventCard.EventCard;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
