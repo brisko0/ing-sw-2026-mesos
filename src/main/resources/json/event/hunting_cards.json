@@ -1,0 +1,20 @@
+[
+  {
+    "cardId": 85,
+    "era": 1,
+    "minPlayers": 2,
+    "winPointsPerHunter": 1
+  },
+  {
+    "cardId": 86,
+    "era": 2,
+    "minPlayers": 2,
+    "winPointsPerHunter": 2
+  },
+  {
+    "cardId": 87,
+    "era": 3,
+    "minPlayers": 2,
+    "winPointsPerHunter": 3
+  }
+]

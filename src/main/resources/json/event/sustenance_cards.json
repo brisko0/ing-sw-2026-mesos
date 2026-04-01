@@ -1,0 +1,20 @@
+[
+  {
+    "cardId": 94,
+    "era": 1,
+    "minPlayers": 2,
+    "losePointsPerChar": 1
+  },
+  {
+    "cardId": 95,
+    "era": 2,
+    "minPlayers": 2,
+    "losePointsPerChar": 2
+  },
+  {
+    "cardId": 96,
+    "era": 3,
+    "minPlayers": 2,
+    "losePointsPerChar": 3
+  }
+]
