@@ -6,13 +6,11 @@ public abstract class Card {
     private final int cardId;
     private final int era;
     private final int minPlayers;
-    private final CardType type;
 
-    public Card(int cardId, int era, int minPlayers,  CardType type) {
+    public Card(int cardId, int era, int minPlayers) {
         this.cardId = cardId;
         this.era = era;
         this.minPlayers = minPlayers;
-        this.type = type;
     }
 
     public abstract void resolveEffect(GameModel gameModel);
@@ -25,5 +23,5 @@ public abstract class Card {
         return minPlayers;
     }
 
-    public CardType getCardType() { return type; }
+    public abstract CardType getCardType();
 }
