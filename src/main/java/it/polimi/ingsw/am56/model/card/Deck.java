@@ -1,5 +1,6 @@
 package it.polimi.ingsw.am56.model.card;
 
+import it.polimi.ingsw.am56.model.card.characterCard.CharacterCard;
 import it.polimi.ingsw.am56.model.card.eventCard.EventCard;
 
 import java.util.ArrayList;

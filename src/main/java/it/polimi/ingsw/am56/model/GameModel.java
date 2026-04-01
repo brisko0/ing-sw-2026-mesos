@@ -4,6 +4,7 @@ import it.polimi.ingsw.am56.model.board.Board;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.board.OrderTile;
 import it.polimi.ingsw.am56.model.card.*;
+import it.polimi.ingsw.am56.model.card.characterCard.CharacterCard;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import it.polimi.ingsw.am56.model.state.GameState;
 import it.polimi.ingsw.am56.model.state.PlayersFilling;

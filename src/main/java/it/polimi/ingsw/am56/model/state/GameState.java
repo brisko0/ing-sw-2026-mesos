@@ -3,9 +3,8 @@ package it.polimi.ingsw.am56.model.state;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.card.BuildingCard;
-import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.board.OfferTile;
-import it.polimi.ingsw.am56.model.card.CharacterCard;
+import it.polimi.ingsw.am56.model.card.characterCard.CharacterCard;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
 public abstract class GameState {

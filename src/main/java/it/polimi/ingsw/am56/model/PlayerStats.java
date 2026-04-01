@@ -1,7 +1,6 @@
 package it.polimi.ingsw.am56.model;
 
 import it.polimi.ingsw.am56.model.card.Card;
-import it.polimi.ingsw.am56.model.card.CharacterCard;
 
 import java.util.ArrayList;
 import java.util.HashSet;
