@@ -2,14 +2,13 @@ package it.polimi.ingsw.am56.model.card.eventCard;
 
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.Player;
-import it.polimi.ingsw.am56.model.card.CardType;
 
 public class ShamansEvCard extends EventCard {
     private final int winPoints;
     private final int losePoints;
 
     public ShamansEvCard(int cardId, int era, int minPlayers, int winPoints, int losePoints) {
-        super(cardId, era, minPlayers, CardType.EVENT);
+        super(cardId, era, minPlayers);
         this.winPoints = winPoints;
         this.losePoints = losePoints;
     }

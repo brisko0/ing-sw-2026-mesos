@@ -2,13 +2,12 @@ package it.polimi.ingsw.am56.model.card.eventCard;
 
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.Player;
-import it.polimi.ingsw.am56.model.card.CardType;
 
 public class SustenanceEvCard extends EventCard {
     private final int losePointsPerChar;
 
     public SustenanceEvCard(int cardId, int era, int minPlayers, int losePointsPerCharSustenance) {
-        super(cardId, era, minPlayers, CardType.EVENT);
+        super(cardId, era, minPlayers);
         this.losePointsPerChar = losePointsPerCharSustenance;
     }
 
