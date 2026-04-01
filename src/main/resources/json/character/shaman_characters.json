@@ -1,0 +1,80 @@
+[
+  {
+    "cardId": 1,
+    "era": 1,
+    "minPlayers": 5,
+    "shamanStars": 2
+  },
+  {
+    "cardId": 2,
+    "era": 1,
+    "minPlayers": 2,
+    "shamanStars": 2
+  },
+  {
+    "cardId": 3,
+    "era": 1,
+    "minPlayers": 2,
+    "shamanStars": 1
+  },
+  {
+    "cardId": 4,
+    "era": 1,
+    "minPlayers": 4,
+    "shamanStars": 1
+  },
+  {
+    "cardId": 5,
+    "era": 2,
+    "minPlayers": 2,
+    "shamanStars": 2
+  },
+  {
+    "cardId": 6,
+    "era": 2,
+    "minPlayers": 2,
+    "shamanStars": 2
+  },
+  {
+    "cardId": 7,
+    "era": 2,
+    "minPlayers": 5,
+    "shamanStars": 1
+  },
+  {
+    "cardId": 8,
+    "era": 2,
+    "minPlayers": 5,
+    "shamanStars": 2
+  },
+  {
+    "cardId": 9,
+    "era": 3,
+    "minPlayers": 3,
+    "shamanStars": 2
+  },
+  {
+    "cardId": 10,
+    "era": 3,
+    "minPlayers": 2,
+    "shamanStars": 3
+  },
+  {
+    "cardId": 11,
+    "era": 3,
+    "minPlayers": 2,
+    "shamanStars": 2
+  },
+  {
+    "cardId": 12,
+    "era": 3,
+    "minPlayers": 2,
+    "shamanStars": 3
+  },
+  {
+    "cardId": 13,
+    "era": 3,
+    "minPlayers": 4,
+    "shamanStars": 2
+  }
+]

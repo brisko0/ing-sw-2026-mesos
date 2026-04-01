@@ -1,0 +1,92 @@
+[
+  {
+    "cardId": 14,
+    "era": 1,
+    "minPlayers": 2,
+    "providesFood": true
+  },
+  {
+    "cardId": 15,
+    "era": 1,
+    "minPlayers": 2,
+    "providesFood": true
+  },
+  {
+    "cardId": 16,
+    "era": 1,
+    "minPlayers": 2,
+    "providesFood": false
+  },
+  {
+    "cardId": 17,
+    "era": 1,
+    "minPlayers": 1,
+    "providesFood": false
+  },
+  {
+    "cardId": 18,
+    "era": 1,
+    "minPlayers": 2,
+    "providesFood": false
+  },
+  {
+    "cardId": 19,
+    "era": 2,
+    "minPlayers": 2,
+    "providesFood": false
+  },
+  {
+    "cardId": 20,
+    "era": 2,
+    "minPlayers": 2,
+    "providesFood": false
+  },
+  {
+    "cardId": 21,
+    "era": 2,
+    "minPlayers": 3,
+    "providesFood": true
+  },
+  {
+    "cardId": 22,
+    "era": 2,
+    "minPlayers": 2,
+    "providesFood": true
+  },
+  {
+    "cardId": 23,
+    "era": 2,
+    "minPlayers": 4,
+    "providesFood": true
+  },
+  {
+    "cardId": 24,
+    "era": 2,
+    "minPlayers": 5,
+    "providesFood": false
+  },
+  {
+    "cardId": 25,
+    "era": 3,
+    "minPlayers": 5,
+    "providesFood": true
+  },
+  {
+    "cardId": 26,
+    "era": 3,
+    "minPlayers": 2,
+    "providesFood": false
+  },
+  {
+    "cardId": 27,
+    "era": 3,
+    "minPlayers": 2,
+    "providesFood": false
+  },
+  {
+    "cardId": 28,
+    "era": 3,
+    "minPlayers": 2,
+    "providesFood": true
+  }
+]

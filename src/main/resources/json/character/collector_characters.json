@@ -1,0 +1,68 @@
+[
+  {
+    "cardId": 41,
+    "era": 1,
+    "minPlayers": 2,
+    "feedingSale": 3
+  },
+  {
+    "cardId": 42,
+    "era": 1,
+    "minPlayers": 2,
+    "feedingSale": 3
+  },
+  {
+    "cardId": 43,
+    "era": 1,
+    "minPlayers": 3,
+    "feedingSale": 3
+  },
+  {
+    "cardId": 44,
+    "era": 1,
+    "minPlayers": 5,
+    "feedingSale": 3
+  },
+  {
+    "cardId": 45,
+    "era": 2,
+    "minPlayers": 2,
+    "feedingSale": 3
+  },
+  {
+    "cardId": 46,
+    "era": 2,
+    "minPlayers": 3,
+    "feedingSale": 3
+  },
+  {
+    "cardId": 47,
+    "era": 2,
+    "minPlayers": 4,
+    "feedingSale": 3
+  },
+  {
+    "cardId": 48,
+    "era": 2,
+    "minPlayers": 5,
+    "feedingSale": 3
+  },
+  {
+    "cardId": 49,
+    "era": 3,
+    "minPlayers": 5,
+    "feedingSale": 3
+  },
+  {
+    "cardId": 50,
+    "era": 3,
+    "minPlayers": 4,
+    "feedingSale": 3
+  },
+  {
+    "cardId": 51,
+    "era": 3,
+    "minPlayers": 2,
+    "feedingSale": 3
+  }
+]
