@@ -35,4 +35,9 @@ public class ShamansEvCard extends EventCard {
             }
         }
     }
+
+    @Override
+    public EvType getEventType() {
+        return EvType.SHAMAN;
+    }
 }

@@ -19,4 +19,9 @@ public class HuntingEvCard extends EventCard {
             player.getStats().addPoints(winPointsPerHunter * huntersNum);
         }
     }
+
+    @Override
+    public EvType getEventType() {
+        return EvType.HUNTING;
+    }
 }

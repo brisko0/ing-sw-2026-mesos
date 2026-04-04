@@ -28,4 +28,9 @@ public class ArtistsEvCard extends EventCard {
         }
     }
 
+    @Override
+    public EvType getEventType() {
+        return EvType.ARTIST;
+    }
+
 }

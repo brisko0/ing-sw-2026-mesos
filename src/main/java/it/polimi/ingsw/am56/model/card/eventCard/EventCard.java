@@ -9,6 +9,8 @@ public abstract class EventCard extends Card {
         super(cardId, era, minPlayers);
     }
 
+    public abstract EvType getEventType();
+
     @Override
     public CardType getCardType(){
         return CardType.EVENT;

@@ -24,4 +24,8 @@ public class SustenanceEvCard extends EventCard {
             }
         }
     }
+
+    public EvType getEventType() {
+        return EvType.SUSTENANCE;
+    }
 }
