@@ -5,6 +5,7 @@ import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.card.CardType;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterCard;
+import it.polimi.ingsw.am56.model.card.eventCard.EventCard;
 
 public abstract class BuildingCard extends Card {
     private final int cost;
@@ -17,7 +18,7 @@ public abstract class BuildingCard extends Card {
     }
 
     public void onCardPicked(GameModel gameModel, CharacterCard characterCard){}
-
+    public void onEventResolving(GameModel gameModel, EventCard evCard, Player player) {}
     public void onGameEnding(GameModel gameModel, Player player) {
         player.getStats().addPoints(points);
     }

@@ -40,4 +40,12 @@ public class ShamansEvCard extends EventCard {
     public EvType getEventType() {
         return EvType.SHAMAN;
     }
+
+    public int getWinPoints() {
+        return winPoints;
+    }
+
+    public int getLosePoints() {
+        return losePoints;
+    }
 }
