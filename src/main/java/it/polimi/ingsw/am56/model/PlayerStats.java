@@ -4,10 +4,7 @@ import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterCard;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class PlayerStats {
     private int food;
@@ -120,6 +117,16 @@ public class PlayerStats {
     }
     public void addHunter() {
         this.huntersNum++;
+    }
+    public int getCompletedSets() {
+        Map<CharacterType, Integer> counts = new EnumMap<>(CharacterType.class);
+        for (CharacterType type : CharacterType.values()) counts.put(type, 0);
+
+        for (CharacterCard c : characterCards) {
+            counts.put(c.getCharacterType(), counts.get(c.getCharacterType()) + 1);
+        }
+
+        return Collections.min(counts.values());
     }
 
 }
