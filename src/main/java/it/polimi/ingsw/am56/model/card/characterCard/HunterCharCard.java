@@ -20,4 +20,9 @@ public class HunterCharCard extends CharacterCard {
                     gameModel.getCurrentPlayer().getStats().getHuntersNum());
         }
     }
+
+    @Override
+    public CharacterType getCharacterType(){
+        return CharacterType.HUNTER;
+    }
 }

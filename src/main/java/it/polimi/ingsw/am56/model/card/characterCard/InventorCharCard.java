@@ -16,4 +16,9 @@ public class InventorCharCard extends CharacterCard {
         gameModel.getCurrentPlayer().getStats().getInventions().add(invention);
         gameModel.getCurrentPlayer().getStats().addInventor();
     }
+
+    @Override
+    public CharacterType getCharacterType(){
+        return CharacterType.INVENTOR;
+    }
 }

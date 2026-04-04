@@ -9,6 +9,8 @@ public abstract class CharacterCard extends Card {
         super( cardId, era, minPlayers);
     }
 
+    public abstract CharacterType getCharacterType();
+
     @Override
     public CardType getCardType() {
         return CardType.CHARACTER;

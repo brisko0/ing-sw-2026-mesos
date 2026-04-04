@@ -15,4 +15,9 @@ public class ShamanCharCard extends CharacterCard{
 
         gameModel.getCurrentPlayer().getStats().addShamanStars(shamanStars);
     }
+
+    @Override
+    public CharacterType getCharacterType(){
+        return CharacterType.SHAMAN;
+    }
 }

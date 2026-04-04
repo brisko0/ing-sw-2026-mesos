@@ -18,4 +18,9 @@ public class BuilderCharCard extends CharacterCard {
         gameModel.getCurrentPlayer().getStats().addBuildingSale(buildingSale);
         gameModel.getCurrentPlayer().getStats().addBuilderPoints(builderPoints);
     }
+
+    @Override
+    public CharacterType getCharacterType(){
+        return CharacterType.BUILDER;
+    }
 }

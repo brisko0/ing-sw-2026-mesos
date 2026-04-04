@@ -15,4 +15,9 @@ public class CollectorCharCard extends CharacterCard {
 
         gameModel.getCurrentPlayer().getStats().addFeedingSale(feedingSale);
     }
+
+    @Override
+    public CharacterType getCharacterType(){
+        return CharacterType.COLLECTOR;
+    }
 }
