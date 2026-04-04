@@ -17,7 +17,7 @@ public class HunterCharCard extends CharacterCard {
 
         if(providesFood){
             gameModel.getCurrentPlayer().getStats().addFood(
-                    gameModel.getCurrentPlayer().getStats().getHuntersNum());
+                    gameModel.getCurrentPlayer().getStats().getCharacterTypeNum(CharacterType.HUNTER));
         }
     }
 

@@ -1,6 +1,8 @@
 package it.polimi.ingsw.am56.model;
 
 import it.polimi.ingsw.am56.model.card.Card;
+import it.polimi.ingsw.am56.model.card.characterCard.CharacterCard;
+import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -18,7 +20,7 @@ public class PlayerStats {
     private int buildingSale;
     private int builderPoints;
     private Set<String>  inventions;
-    private List<Card> characterCards;
+    private List<CharacterCard> characterCards;
     private List<Card> buildingCards;
 
     public PlayerStats(){
@@ -32,7 +34,7 @@ public class PlayerStats {
         this.buildingSale = 0;
         this.builderPoints = 0;
         this.inventions = new HashSet<String>();
-        this.characterCards = new ArrayList<Card>();
+        this.characterCards = new ArrayList<CharacterCard>();
         this.buildingCards = new ArrayList<Card>();
     }
 
@@ -44,16 +46,14 @@ public class PlayerStats {
         return points;
     }
 
-    public int getHuntersNum() {
-        return huntersNum;
-    }
-
-    public int getArtistsNum() {
-        return artistsNum;
-    }
-
-    public int getInventorsNum() {
-        return inventorsNum;
+    public int getCharacterTypeNum(CharacterType characterType) {
+        int count = 0;
+        for(CharacterCard characterCard : characterCards){
+            if(characterCard.getCharacterType() == characterType){
+                count++;
+            }
+        }
+        return count;
     }
 
     public int getShamanStars() {
@@ -76,7 +76,7 @@ public class PlayerStats {
         return inventions;
     }
 
-    public List<Card> getCharacterCards() {
+    public List<CharacterCard> getCharacterCards() {
         return characterCards;
     }
 

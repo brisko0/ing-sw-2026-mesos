@@ -2,6 +2,7 @@ package it.polimi.ingsw.am56.model.card.eventCard;
 
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.Player;
+import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
 
 public class ArtistsEvCard extends EventCard {
     private final int minArtists;
@@ -17,7 +18,7 @@ public class ArtistsEvCard extends EventCard {
 
     public void resolveEffect(GameModel gameModel) {
         for(Player player : gameModel.getPlayers()) {
-            int artistsNum = player.getStats().getArtistsNum();
+            int artistsNum = player.getStats().getCharacterTypeNum(CharacterType.ARTIST);
             if(artistsNum < minArtists) {
                 player.getStats().addPoints(-losePoints);
             }
