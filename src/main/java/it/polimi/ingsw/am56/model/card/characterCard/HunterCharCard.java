@@ -13,8 +13,6 @@ public class HunterCharCard extends CharacterCard {
     @Override
     public void resolveEffect(GameModel gameModel){
 
-        gameModel.getCurrentPlayer().getStats().addHunter();
-
         if(providesFood){
             gameModel.getCurrentPlayer().getStats().addFood(
                     gameModel.getCurrentPlayer().getStats().getCharacterTypeNum(CharacterType.HUNTER));

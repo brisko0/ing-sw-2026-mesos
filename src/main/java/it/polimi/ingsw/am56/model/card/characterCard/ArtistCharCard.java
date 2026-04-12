@@ -9,9 +9,7 @@ public class ArtistCharCard extends CharacterCard {
     }
 
     @Override
-    public void resolveEffect(GameModel gameModel){
-        gameModel.getCurrentPlayer().getStats().addArtist();
-    }
+    public void resolveEffect(GameModel gameModel){}
 
     @Override
     public CharacterType getCharacterType(){

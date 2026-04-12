@@ -9,9 +9,6 @@ import java.util.*;
 public class PlayerStats {
     private int food;
     private int points;
-    private int huntersNum;
-    private int artistsNum;
-    private int inventorsNum;
     private int shamanStars;
     private int feedingSale;
     private int buildingSale;
@@ -23,9 +20,6 @@ public class PlayerStats {
     public PlayerStats(){
         this.food = 0;
         this.points = 0;
-        this.huntersNum = 0;
-        this.artistsNum = 0;
-        this.inventorsNum = 0;
         this.shamanStars = 0;
         this.feedingSale = 0;
         this.buildingSale = 0;
@@ -96,9 +90,6 @@ public class PlayerStats {
     public void addFood(int food) {
         this.food += food;
     }
-    public void subtractFood(int food) {
-        this.food -= food;
-    }
     public void addShamanStars(int shamanStars) {
         this.shamanStars += shamanStars;
     }
@@ -109,15 +100,7 @@ public class PlayerStats {
     public void addBuilderPoints(int builderPoints) {
         this.builderPoints += builderPoints;
     }
-    public void addInventor() {
-        this.inventorsNum++;
-    }
-    public void addArtist() {
-        this.artistsNum++;
-    }
-    public void addHunter() {
-        this.huntersNum++;
-    }
+
     public int getCompletedSets() {
         Map<CharacterType, Integer> counts = new EnumMap<>(CharacterType.class);
         for (CharacterType type : CharacterType.values()) counts.put(type, 0);

@@ -14,7 +14,6 @@ public class InventorCharCard extends CharacterCard {
     public void resolveEffect(GameModel gameModel){
 
         gameModel.getCurrentPlayer().getStats().getInventions().add(invention);
-        gameModel.getCurrentPlayer().getStats().addInventor();
     }
 
     @Override
