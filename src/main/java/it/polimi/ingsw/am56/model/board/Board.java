@@ -1,14 +1,10 @@
 package it.polimi.ingsw.am56.model.board;
 
-import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.card.Deck;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static it.polimi.ingsw.am56.model.board.OfferTile.createOfferTiles;
-import static it.polimi.ingsw.am56.model.board.OrderTile.createOrderTiles;
 
 public class Board {
     private List<OrderTile> orderTiles;
@@ -25,15 +21,6 @@ public class Board {
         upperRowCharEv = new ArrayList<>();
         lowerRowBuildings = new ArrayList<>();
         lowerRowCharEv = new ArrayList<>();
-    }
-
-    public static Board createBoard(int gameSize){
-        Board board = new Board();
-
-        board.offerTiles = createOfferTiles(gameSize);
-        board.orderTiles = createOrderTiles(gameSize);
-
-        return board;
     }
 
     public List<OrderTile> getOrderTiles() {
