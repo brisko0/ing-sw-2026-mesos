@@ -1,0 +1,44 @@
+package it.polimi.ingsw.am56.model.factory.board;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import it.polimi.ingsw.am56.model.board.OrderTile;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+public class OrderTilesFactory {
+    public static List<OrderTile> createOrderTiles(int gameSize) {
+        List<OrderTile> filteredTiles = new ArrayList<>();
+        Gson gson = new Gson();
+
+        try (InputStream is = OrderTile.class.getResourceAsStream("/json/order_tiles.json")) {
+
+            if (is == null) {
+                throw new RuntimeException("File JSON NON trovato!");
+            }
+
+            try (Reader reader = new InputStreamReader(is)) {
+                Type listType = new TypeToken<ArrayList<OrderTile>>(){}.getType();
+                List<OrderTile> allTiles = gson.fromJson(reader, listType);
+
+                if (allTiles != null) {
+                    for (OrderTile tile : allTiles) {
+                        if (gameSize == tile.getNumPlayers()) {
+                            filteredTiles.add(tile);
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Impossibile inizializzare il gioco: file di configurazione mancante o corrotto", e);
+        }
+
+        return filteredTiles;
+    }
+}
