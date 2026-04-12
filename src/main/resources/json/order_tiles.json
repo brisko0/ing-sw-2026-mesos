@@ -1,19 +1,21 @@
 [
-  { "orderTileId": 1, "foodEffect": 1, "pointsEffect": 0, "numPlayers": 2 },
-  { "orderTileId": 2, "foodEffect": -1, "pointsEffect": -2, "numPlayers": 2 },
+  { "orderTileId": 1, "foodEffect": 1, "pointsEffect": 0, "numPlayers": 2,
+    "isFree":"true"
+  },
+  { "orderTileId": 2, "foodEffect": -1, "pointsEffect": -2, "numPlayers": 2,"isFree":"true" },
 
-  { "orderTileId": 1, "foodEffect": 2, "pointsEffect": 0, "numPlayers": 3 },
-  { "orderTileId": 2, "foodEffect": 0, "pointsEffect": 0, "numPlayers": 3 },
-  { "orderTileId": 3, "foodEffect": -1, "pointsEffect": -2, "numPlayers": 3 },
+  { "orderTileId": 1, "foodEffect": 2, "pointsEffect": 0, "numPlayers": 3 ,"isFree":"true"},
+  { "orderTileId": 2, "foodEffect": 0, "pointsEffect": 0, "numPlayers": 3 ,"isFree":"true"},
+  { "orderTileId": 3, "foodEffect": -1, "pointsEffect": -2, "numPlayers": 3 ,"isFree":"true"},
 
-  { "orderTileId": 1, "foodEffect": 2, "pointsEffect": 0, "numPlayers": 4 },
-  { "orderTileId": 2, "foodEffect": 1, "pointsEffect": 0, "numPlayers": 4 },
-  { "orderTileId": 3, "foodEffect": 0, "pointsEffect": 0, "numPlayers": 4 },
-  { "orderTileId": 4, "foodEffect": -1, "pointsEffect": -2, "numPlayers": 4 },
+  { "orderTileId": 1, "foodEffect": 2, "pointsEffect": 0, "numPlayers": 4 ,"isFree":"true"},
+  { "orderTileId": 2, "foodEffect": 1, "pointsEffect": 0, "numPlayers": 4 ,"isFree":"true"},
+  { "orderTileId": 3, "foodEffect": 0, "pointsEffect": 0, "numPlayers": 4 ,"isFree":"true"},
+  { "orderTileId": 4, "foodEffect": -1, "pointsEffect": -2, "numPlayers": 4 ,"isFree":"true"},
 
-  { "orderTileId": 1, "foodEffect": 3, "pointsEffect": 0, "numPlayers": 5 },
-  { "orderTileId": 2, "foodEffect": 1, "pointsEffect": 0, "numPlayers": 5 },
-  { "orderTileId": 3, "foodEffect": 0, "pointsEffect": 0, "numPlayers": 5 },
-  { "orderTileId": 4, "foodEffect": 0, "pointsEffect": 0, "numPlayers": 5 },
-  { "orderTileId": 5, "foodEffect": -1, "pointsEffect": -2, "numPlayers": 5 }
+  { "orderTileId": 1, "foodEffect": 3, "pointsEffect": 0, "numPlayers": 5 ,"isFree":"true"},
+  { "orderTileId": 2, "foodEffect": 1, "pointsEffect": 0, "numPlayers": 5 ,"isFree":"true"},
+  { "orderTileId": 3, "foodEffect": 0, "pointsEffect": 0, "numPlayers": 5 ,"isFree":"true"},
+  { "orderTileId": 4, "foodEffect": 0, "pointsEffect": 0, "numPlayers": 5 ,"isFree":"true"},
+  { "orderTileId": 5, "foodEffect": -1, "pointsEffect": -2, "numPlayers": 5 ,"isFree":"true"}
 ]
