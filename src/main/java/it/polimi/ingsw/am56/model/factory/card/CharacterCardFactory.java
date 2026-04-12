@@ -1,56 +1,58 @@
 package it.polimi.ingsw.am56.model.factory.card;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.*;
 import it.polimi.ingsw.am56.model.card.characterCard.*;
 import it.polimi.ingsw.am56.model.factory.CardFactory;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class CharacterCardFactory implements CardFactory<CharacterCard> {
     private final Gson gson = new Gson();
 
 
-    private final Map<String, Type> config = Map.of(
-            "artist_characters.json", new TypeToken<ArrayList<ArtistCharCard>>(){}.getType(),
-            "builder_characters.json", new TypeToken<ArrayList<BuilderCharCard>>(){}.getType(),
-            "collector_characters.json", new TypeToken<ArrayList<CollectorCharCard>>(){}.getType(),
-            "hunting_characters.json", new TypeToken<ArrayList<HunterCharCard>>(){}.getType(),
-            "inventor_characters.json", new TypeToken<ArrayList<InventorCharCard>>(){}.getType(),
-            "shaman_characters.json", new TypeToken<ArrayList<ShamanCharCard>>(){}.getType()
+    private final Map<String, Class<? extends CharacterCard>> typeToClass = Map.of(
+            "SHAMAN", ArtistCharCard.class,
+            "HUNTER", BuilderCharCard.class,
+            "BUILDER", CollectorCharCard.class,
+            "COLLECTOR", HunterCharCard.class,
+            "ARTIST", InventorCharCard.class,
+            "INVENTOR", ShamanCharCard.class
     );
 
     @Override
     public List<CharacterCard> createCards(int era, int gameSize) {
         List<CharacterCard> filteredCards = new ArrayList<>();
+        String path = "/json/characterCards.json";
 
-        for (Map.Entry<String, Type> entry : config.entrySet()) {
-            String fileName = entry.getKey();
-            Type listType = entry.getValue();
+        try (var is = getClass().getResourceAsStream(path)) {
+            if (is == null) throw new RuntimeException("File non trovato: " + path);
 
-            filteredCards.addAll(loadAndFilter(fileName, listType, era, gameSize));
+            try (Reader reader = new InputStreamReader(is)) {
+                JsonArray jsonArray = JsonParser.parseReader(reader).getAsJsonArray();
+
+                for (JsonElement element : jsonArray) {
+                    JsonObject jsonObject = element.getAsJsonObject();
+
+                    String classType = jsonObject.get("classType").getAsString();
+                    int cardEra = jsonObject.get("era").getAsInt();
+                    int minPlayers = jsonObject.get("minPlayers").getAsInt();
+
+                    if (cardEra == era && gameSize >= minPlayers) {
+                        Class<? extends CharacterCard> targetClass = typeToClass.get(classType);
+                        if (targetClass != null) {
+                            filteredCards.add(gson.fromJson(element, targetClass));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Errore durante il caricamento dei personaggi", e);
         }
 
         return filteredCards;
-    }
-
-    private List<CharacterCard> loadAndFilter(String fileName, Type listType, int era, int gameSize) {
-        String path = "/it/polimi/ingsw/am56/json/character/" + fileName;
-
-        try (Reader reader = new InputStreamReader(getClass().getResourceAsStream(path))) {
-            List<? extends CharacterCard> allCards = gson.fromJson(reader, listType);
-            if (allCards == null) return List.of();
-            return allCards.stream()
-                    .filter(c -> gameSize >= c.getMinPlayers() && c.getEra() == era)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            throw new RuntimeException("Errore nel caricamento di " + fileName, e);
-        }
     }
 }
