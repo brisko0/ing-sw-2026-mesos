@@ -149,15 +149,6 @@ public class GameModel {
 
         board.fillUpperCharEv(gameSize, eraToCharEvdeck.get(currentEra));
         board.fillUpperBuildings(gameSize, eraToBuildingsdeck.get(currentEra));
-
-        for (int i = 0; i < players.size(); i++) {
-            players.get(i).getStats().setInitialFood(i + 1);
-            playerToOrderTile.put(players.get(i), board.getOrderTiles().get(i));
-            board.getOrderTiles().get(i).setIsFree(false);
-        }
-
-        this.setState(new TotemPlacement(this));
-        setCurrentPlayerOrder();
     }
 
     public void setCurrentPlayerOrder(){
