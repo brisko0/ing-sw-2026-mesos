@@ -1,0 +1,193 @@
+[
+  {
+    "classType": "FoodPerSet",
+    "cardId": 97,
+    "era": 1,
+    "minPlayers": 0,
+    "cost":  4,
+    "points": 3,
+    "lastCheckedSets": 0,
+    "bonusFood": 5
+  },
+  {
+    "classType": "FeedingSaleCharType",
+    "cardId": 98,
+    "era": 1,
+    "minPlayers": 0,
+    "cost":  4,
+    "points": 4
+  },
+  {
+    "classType": "FeedingSaleCharType",
+    "cardId": 99,
+    "era": 1,
+    "minPlayers": 0,
+    "cost":  5,
+    "points": 3,
+    "characterType": "COLLECTOR"
+  },
+  {
+    "classType": "ShamanNoLoss",
+    "cardId": 100,
+    "era": 1,
+    "minPlayers": 0,
+    "cost":  5,
+    "points": 2,
+    "characterType": "ARTIST"
+  },
+  {
+    "classType": "FoodBonusOrderTile",
+    "cardId": 101,
+    "era": 1,
+    "minPlayers": 0,
+    "cost":  3,
+    "points": 3,
+    "foodBonus": 1
+  },
+  {
+    "classType": "FoodPerInventorPair",
+    "cardId": 102,
+    "era": 1,
+    "minPlayers": 0,
+    "cost":  3,
+    "points": 3,
+    "foodBonus": 3
+  },
+  {
+    "classType": "ShamanEventDouble",
+    "cardId": 103,
+    "era": 2,
+    "minPlayers": 0,
+    "cost":  7,
+    "points": 0
+  },
+  {
+    "classType": "ShamanStarsBonus",
+    "cardId": 104,
+    "era": 2,
+    "minPlayers": 0,
+    "cost":  6,
+    "points": 4,
+    "bonusStars": 3
+  },
+  {
+    "classType": "FeedingSaleCharType",
+    "cardId": 105,
+    "era": 2,
+    "minPlayers": 0,
+    "cost":  7,
+    "points": 4,
+    "characterType": "INVENTOR"
+  },
+  {
+    "classType": "HuntingEventFoodPointsBonus",
+    "cardId": 106,
+    "era": 2,
+    "minPlayers": 0,
+    "cost":  7,
+    "points": 2
+  },
+  {
+    "classType": "DoubleBuildersPoints",
+    "cardId": 107,
+    "era": 2,
+    "minPlayers": 0,
+    "cost":  6,
+    "points": 4
+  },
+  {
+    "classType": "ArtistEventFoodBonus",
+    "cardId": 108,
+    "era": 2,
+    "minPlayers": 0,
+    "cost":  5,
+    "points": 6
+  },
+  {
+    "classType": "PointsPerSet",
+    "cardId": 109,
+    "era": 2,
+    "minPlayers": 0,
+    "cost":  5,
+    "points": 6,
+    "bonusPoints": 6
+  },
+  {
+    "classType": "PointsPerCharType",
+    "cardId": 110,
+    "era": 3,
+    "minPlayers": 0,
+    "cost":  0,
+    "points": 0,
+    "characterType": "HUNTER",
+    "pointsPerCharacter": 3
+  },
+  {
+    "classType": "PointsPerCharType",
+    "cardId": 111,
+    "era": 3,
+    "minPlayers": 0,
+    "cost":  0,
+    "points": 0,
+    "pointsPerCharacter": 4,
+    "characterType": "COLLECTOR"
+  },
+  {
+    "classType": "PointsPerCharType",
+    "cardId": 112,
+    "era": 3,
+    "minPlayers": 0,
+    "cost":  0,
+    "points": 0,
+    "pointsPerCharacter": 4,
+    "characterType": "SHAMAN"
+  },
+  {
+    "classType": "PointsPerCharType",
+    "cardId": 113,
+    "era": 3,
+    "minPlayers": 0,
+    "cost":  0,
+    "points": 0,
+    "pointsPerCharacter": 4,
+    "characterType": "BUILDER"
+  },
+  {
+    "classType": "PointsPerCharType",
+    "cardId": 114,
+    "era": 3,
+    "minPlayers": 0,
+    "cost":  0,
+    "points": 0,
+    "pointsPerCharacter": 4,
+    "characterType": "ARTIST"
+  },
+  {
+    "classType": "PointsPerCharType",
+    "cardId": 115,
+    "era": 3,
+    "minPlayers": 0,
+    "cost":  6,
+    "points": 6,
+    "pointsPerCharacter": 2,
+    "characterType": "INVENTOR"
+  },
+  {
+    "classType": "AddPointsEndGame",
+    "cardId": 116,
+    "era": 3,
+    "minPlayers": 0,
+    "cost":  0,
+    "points": 0,
+    "bonusPoints": 0
+  },
+  {
+    "classType": "AddPointsEndGame",
+    "cardId": 117,
+    "era": 3,
+    "minPlayers": 0,
+    "cost":  10,
+    "points": 0,
+    "bonusPoints": 25
+  }
+]
