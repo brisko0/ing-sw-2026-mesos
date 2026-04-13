@@ -1,6 +1,7 @@
 package it.polimi.ingsw.am56.model.card;
 
 import it.polimi.ingsw.am56.model.GameModel;
+import it.polimi.ingsw.am56.model.Player;
 
 public abstract class Card {
     private final int cardId;
@@ -14,6 +15,8 @@ public abstract class Card {
     }
 
     public abstract void resolveEffect(GameModel gameModel);
+
+    public void addCardToPlayer(Player player){}
 
     public int getEra() {
         return era;

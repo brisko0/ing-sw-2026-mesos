@@ -34,6 +34,11 @@ public abstract class BuildingCard extends Card {
     }
 
     @Override
+    public void addCardToPlayer(Player player) {
+        player.getStats().getBuildingCards().add(this);
+    }
+
+    @Override
     public CardType getCardType() {
         return CardType.BUILDING;
     }
