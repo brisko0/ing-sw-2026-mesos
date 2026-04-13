@@ -19,6 +19,7 @@ public abstract class BuildingCard extends Card {
 
     public void onCardPicked(GameModel gameModel, CharacterCard characterCard){}
     public void onEventResolving(GameModel gameModel, EventCard evCard, Player player) {}
+    public void onOwnTurnEnding(GameModel gameModel) {}
     public void onGameEnding(GameModel gameModel, Player player) {
         player.getStats().addPoints(points);
     }
