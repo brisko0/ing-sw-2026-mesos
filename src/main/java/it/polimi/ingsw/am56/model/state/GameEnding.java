@@ -6,5 +6,6 @@ public class GameEnding extends GameState{
 
     public GameEnding(GameModel model) {
         super(model);
+        model.endGameActions();
     }
 }

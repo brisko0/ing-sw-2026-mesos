@@ -6,6 +6,7 @@ import it.polimi.ingsw.am56.model.board.OrderTile;
 import it.polimi.ingsw.am56.model.card.*;
 import it.polimi.ingsw.am56.model.card.buildingCard.BuildingCard;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterCard;
+import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import it.polimi.ingsw.am56.model.factory.board.BoardFactory;
 import it.polimi.ingsw.am56.model.factory.card.EventCardFactory;
@@ -239,8 +240,27 @@ public class GameModel {
         playerToOrderTile.put(currentPlayer, firstFreeOrder);
         firstFreeOrder.setIsFree(false);
 
+        applyOrderBonuses();
+
         currentPlayer.setPickedUpper(0);
         currentPlayer.setPickedLower(0);
+    }
+
+    private void applyOrderBonuses(){
+        int foodEffect = playerToOrderTile.get(currentPlayer).getFoodEffect();
+        int pointsEffect = playerToOrderTile.get(currentPlayer).getPointsEffect();
+
+        if(foodEffect >= 0){
+            currentPlayer.getStats().addFood(foodEffect);
+        }
+        else {
+            if(currentPlayer.getStats().getFood() > 0) {
+                currentPlayer.getStats().addFood(foodEffect);
+            }
+            else {
+                currentPlayer.getStats().addPoints(pointsEffect);
+            }
+        }
     }
 
     public void endRound(){
@@ -258,6 +278,14 @@ public class GameModel {
             if(c.getCardType() == CardType.EVENT){
                 c.resolveEffect(this);
             }
+        }
+    }
+
+    public void endGameActions() {
+        for(Player p : players){
+            p.getStats().addPoints(p.getStats().getBuilderPoints());
+            p.getStats().addPoints(p.getStats().getCharacterTypeNum(CharacterType.INVENTOR) * p.getStats().getInventions().size());
+            p.getStats().addPoints(p.getStats().getCharacterTypeNum(CharacterType.ARTIST) / 2);
         }
     }
 }
