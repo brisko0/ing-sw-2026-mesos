@@ -19,11 +19,5 @@ public class PlayersFilling extends GameState{
         }
 
         model.executeAddPlayer(p);
-
-        if (model.getPlayers().size() == 1) {
-            model.setState(new SizeChoosing(model));
-        }
-        else if (model.getPlayers().size() == model.getGameSize())
-            model.setState(new SetUpState(model));
     }
 }

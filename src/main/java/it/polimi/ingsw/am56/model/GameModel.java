@@ -21,7 +21,7 @@ public class GameModel {
     private GameState state;
     private int gameSize;
     private Map<Integer, Deck> eraToCharEvdeck;
-    private Map<Integer, Deck> eraToBuildingsdeck;
+    private Map<Integer, BuildingDeck> eraToBuildingsdeck;
     private Board board;
     private List<Player> players;
     private Map<Player, OrderTile> playerToOrderTile;
@@ -56,7 +56,7 @@ public class GameModel {
         return eraToCharEvdeck;
     }
 
-    public Map<Integer, Deck> getEraToBuildingsdeck() {
+    public Map<Integer, BuildingDeck> getEraToBuildingsdeck() {
         return eraToBuildingsdeck;
     }
 
@@ -178,7 +178,6 @@ public class GameModel {
                 .toList();
 
         if (!needingToAct.isEmpty()) {
-            // Ordiniamo i "mancanti" per lettera OfferTile e prendiamo il primo
             this.currentPlayer = needingToAct.stream()
                     .min(Comparator.comparing(p -> playerToOfferTile.get(p).getLetter()))
                     .orElse(null);

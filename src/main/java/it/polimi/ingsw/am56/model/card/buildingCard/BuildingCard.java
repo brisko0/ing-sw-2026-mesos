@@ -24,7 +24,9 @@ public abstract class BuildingCard extends Card {
         player.getStats().addPoints(points);
     }
 
-
+    public int getCost() {
+        return cost;
+    }
 
     @Override
     public void resolveEffect(GameModel  gameModel) {

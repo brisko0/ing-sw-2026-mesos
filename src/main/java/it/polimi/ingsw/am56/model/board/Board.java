@@ -1,7 +1,9 @@
 package it.polimi.ingsw.am56.model.board;
 
+import it.polimi.ingsw.am56.model.card.BuildingDeck;
 import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.card.Deck;
+import it.polimi.ingsw.am56.model.card.buildingCard.BuildingCard;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,9 +11,9 @@ import java.util.List;
 public class Board {
     private List<OrderTile> orderTiles;
     private List<OfferTile> offerTiles;
-    private List<Card> upperRowBuildings;
+    private List<BuildingCard> upperRowBuildings;
     private List<Card> upperRowCharEv;
-    private List<Card> lowerRowBuildings;
+    private List<BuildingCard> lowerRowBuildings;
     private List<Card> lowerRowCharEv;
 
     public Board(){
@@ -31,7 +33,7 @@ public class Board {
         return offerTiles;
     }
 
-    public List<Card> getUpperRowBuildings() {
+    public List<BuildingCard> getUpperRowBuildings() {
         return upperRowBuildings;
     }
 
@@ -39,7 +41,7 @@ public class Board {
         return upperRowCharEv;
     }
 
-    public List<Card> getLowerRowBuildings() {
+    public List<BuildingCard> getLowerRowBuildings() {
         return lowerRowBuildings;
     }
 
@@ -59,7 +61,7 @@ public class Board {
         }
     }
 
-    public void fillUpperBuildings(int gameSize, Deck buildingsDeck){
+    public void fillUpperBuildings(int gameSize, BuildingDeck buildingsDeck){
         while(!buildingsDeck.getRemainingCards().isEmpty()){
             upperRowBuildings.add(buildingsDeck.drawCard());
         }
@@ -77,7 +79,7 @@ public class Board {
         fillUpperCharEv(gameSize, charEvDeck);
     }
 
-    public void endEra(int gameSize, Deck charEvDeck, Deck buildingsDeck){
+    public void endEra(int gameSize, Deck charEvDeck, BuildingDeck buildingsDeck){
         lowerRowBuildings.clear();
         lowerRowBuildings.addAll(upperRowBuildings);
         upperRowBuildings.clear();
