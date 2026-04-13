@@ -47,18 +47,10 @@ public class Board {
         return lowerRowCharEv;
     }
 
-    public void fillBoard(int gameSize, Deck charEvDeck, Deck buildingsDeck){
+    public void fillLowerChar(int gameSize, Deck charactersDeck){
         while(lowerRowCharEv.size() < (gameSize + 1)){
-            Card c = charEvDeck.drawCard();
-            switch (c.getCardType()) {
-                case CHARACTER -> lowerRowCharEv.add(c);
-                case EVENT     -> upperRowCharEv.add(c);
-                default        -> throw new IllegalStateException("Tipo sconosciuto: " + c.getCardType());
-            }
+            lowerRowCharEv.add(charactersDeck.drawCard());
         }
-
-        fillUpperCharEv(gameSize, charEvDeck);
-        fillUpperBuildings(gameSize, buildingsDeck);
     }
 
     public void fillUpperCharEv(int gameSize, Deck charEvDeck){
@@ -68,23 +60,14 @@ public class Board {
     }
 
     public void fillUpperBuildings(int gameSize, Deck buildingsDeck){
-        while(buildingsDeck.getRemainingCards() > 0){
+        while(!buildingsDeck.getRemainingCards().isEmpty()){
             upperRowBuildings.add(buildingsDeck.drawCard());
         }
     }
 
     public void removeCard(Card c){
-        switch (c.getCardType()) {
-            case CHARACTER -> {
-                lowerRowCharEv.remove(c);
-                upperRowCharEv.remove(c);
-            }
-            case BUILDING -> {
-                upperRowBuildings.remove(c);
-                lowerRowBuildings.remove(c);
-            }
-            default -> throw new IllegalStateException("Tipo sconosciuto: " + c.getCardType());
-        }
+        List.of(lowerRowCharEv, upperRowCharEv, upperRowBuildings, lowerRowBuildings)
+                .forEach(list -> list.remove(c));
     }
 
     public void endRound(int gameSize, Deck charEvDeck){

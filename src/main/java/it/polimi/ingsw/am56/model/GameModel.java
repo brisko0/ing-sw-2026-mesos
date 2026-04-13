@@ -7,6 +7,10 @@ import it.polimi.ingsw.am56.model.card.*;
 import it.polimi.ingsw.am56.model.card.buildingCard.BuildingCard;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterCard;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
+import it.polimi.ingsw.am56.model.factory.board.BoardFactory;
+import it.polimi.ingsw.am56.model.factory.card.EventCardFactory;
+import it.polimi.ingsw.am56.model.factory.deck.BuildingDeckFactory;
+import it.polimi.ingsw.am56.model.factory.deck.CharacterDeckFactory;
 import it.polimi.ingsw.am56.model.state.GameState;
 import it.polimi.ingsw.am56.model.state.PlayersFilling;
 import it.polimi.ingsw.am56.model.state.TotemPlacement;
@@ -108,19 +112,50 @@ public class GameModel {
         players.add(p);
     }
 
-    public void initializeGame(int gameSize){
+    public void initializeGame(int gameSize) throws InvalidActionException {
         Collections.shuffle(players);
-        for (int era = 1; era <= 3; era++) {
-            eraToCharEvdeck.put(era, Deck.createCharEvDeck(era, gameSize));
-            eraToBuildingsdeck.put(era, Deck.createBuildingsDeck(era, gameSize));
+
+        if(gameSize < 2 || gameSize > 5){
+            throw new InvalidActionException("Numero di giocatori non valido");
         }
-        board = Board.createBoard(gameSize);
-        board.fillBoard(gameSize, eraToCharEvdeck.get(currentEra), eraToBuildingsdeck.get(currentEra));
+
+        this.gameSize = gameSize;
+
+        board = BoardFactory.createBoard(gameSize);
+
+        EventCardFactory eventCardFactory = new EventCardFactory();
+
+        CharacterDeckFactory characterDeckFactory = new CharacterDeckFactory();
+        BuildingDeckFactory buildingDeckFactory = new BuildingDeckFactory();
+
+        Deck era1deck = characterDeckFactory.createDeck(1, gameSize);
+
+        board.fillLowerChar(gameSize, era1deck);
+
+        era1deck.getRemainingCards().addAll(eventCardFactory.createCards(1, gameSize));
+        era1deck.shuffle();
+
+        getEraToCharEvdeck().put(1, era1deck);
+
+        eraToBuildingsdeck.put(1, buildingDeckFactory.createDeck(1, gameSize));
+
+        for (int era = 2; era <= 3; era++) {
+            Deck charEvDeck = characterDeckFactory.createDeck(era, gameSize);
+            charEvDeck.getRemainingCards().addAll(eventCardFactory.createCards(era, gameSize));
+            charEvDeck.shuffle();
+            eraToCharEvdeck.put(era, charEvDeck);
+            eraToBuildingsdeck.put(era, buildingDeckFactory.createDeck(era, gameSize));
+        }
+
+        board.fillUpperCharEv(gameSize, eraToCharEvdeck.get(currentEra));
+        board.fillUpperBuildings(gameSize, eraToBuildingsdeck.get(currentEra));
+
         for (int i = 0; i < players.size(); i++) {
             players.get(i).getStats().setInitialFood(i + 1);
             playerToOrderTile.put(players.get(i), board.getOrderTiles().get(i));
             board.getOrderTiles().get(i).setIsFree(false);
         }
+
         this.setState(new TotemPlacement(this));
         setCurrentPlayerOrder();
     }
