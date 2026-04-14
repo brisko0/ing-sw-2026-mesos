@@ -1,5 +1,7 @@
 package it.polimi.ingsw.am56.network;
 
+import it.polimi.ingsw.am56.network.message.update.ServerMessage;
+
 import java.rmi.RemoteException;
 
 public interface VirtualView {

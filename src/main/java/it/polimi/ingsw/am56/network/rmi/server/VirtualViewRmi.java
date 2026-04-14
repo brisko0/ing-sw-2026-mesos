@@ -1,7 +1,7 @@
 package it.polimi.ingsw.am56.network.rmi.server;
 
 import it.polimi.ingsw.am56.network.VirtualView;
-import it.polimi.ingsw.am56.network.message.ServerMessage;
+import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
