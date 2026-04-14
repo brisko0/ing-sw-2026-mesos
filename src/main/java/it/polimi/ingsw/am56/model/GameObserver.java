@@ -1,0 +1,5 @@
+package it.polimi.ingsw.am56.model;
+
+public interface GameObserver {
+    void onModelChanged(GameEvent event);
+}

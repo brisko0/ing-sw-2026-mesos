@@ -1,8 +1,8 @@
 package it.polimi.ingsw.am56.network.rmi.server;
 
-import it.polimi.ingsw.am56.model.GameModel; // <-- Importante
+import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.GameObserver;
-import it.polimi.ingsw.am56.model.state.GameEvent;
+import it.polimi.ingsw.am56.model.GameEvent;
 import it.polimi.ingsw.am56.network.message.update.*;
 
 import java.util.concurrent.BlockingQueue;
@@ -10,11 +10,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class RmiClientHandler implements GameObserver, Runnable {
     private final VirtualViewRmi clientStub;
-    private final GameModel model; // <-- Riferimento al modello
+    private final GameModel model;
     private final BlockingQueue<Runnable> taskQueue;
     private boolean active = true;
 
-    // Aggiorna il costruttore
     public RmiClientHandler(VirtualViewRmi clientStub, GameModel model) {
         this.clientStub = clientStub;
         this.model = model;
@@ -24,11 +23,10 @@ public class RmiClientHandler implements GameObserver, Runnable {
     @Override
     public void onModelChanged(GameEvent event) {
 
-        // 2. Creiamo il Messaggio (DTO) estraendo SOLO i dati sicuri e necessari per quell'evento
         ServerMessage msg = switch (event) {
 
             case PLAYER_ADDED ->
-                    new PlayerAddedMessage(); // Magari potresti passargli model.getPlayers().size() per sapere quanti sono!
+                    new PlayerAddedMessage();
 
             case STATE_CHANGED ->
                     new StateChangedMessage(model.getState().getClass().getSimpleName());
@@ -45,7 +43,6 @@ public class RmiClientHandler implements GameObserver, Runnable {
             case CARD_PICKED ->
                     new CardPickedMessage(model.getCurrentPlayer().getNickname(), model.getState().getClass().getSimpleName());
 
-            // Per i messaggi complessi apriamo un blocco e usiamo "yield"
             case TOTEM_PLACED ->
                     new TotemPlacedMessage(model.getCurrentPlayer().getNickname(),
                             model.getPlayerToOfferTile().get(model.getCurrentPlayer()).getLetter());
@@ -54,12 +51,10 @@ public class RmiClientHandler implements GameObserver, Runnable {
                     new TotemResetMessage(model.getCurrentPlayer().getNickname(),
                             model.getPlayerToOrderTile().get(model.getCurrentPlayer()).getOrderTileId());
 
-            // Messaggio di default ultra-sicuro (non chiama metodi su oggetti potenzialmente nulli)
             default ->
                     new GameStateMessage();
         };
 
-        // 3. Mettiamo l'invio in coda
         taskQueue.add(() -> {
             try {
                 clientStub.showUpdate(msg);

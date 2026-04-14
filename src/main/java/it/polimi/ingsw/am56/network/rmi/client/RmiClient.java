@@ -13,7 +13,6 @@ public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi {
 
     @Override
     public void showUpdate(ServerMessage message) throws RemoteException {
-        // Il messaggio sa da solo come aggiornare questo client!
         message.executeOnClient(this);
     }
 

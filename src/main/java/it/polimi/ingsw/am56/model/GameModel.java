@@ -4,8 +4,6 @@ import it.polimi.ingsw.am56.model.board.Board;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.board.OrderTile;
 import it.polimi.ingsw.am56.model.card.*;
-import it.polimi.ingsw.am56.model.card.buildingCard.BuildingCard;
-import it.polimi.ingsw.am56.model.card.characterCard.CharacterCard;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import it.polimi.ingsw.am56.model.factory.board.BoardFactory;
@@ -14,7 +12,6 @@ import it.polimi.ingsw.am56.model.factory.deck.BuildingDeckFactory;
 import it.polimi.ingsw.am56.model.factory.deck.CharacterDeckFactory;
 import it.polimi.ingsw.am56.model.state.GameState;
 import it.polimi.ingsw.am56.model.state.PlayersFilling;
-import it.polimi.ingsw.am56.model.state.TotemPlacement;
 
 import java.util.*;
 
@@ -31,6 +28,8 @@ public class GameModel {
     private int currentRound;
     private Player currentPlayer;
 
+    private final transient List<GameObserver> observers;
+
     public GameModel() {
         this.state = new PlayersFilling(this);
         this.gameSize = -1;
@@ -42,7 +41,24 @@ public class GameModel {
         this.playerToOfferTile = new HashMap<>();
         this.currentEra = 1;
         this.currentRound = 1;
+        this.observers = new ArrayList<>();
         this.currentPlayer = null;
+    }
+
+    public void addObserver(GameObserver observer) {
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+        }
+    }
+
+    public void removeObserver(GameObserver observer) {
+        observers.remove(observer);
+    }
+
+    private void notifyObservers(GameEvent event) {
+        for (GameObserver observer : observers) {
+            observer.onModelChanged(event);
+        }
     }
 
     public GameState getState() {
@@ -91,6 +107,7 @@ public class GameModel {
 
     public void setState(GameState state) {
         this.state = state;
+        notifyObservers(GameEvent.STATE_CHANGED);
     }
 
     public void setGameSize(int gameSize) throws InvalidActionException {
@@ -107,6 +124,7 @@ public class GameModel {
 
     public void addPlayer(Player p) throws InvalidActionException{
         state.addPlayer(p);
+        notifyObservers(GameEvent.PLAYER_ADDED);
     }
 
     public void executeAddPlayer(Player p){
@@ -162,6 +180,7 @@ public class GameModel {
                     .min(Comparator.comparingInt(p -> playerToOrderTile.get(p).getOrderTileId()))
                     .orElse(null);
         }
+        notifyObservers(GameEvent.TURN_CHANGED);
     }
 
     public void setCurrentPlayerOffer(){
@@ -174,6 +193,7 @@ public class GameModel {
                     .min(Comparator.comparing(p -> playerToOfferTile.get(p).getLetter()))
                     .orElse(null);
         }
+        notifyObservers(GameEvent.TURN_CHANGED);
     }
 
     public void handleTotemPlacement (Player p, OfferTile t) throws InvalidActionException {
@@ -186,6 +206,8 @@ public class GameModel {
 
         OrderTile oldOrderTile = playerToOrderTile.remove(p);
         oldOrderTile.setIsFree(true);
+
+        notifyObservers(GameEvent.TOTEM_PLACED);
     }
 
     public boolean checkCanPick() {
@@ -226,6 +248,8 @@ public class GameModel {
         }
         board.removeCard(c);
         c.resolveEffect(this);
+
+        notifyObservers(GameEvent.CARD_PICKED);
     }
 
     public void resetTotemToOrder(){
@@ -244,6 +268,8 @@ public class GameModel {
 
         currentPlayer.setPickedUpper(0);
         currentPlayer.setPickedLower(0);
+
+        notifyObservers(GameEvent.TOTEM_RESET);
     }
 
     private void applyOrderBonuses(){
@@ -269,8 +295,10 @@ public class GameModel {
         if(currentEra < 3 && board.getUpperRowCharEv().size() < gameSize + 4){
             currentEra ++;
             board.endEra(gameSize, eraToCharEvdeck.get(currentEra), eraToBuildingsdeck.get(currentEra));
+            notifyObservers(GameEvent.ERA_CHANGED);
         }
         currentRound++;
+        notifyObservers(GameEvent.ROUND_ENDED);
     }
 
     private void resolveEvents() {
@@ -287,5 +315,6 @@ public class GameModel {
             p.getStats().addPoints(p.getStats().getCharacterTypeNum(CharacterType.INVENTOR) * p.getStats().getInventions().size());
             p.getStats().addPoints(p.getStats().getCharacterTypeNum(CharacterType.ARTIST) / 2);
         }
+        notifyObservers(GameEvent.GAME_ENDED);
     }
 }

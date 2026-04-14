@@ -25,25 +25,23 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
     public void addClient(VirtualViewRmi clientStub) throws RemoteException {
         System.out.println("[SERVER] Nuovo client RMI connesso.");
 
-        // Creiamo l'handler asincrono per questo specifico client
+        // creo l'handler asincrono per questo specifico client
         RmiClientHandler handler = new RmiClientHandler(clientStub, this.model);
 
-        // Lo registriamo come osservatore del modello
+        // lo si registra come osservatore del modello
         model.addObserver(handler);
 
-        // Facciamo partire il thread dedicato alla comunicazione con questo client
+        // si fa partire il thread dedicato alla comunicazione con questo client
         new Thread(handler).start();
     }
 
     @Override
     public void addPlayer(String nickname, String totemColor) throws InvalidActionException, RemoteException {
-        // Deleghiamo al controller la logica di aggiunta
         controller.addPlayer(nickname, totemColor);
     }
 
     @Override
     public void startGame() throws InvalidActionException, RemoteException {
-        // Deleghiamo al controller l'avvio della partita
         controller.startGame();
     }
 
@@ -61,8 +59,6 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
 
     public static void main(String[] args) {
         try {
-            // Inizializziamo il Modello (vuoto) e il Controller
-            // Nota: gameSize nel costruttore è il limite massimo (es. 5) o quello previsto
             GameModel model = new GameModel();
             GameController controller = new GameController(model);
 
