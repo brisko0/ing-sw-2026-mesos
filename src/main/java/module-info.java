@@ -3,6 +3,7 @@ module it.polimi.ingsw.am56 {
     requires javafx.fxml;
     requires jdk.compiler;
     requires com.google.gson;
+    requires java.rmi;
 
 
     opens it.polimi.ingsw.am56 to javafx.fxml;
