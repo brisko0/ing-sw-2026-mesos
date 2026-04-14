@@ -4,6 +4,7 @@ import it.polimi.ingsw.am56.model.board.Board;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.board.OrderTile;
 import it.polimi.ingsw.am56.model.card.*;
+import it.polimi.ingsw.am56.model.card.buildingCard.BuildingCard;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import it.polimi.ingsw.am56.model.factory.board.BoardFactory;
@@ -307,8 +308,8 @@ public class GameModel {
     private void resolveEvents() {
         for(Card c : board.getLowerRowCharEv()){
             if(c.getCardType() == CardType.EVENT){
-                c.resolveBuildingsEffects(this);
                 c.resolveEffect(this);
+                c.resolveBuildingsEffects(this);
             }
         }
     }
@@ -318,6 +319,11 @@ public class GameModel {
             p.getStats().addPoints(p.getStats().getBuilderPoints());
             p.getStats().addPoints(p.getStats().getCharacterTypeNum(CharacterType.INVENTOR) * p.getStats().getInventions().size());
             p.getStats().addPoints(p.getStats().getCharacterTypeNum(CharacterType.ARTIST) / 2);
+
+            for(BuildingCard buildingCard : p.getStats().getBuildingCards()){
+                buildingCard.onGameEnding(this, p);
+            }
+
         }
         notifyObservers(GameEvent.GAME_ENDED);
     }

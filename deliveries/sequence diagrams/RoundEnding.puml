@@ -1,0 +1,59 @@
+@startuml
+autonumber
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 150
+
+participant "GameModel" as Model
+participant "Board" as Board
+participant "Card (Event)" as Card
+participant "ClientHandler\n(Observer)" as Handler
+
+== Phase 6: Round Ending ==
+[-> Model: setState(new RoundEnding(this))
+activate Model
+note right: Triggered automatically when\nCardPicking is complete
+
+Model -> Model: onEntry()
+Model -> Model: endRoundActions()
+Model -> Model: endRound()
+
+' 1. Resolve Events
+Model -> Model: resolveEvents()
+loop For each Card in Lower Row
+    opt card.getCardType() == EVENT
+        Model -> Card: resolveEffect(this)
+        Model -> Card: resolveBuildingsEffects(this)
+    end
+end
+
+' 2. Board end round
+Model -> Board: endRound(gameSize, currentDeck)
+
+' 3. Era Check
+opt currentEra < 3 AND upper cards < gameSize + 4
+    note over Model: Not enough cards for the next round,\ntransition to the next Era.
+    Model -> Model: currentEra++
+    Model -> Board: endEra(gameSize, charEvDeck, buildingsDeck)
+    Model -> Handler: onModelChanged(ERA_CHANGED)
+end
+
+' 4. Increment and Notify
+Model -> Model: currentRound++
+Model -> Handler: onModelChanged(ROUND_ENDED)
+
+' 5. Next State Transition Check
+alt currentRound == 11
+    note over Model: 10th round finished. End the game.
+    Model -> Model: setState(new GameEnding(this))
+else Normal Round Progression
+    Model -> Model: setState(new TotemPlacement(this))
+    Model -> Handler: onModelChanged(STATE_CHANGED)
+
+    Model -> Model: setCurrentPlayerOrder()
+    Model -> Handler: onModelChanged(TURN_CHANGED)
+end
+
+[<-- Model
+deactivate Model
+@enduml

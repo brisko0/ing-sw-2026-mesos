@@ -1,0 +1,109 @@
+@startuml
+autonumber
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 150
+
+actor "User\n(Host/Creator)" as User
+participant "ClientApp\n(View)" as Client
+participant "VirtualView\n(Client Proxy)" as Callback
+participant "VirtualServer\n(Server Proxy)" as Server
+participant "GameController" as Controller
+participant "GameModel" as Model
+participant "ClientHandler\n(Observer)" as Handler
+
+== Phase 1: Server Connection ==
+User -> Client: Start application
+activate Client
+Client -> Server: connect(VirtualView)
+activate Server
+create Handler
+Server -> Handler: new ClientHandler(VirtualView, GameModel)
+Server -> Model: addObserver(Handler)
+Server --> Client: Connection confirmed
+deactivate Server
+
+== Phase 2: Game Creation ==
+User -> Client: Enters Nickname, Color, and GameSize\nClicks "Create Game"
+
+alt Valid Inputs (Success)
+
+    note over Client, Server: The client sends requests to register the creator and initialize the room
+
+    ' 1. Adding the creator
+    Client -> Server: addPlayer("Alice", "RED")
+    activate Server
+    Server -> Controller: addPlayer("Alice", "RED")
+    activate Controller
+    Controller -> Model: addPlayer(new Player)
+    activate Model
+
+    Model -> Handler: onModelChanged(PLAYER_ADDED)
+    activate Handler
+    Handler ->> Callback: showUpdate(PlayerAddedMessage)
+    activate Callback
+    Callback -> Callback: executeOnClient(this)
+    deactivate Callback
+    deactivate Handler
+
+    Model --> Controller: return
+    deactivate Model
+    Controller --> Server: return
+    deactivate Controller
+    Server --> Client: return
+    deactivate Server
+
+    ' 2. Room initialization
+    Client -> Server: startGame()
+    activate Server
+    Server -> Controller: startGame()
+    activate Controller
+    Controller -> Model: initializeGame()
+    activate Model
+
+    note right of Model: The Model creates the Board, decks,\nsets the gameSize,\nbut does NOT start the turns\nuntil the room is full.
+
+    Model -> Handler: onModelChanged(GAME_STARTED)
+    activate Handler
+    Handler ->> Callback: showUpdate(GameStartedMessage)
+    activate Callback
+    Callback -> Callback: executeOnClient(this)
+    deactivate Callback
+    deactivate Handler
+
+    Model --> Controller: return
+    deactivate Model
+    Controller --> Server: return
+    deactivate Controller
+    Server --> Client: return
+    deactivate Server
+
+    User <-- Client: Shows waiting room\n(Lobby) successfully created
+
+else Exception Thrown (e.g., InvalidActionException or Network Error)
+
+    note over Client, Model: Example: The user tries to use a forbidden Nickname or a network timeout occurs
+
+    Client -> Server: addPlayer("Alice", "RED")
+    activate Server
+    Server -> Controller: addPlayer("Alice", "RED")
+    activate Controller
+    Controller -> Model: validate request
+    activate Model
+
+    Model --> Controller: throws InvalidActionException
+    deactivate Model
+
+    Controller --> Server: throws InvalidActionException
+    deactivate Controller
+
+    Server --> Client: throws Exception (e.g., RemoteException)
+    deactivate Server
+
+    Client -> Client: catch(Exception e)
+    User <-- Client: Displays Error Message/Popup\n"Error during creation"
+
+end
+deactivate Client
+
+@enduml
