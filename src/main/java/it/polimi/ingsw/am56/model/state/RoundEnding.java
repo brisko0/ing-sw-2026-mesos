@@ -6,6 +6,10 @@ public class RoundEnding extends GameState{
 
     public RoundEnding(GameModel model) {
         super(model);
+    }
+
+    @Override
+    public void onEntry() {
         endRoundActions();
     }
 

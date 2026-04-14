@@ -30,4 +30,6 @@ public abstract class GameState {
     public void setGameSize(int gameSize) throws InvalidActionException {
         throw new InvalidActionException("Cannot change the game size.");
     }
+
+    public void onEntry() {}
 }

@@ -108,6 +108,7 @@ public class GameModel {
     public void setState(GameState state) {
         this.state = state;
         notifyObservers(GameEvent.STATE_CHANGED);
+        state.onEntry();
     }
 
     public void setGameSize(int gameSize) throws InvalidActionException {

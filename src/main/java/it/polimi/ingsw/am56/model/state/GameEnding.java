@@ -6,6 +6,10 @@ public class GameEnding extends GameState{
 
     public GameEnding(GameModel model) {
         super(model);
+    }
+
+    @Override
+    public void onEntry() {
         model.endGameActions();
     }
 }

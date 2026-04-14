@@ -10,6 +10,10 @@ public class CardPicking extends GameState {
 
     public CardPicking(GameModel model) {
         super(model);
+    }
+
+    @Override
+    public void onEntry() {
         checkTurnFlow();
     }
 
