@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BoardfactoryTest {
+class BoardFactoryTest {
     private BoardFactory boardFactory;
     private Board board;
     private int gameSize;
