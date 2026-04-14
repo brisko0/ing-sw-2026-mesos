@@ -1,0 +1,95 @@
+[
+  {
+    "classType": "ARTIST",
+    "cardId": 85,
+    "era": 1,
+    "minPlayers": 2,
+    "minArtists": 1,
+    "losePoints": 2,
+    "winPointsPerArtist": 1
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 86,
+    "era": 2,
+    "minPlayers": 2,
+    "minArtists": 2,
+    "losePoints": 2,
+    "winPointsPerArtist": 2
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 87,
+    "era": 3,
+    "minPlayers": 2,
+    "minArtists": 3,
+    "losePoints": 2,
+    "winPointsPerArtist": 3
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 88,
+    "era": 1,
+    "minPlayers": 2,
+    "winPointsPerHunter": 1
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 89,
+    "era": 2,
+    "minPlayers": 2,
+    "winPointsPerHunter": 2
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 90,
+    "era": 3,
+    "minPlayers": 2,
+    "winPointsPerHunter": 3
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 91,
+    "era": 1,
+    "minPlayers": 2,
+    "winPoints": 5,
+    "losePoints": 3
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 92,
+    "era": 2,
+    "minPlayers": 2,
+    "winPoints": 10,
+    "losePoints": 5
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 93,
+    "era": 3,
+    "minPlayers": 2,
+    "winPoints": 15,
+    "losePoints": 7
+  },
+  {
+    "classType": "SUSTENANCE",
+    "cardId": 94,
+    "era": 1,
+    "minPlayers": 2,
+    "losePointsPerChar": 1
+  },
+  {
+    "classType": "SUSTENANCE",
+    "cardId": 95,
+    "era": 2,
+    "minPlayers": 2,
+    "losePointsPerChar": 2
+  },
+  {
+    "classType": "SUSTENANCE",
+    "cardId": 96,
+    "era": 3,
+    "minPlayers": 2,
+    "losePointsPerChar": 3
+  }
+]
