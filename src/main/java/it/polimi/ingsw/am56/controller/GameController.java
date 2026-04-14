@@ -30,10 +30,7 @@ public class GameController {
 
     public void startGame() throws InvalidActionException {
         synchronized (model) {
-            if (model.getPlayers().size() < 2) {
-                throw new InvalidActionException("Servono almeno 2 giocatori per iniziare!");
-            }
-            model.initializeGame(model.getPlayers().size());
+            model.initializeGame(2);
             System.out.println("[CONTROLLER] Partita inizializzata con " + model.getPlayers().size() + " giocatori.");
         }
     }

@@ -24,9 +24,9 @@ public class ClientMain {
             // test
             serverStub.addPlayer("Alice", "RED");
 
-            serverStub.addPlayer("Bob", "BLUE");
-
             serverStub.startGame();
+
+            serverStub.addPlayer("Bob", "BLUE");
 
             serverStub.moveTotem(new TotemMoveRequest("Alice", "C"));
 
