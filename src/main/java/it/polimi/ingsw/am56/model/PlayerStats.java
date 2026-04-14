@@ -1,6 +1,6 @@
 package it.polimi.ingsw.am56.model;
 
-import it.polimi.ingsw.am56.model.card.Card;
+import it.polimi.ingsw.am56.model.card.buildingCard.BuildingCard;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterCard;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
 
@@ -15,7 +15,7 @@ public class PlayerStats {
     private int builderPoints;
     private Set<String>  inventions;
     private List<CharacterCard> characterCards;
-    private List<Card> buildingCards;
+    private List<BuildingCard> buildingCards;
 
     public PlayerStats(){
         this.food = 0;
@@ -26,7 +26,7 @@ public class PlayerStats {
         this.builderPoints = 0;
         this.inventions = new HashSet<String>();
         this.characterCards = new ArrayList<CharacterCard>();
-        this.buildingCards = new ArrayList<Card>();
+        this.buildingCards = new ArrayList<BuildingCard>();
     }
 
     public int getFood() {
@@ -71,7 +71,7 @@ public class PlayerStats {
         return characterCards;
     }
 
-    public List<Card> getBuildingCards() {
+    public List<BuildingCard> getBuildingCards() {
         return buildingCards;
     }
 

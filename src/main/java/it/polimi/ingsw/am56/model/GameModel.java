@@ -249,6 +249,8 @@ public class GameModel {
         board.removeCard(c);
         c.resolveEffect(this);
 
+        c.resolveBuildingsEffects(this);
+
         notifyObservers(GameEvent.CARD_PICKED);
     }
 
@@ -304,6 +306,7 @@ public class GameModel {
     private void resolveEvents() {
         for(Card c : board.getLowerRowCharEv()){
             if(c.getCardType() == CardType.EVENT){
+                c.resolveBuildingsEffects(this);
                 c.resolveEffect(this);
             }
         }

@@ -30,5 +30,7 @@ public abstract class Card {
         return minPlayers;
     }
 
+    public void resolveBuildingsEffects(GameModel gameModel) {}
+
     public abstract CardType getCardType();
 }
