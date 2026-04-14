@@ -6,7 +6,9 @@ import it.polimi.ingsw.am56.model.card.Deck;
 import it.polimi.ingsw.am56.model.card.buildingCard.BuildingCard;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class Board {
     private List<OrderTile> orderTiles;
@@ -87,5 +89,11 @@ public class Board {
         fillUpperBuildings(gameSize, buildingsDeck);
     }
 
-
+    public Card getCardById(int cardId) {
+        return Stream.of(upperRowCharEv, lowerRowCharEv, upperRowBuildings, lowerRowBuildings)
+                .flatMap(Collection::stream)
+                .filter(c -> c.getCardId() == cardId)
+                .findFirst()
+                .orElse(null);
+    }
 }

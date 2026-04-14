@@ -18,6 +18,10 @@ public abstract class Card {
 
     public void addCardToPlayer(Player player){}
 
+    public int getCardId() {
+        return cardId;
+    }
+
     public int getEra() {
         return era;
     }

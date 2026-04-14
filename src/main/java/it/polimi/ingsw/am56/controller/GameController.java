@@ -5,8 +5,7 @@ import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
-import it.polimi.ingsw.am56.network.message.CardPickRequest;
-import it.polimi.ingsw.am56.network.message.TotemMoveRequest;
+import it.polimi.ingsw.am56.network.message.request.*;
 
 public class GameController {
     private final GameModel model;
