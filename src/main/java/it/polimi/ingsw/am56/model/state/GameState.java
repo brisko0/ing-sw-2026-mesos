@@ -32,4 +32,6 @@ public abstract class GameState {
     }
 
     public void onEntry() {}
+
+    public abstract State getState();
 }

@@ -33,4 +33,8 @@ public abstract class Card {
     public void resolveBuildingsEffects(GameModel gameModel) {}
 
     public abstract CardType getCardType();
+
+    public int getCost() {
+        return 0;
+    }
 }

@@ -12,4 +12,9 @@ public class GameEnding extends GameState{
     public void onEntry() {
         model.endGameActions();
     }
+
+    @Override
+    public State getState() {
+        return State.GAME_ENDING;
+    }
 }

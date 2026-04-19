@@ -75,14 +75,6 @@ public class PlayerStats {
         return buildingCards;
     }
 
-    public void setInitialFood(int position){
-        switch(position){
-            case 1 -> this.food = 2;
-            case 2,3 -> this.food = 3;
-            case 4,5 -> this.food = 4;
-        }
-    }
-
     public void addPoints(int points) {
         this.points += points;
     }

@@ -58,8 +58,17 @@ public class CardPicking extends GameState {
             }
         }
 
+        if(model.getCurrentPlayer().getStats().getFood() < (c.getCost() - model.getCurrentPlayer().getStats().getBuildingSale())) {
+            throw new InvalidActionException("non hai il cibo necessario per permetterti la carta building");
+        }
+
         model.executeCardPick(p, c, isUpper);
 
         checkTurnFlow();
+    }
+
+    @Override
+    public State getState() {
+        return State.CARD_PICKING;
     }
 }

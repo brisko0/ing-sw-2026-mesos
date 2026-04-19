@@ -33,9 +33,18 @@ public class PlayersFilling extends GameState{
     private void setUpPlayers(GameModel model){
         List<Player> players = model.getPlayers();
         for (int i = 0; i < players.size(); i++) {
-            players.get(i).getStats().setInitialFood(i + 1);
+            switch(i) {
+                case 0 -> model.getPlayers().get(i).getStats().addFood(2);
+                case 1, 2 -> model.getPlayers().get(i).getStats().addFood(3);
+                case 3, 4 -> model.getPlayers().get(i).getStats().addFood(4);
+            }
             model.getPlayerToOrderTile().put(players.get(i), model.getBoard().getOrderTiles().get(i));
             model.getBoard().getOrderTiles().get(i).setIsFree(false);
         }
+    }
+
+    @Override
+    public State getState() {
+        return State.PLAYERS_FILLING;
     }
 }

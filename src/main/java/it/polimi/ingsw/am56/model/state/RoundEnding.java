@@ -25,4 +25,9 @@ public class RoundEnding extends GameState{
         model.setCurrentPlayerOrder();
 
     }
+
+    @Override
+    public State getState() {
+        return State.ROUND_ENDING;
+    }
 }

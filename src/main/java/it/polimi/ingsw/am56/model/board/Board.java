@@ -58,7 +58,7 @@ public class Board {
     }
 
     public void fillUpperCharEv(int gameSize, Deck charEvDeck){
-        while(upperRowCharEv.size() < (gameSize + 4)){
+        while(upperRowCharEv.size() < (gameSize + 4) && !charEvDeck.getRemainingCards().isEmpty()){
             upperRowCharEv.add(charEvDeck.drawCard());
         }
     }

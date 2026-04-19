@@ -41,4 +41,9 @@ public class TotemPlacement extends GameState{
         model.setCurrentPlayerOffer();
         model.setState(new CardPicking(model));
     }
+
+    @Override
+    public State getState() {
+        return State.TOTEM_PLACEMENT;
+    }
 }
