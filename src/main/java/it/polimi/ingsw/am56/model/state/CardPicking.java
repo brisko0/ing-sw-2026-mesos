@@ -40,9 +40,9 @@ public class CardPicking extends GameState {
             throw new InvalidActionException("Non è il tuo turno! Deve muovere il player " + model.getCurrentPlayer().getNickname());
         }
 
-        boolean isUpper = model.getBoard().getUpperRowCharEv().contains(c);
+        boolean isUpper = model.getBoard().getUpperRowCharEv().contains(c) || model.getBoard().getUpperRowBuildings().contains(c);
 
-        if (!isUpper && !model.getBoard().getLowerRowCharEv().contains(c)) {
+        if (!isUpper && !model.getBoard().getLowerRowCharEv().contains(c) && !model.getBoard().getLowerRowBuildings().contains(c)) {
             throw new InvalidActionException("La carta selezionata non è disponibile sulla board.");
         }
 
