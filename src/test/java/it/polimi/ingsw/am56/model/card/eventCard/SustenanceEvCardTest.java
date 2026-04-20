@@ -26,10 +26,8 @@ class SustenanceEvCardTest {
     @BeforeEach
     void setUp() {
         gameModel = new GameModel();
-        List<Player> players = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
-            players.add(new Player("a", "r"));
-            gameModel.getPlayers().add(players.get(i));
+            gameModel.getPlayers().add(new Player("a", "a"));
         }
         sustenanceEvCard = new SustenanceEvCard(1, 1, 1, 2);
         artistCharCard = new ArtistCharCard(1, 1, 1);
