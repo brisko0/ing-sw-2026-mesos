@@ -15,12 +15,12 @@ public class CharacterCardFactory implements CardFactory<CharacterCard> {
 
 
     private final Map<String, Class<? extends CharacterCard>> typeToClass = Map.of(
-            "SHAMAN", ArtistCharCard.class,
-            "HUNTER", BuilderCharCard.class,
-            "BUILDER", CollectorCharCard.class,
-            "COLLECTOR", HunterCharCard.class,
-            "ARTIST", InventorCharCard.class,
-            "INVENTOR", ShamanCharCard.class
+            "ARTIST", ArtistCharCard.class,
+            "BUILDER", BuilderCharCard.class,
+            "COLLECTOR", CollectorCharCard.class,
+            "HUNTER", HunterCharCard.class,
+            "INVENTOR", InventorCharCard.class,
+            "SHAMAN", ShamanCharCard.class
     );
 
     @Override

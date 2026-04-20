@@ -11,7 +11,7 @@ class OrderTileTest {
 
     @BeforeEach
     void setUp() {
-        orderTile = new OrderTile(1, 2, 3, 4);
+        orderTile = new OrderTile(1, 2, 3, 4, true);
     }
 
     @Test
