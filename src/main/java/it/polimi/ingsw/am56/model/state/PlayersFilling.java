@@ -21,6 +21,16 @@ public class PlayersFilling extends GameState{
             }
         }
 
+        for (Player existing : model.getPlayers()) {
+            if (existing.getTotemColor().equalsIgnoreCase(p.getTotemColor())) {
+                throw new InvalidActionException("Colore del totem già in uso!");
+            }
+        }
+
+        if(model.getPlayers().size() == model.getGameSize()) {
+            throw new InvalidActionException("Impossibile unirsi, partita già al completo!");
+        }
+
         model.executeAddPlayer(p);
 
         if(model.getPlayers().size() == model.getGameSize()){
