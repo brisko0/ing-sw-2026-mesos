@@ -62,7 +62,7 @@ public class GameModel {
         }
     }
 
-    public GameState getState() {
+    public GameState getCurrentState() {
         return state;
     }
 

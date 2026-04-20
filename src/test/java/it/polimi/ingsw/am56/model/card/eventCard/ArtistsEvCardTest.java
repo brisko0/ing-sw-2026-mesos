@@ -36,4 +36,50 @@ class ArtistsEvCardTest {
         assertEquals(-10, gameModel.getPlayers().getFirst().getStats().getPoints());
         assertEquals(-10, gameModel.getPlayers().get(1).getStats().getPoints());
     }
+
+    @Test
+    void shouldWinPoints() {
+        gameModel.getPlayers().getFirst().getStats().getCharacterCards().add(artistCharCard);
+        gameModel.getPlayers().getFirst().getStats().getCharacterCards().add(artistCharCard);
+
+        gameModel.getPlayers().get(1).getStats().getCharacterCards().add(artistCharCard);
+        gameModel.getPlayers().get(1).getStats().getCharacterCards().add(artistCharCard);
+        gameModel.getPlayers().get(1).getStats().getCharacterCards().add(artistCharCard);
+
+        artistsEvCard.resolveEffect(gameModel);
+
+        assertEquals(4, gameModel.getPlayers().getFirst().getStats().getPoints());
+        assertEquals(6, gameModel.getPlayers().get(1).getStats().getPoints());
+    }
+
+    @Test
+    void shouldReturnCorrectEvType() {
+        assertEquals(EvType.ARTIST, artistsEvCard.getEventType());
+    }
+
+
+    // test classe astratta EventCard
+
+
+    @Test
+    void shouldReturnCorrectCardType() {
+        assertEquals(CardType.EVENT, artistsEvCard.getCardType());
+    }
+
+    @Test
+    void shouldResolveBuildingsEffects() {
+        ArtistEventFoodBonus artistEventFoodBonus = new ArtistEventFoodBonus(1, 1, 1, 1, 1);
+
+        gameModel.setCurrentPlayer(gameModel.getPlayers().getFirst());
+        artistCharCard.addCardToPlayer(gameModel.getCurrentPlayer());
+
+        artistEventFoodBonus.addCardToPlayer(gameModel.getCurrentPlayer());
+
+        assertEquals(0, gameModel.getCurrentPlayer().getStats().getFood());
+
+        artistsEvCard.resolveEffect(gameModel);
+        artistsEvCard.resolveBuildingsEffects(gameModel);
+
+        assertEquals(1, gameModel.getCurrentPlayer().getStats().getFood());
+    }
 }

@@ -29,7 +29,7 @@ public class RmiClientHandler implements GameObserver, Runnable {
                     new PlayerAddedMessage();
 
             case STATE_CHANGED ->
-                    new StateChangedMessage(model.getState().getClass().getSimpleName());
+                    new StateChangedMessage(model.getCurrentState().getClass().getSimpleName());
 
             case GAME_STARTED ->
                     new GameStartedMessage(model.getPlayers().size());
@@ -41,7 +41,7 @@ public class RmiClientHandler implements GameObserver, Runnable {
                     new RoundEndedMessage(model.getCurrentRound());
 
             case CARD_PICKED ->
-                    new CardPickedMessage(model.getCurrentPlayer().getNickname(), model.getState().getClass().getSimpleName());
+                    new CardPickedMessage(model.getCurrentPlayer().getNickname(), model.getCurrentState().getClass().getSimpleName());
 
             case TOTEM_PLACED ->
                     new TotemPlacedMessage(model.getCurrentPlayer().getNickname(),
