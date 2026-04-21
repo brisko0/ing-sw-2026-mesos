@@ -1,5 +1,11 @@
 package it.polimi.ingsw.am56.network.message.request;
 
-import java.io.Serializable;
+import it.polimi.ingsw.am56.controller.GameController;
+import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
-public record TotemMoveRequest(String nickname, String offerTileLetter) implements Serializable {}
+public record TotemMoveRequest(String nickname, String offerTileLetter) implements ClientRequest {
+    @Override
+    public void executeOnServer(GameController controller) throws InvalidActionException {
+        controller.moveTotem(nickname, offerTileLetter);
+    }
+}

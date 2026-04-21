@@ -1,5 +1,11 @@
 package it.polimi.ingsw.am56.network.message.request;
 
-import java.io.Serializable;
+import it.polimi.ingsw.am56.controller.GameController;
+import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
-public record CardPickRequest(String nickname, int cardId) implements Serializable {}
+public record CardPickRequest(String nickname, int cardId) implements ClientRequest {
+    @Override
+    public void executeOnServer(GameController controller) throws InvalidActionException {
+        controller.cardPick(nickname, cardId);
+    }
+}
