@@ -29,10 +29,10 @@ public class GameModel {
     private int currentRound;
     private Player currentPlayer;
 
+    // Lista degli osservatori (transient per evitare che venga serializzata)
     private final transient List<GameObserver> observers;
 
     public GameModel() {
-        this.state = new PlayersFilling(this);
         this.gameSize = -1;
         this.eraToCharEvdeck = new HashMap<>();
         this.eraToBuildingsdeck = new HashMap<>();
@@ -42,8 +42,9 @@ public class GameModel {
         this.playerToOfferTile = new HashMap<>();
         this.currentEra = 1;
         this.currentRound = 1;
-        this.observers = new ArrayList<>();
         this.currentPlayer = null;
+        this.observers = new ArrayList<>();
+        this.state = new PlayersFilling(this);
     }
 
     public void addObserver(GameObserver observer) {
@@ -112,29 +113,23 @@ public class GameModel {
         state.onEntry();
     }
 
-    public void setGameSize(int gameSize) throws InvalidActionException {
-        state.setGameSize(gameSize);
-    }
-
-    public void setBoard(Board board) {
-        this.board = board;
-    }
-
     public void setCurrentPlayer(Player player) {
         this.currentPlayer = player;
     }
 
     public void addPlayer(Player p) throws InvalidActionException{
         state.addPlayer(p);
-        notifyObservers(GameEvent.PLAYER_ADDED);
     }
 
     public void executeAddPlayer(Player p){
         players.add(p);
+        notifyObservers(GameEvent.PLAYER_ADDED);
     }
 
     public void initializeGame(int gameSize) throws InvalidActionException {
-        Collections.shuffle(players);
+
+        // commentato per avere la lista di player deterministica per testare
+        // Collections.shuffle(players);
 
         if(gameSize < 2 || gameSize > 5){
             throw new InvalidActionException("Numero di giocatori non valido");
@@ -177,11 +172,10 @@ public class GameModel {
                 .filter(p -> !playerToOfferTile.containsKey(p))
                 .toList();
 
-        if (!needingToPlace.isEmpty()) {
-            this.currentPlayer = needingToPlace.stream()
-                    .min(Comparator.comparingInt(p -> playerToOrderTile.get(p).getOrderTileId()))
-                    .orElse(null);
-        }
+        this.currentPlayer = needingToPlace.stream()
+                .min(Comparator.comparingInt(p -> playerToOrderTile.get(p).getOrderTileId()))
+                .orElse(null);
+
         notifyObservers(GameEvent.TURN_CHANGED);
     }
 
@@ -190,11 +184,10 @@ public class GameModel {
                 .filter(p -> !playerToOrderTile.containsKey(p))
                 .toList();
 
-        if (!needingToAct.isEmpty()) {
-            this.currentPlayer = needingToAct.stream()
-                    .min(Comparator.comparing(p -> playerToOfferTile.get(p).getLetter()))
-                    .orElse(null);
-        }
+        this.currentPlayer = needingToAct.stream()
+                .min(Comparator.comparing(p -> playerToOfferTile.get(p).getLetter()))
+                .orElse(null);
+
         notifyObservers(GameEvent.TURN_CHANGED);
     }
 
@@ -214,7 +207,6 @@ public class GameModel {
 
     public boolean checkCanPick() {
         OfferTile ot = playerToOfferTile.get(currentPlayer);
-        if (ot == null) return false;
 
         boolean hasUpperSlot = currentPlayer.getPickedUpper() < ot.getUpperCards();
 
@@ -291,6 +283,10 @@ public class GameModel {
                 currentPlayer.getStats().addPoints(pointsEffect);
             }
         }
+
+        for(BuildingCard buildingCard : currentPlayer.getStats().getBuildingCards()) {
+            buildingCard.onOwnTurnEnding(this);
+        }
     }
 
     public void endRound(){
@@ -316,14 +312,14 @@ public class GameModel {
 
     public void endGameActions() {
         for(Player p : players){
+
             p.getStats().addPoints(p.getStats().getBuilderPoints());
             p.getStats().addPoints(p.getStats().getCharacterTypeNum(CharacterType.INVENTOR) * p.getStats().getInventions().size());
-            p.getStats().addPoints(p.getStats().getCharacterTypeNum(CharacterType.ARTIST) / 2);
+            p.getStats().addPoints(10 * p.getStats().getCharacterTypeNum(CharacterType.ARTIST) / 2);
 
-            for(BuildingCard buildingCard : p.getStats().getBuildingCards()){
+            for (BuildingCard buildingCard : p.getStats().getBuildingCards()) {
                 buildingCard.onGameEnding(this, p);
             }
-
         }
         notifyObservers(GameEvent.GAME_ENDED);
     }
