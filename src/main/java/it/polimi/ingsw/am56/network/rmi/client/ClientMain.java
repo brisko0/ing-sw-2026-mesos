@@ -1,43 +1,61 @@
 package it.polimi.ingsw.am56.network.rmi.client;
 
-import it.polimi.ingsw.am56.network.message.request.*;
+// Assicurati di avere tutti questi import corretti in base ai tuoi package
+import it.polimi.ingsw.am56.network.message.request.AddPlayerRequest;
+import it.polimi.ingsw.am56.network.message.request.CardPickRequest;
+import it.polimi.ingsw.am56.network.message.request.CreateGameRequest;
+import it.polimi.ingsw.am56.network.message.request.TotemMoveRequest;
+
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 public class ClientMain {
     public static void main(String[] args) {
         try {
-            // cerchiamo il registro sulla porta 1099
+            // cerco il registro sulla porta 1099
             Registry registry = LocateRegistry.getRegistry("localhost", 1099);
 
-            // ottenimento del riferimento al server (lo stub)
+            //  ottengo riferimento al server (stub)
             VirtualServerRmi serverStub = (VirtualServerRmi) registry.lookup("MesosServer");
 
-            // creazione della view (client remoto)
+            // creo la view
             RmiClient view = new RmiClient();
+
+            // dico alla view chi è il server
+            view.setServerStub(serverStub);
 
             // registrazione sul server
             System.out.println("[CLIENT] Connessione in corso...");
             serverStub.addClient(view);
             System.out.println("[CLIENT] Registrato correttamente.");
 
-            // test
-            serverStub.addPlayer("Alice", "RED");
+            // test attraverso DTO request (test hardcodato)
 
-            serverStub.startGame();
+            // createGame + addPlayer
 
-            serverStub.addPlayer("Bob", "BLUE");
+            view.sendRequest(new CreateGameRequest("Alice", "RED", 2));
+            Thread.sleep(200);
 
-            serverStub.moveTotem(new TotemMoveRequest("Alice", "C"));
+            view.sendRequest(new AddPlayerRequest("Bob", "BLUE"));
+            Thread.sleep(200);
 
-            serverStub.moveTotem(new TotemMoveRequest("Bob", "F"));
+            // totem placement
 
-            serverStub.cardPick(new CardPickRequest("Alice", 99));
+            view.sendRequest(new TotemMoveRequest("Alice", "C"));
+            Thread.sleep(200);
 
-            serverStub.cardPick(new CardPickRequest("Bob", 100));
+            view.sendRequest(new TotemMoveRequest("Bob", "F"));
+            Thread.sleep(200);
 
-            serverStub.cardPick(new CardPickRequest("Bob", 101));
+            // pesca carte
+            view.sendRequest(new CardPickRequest("Alice", 99));
+            Thread.sleep(200);
 
+            view.sendRequest(new CardPickRequest("Bob", 100));
+            Thread.sleep(200);
+
+            view.sendRequest(new CardPickRequest("Bob", 101));
+            Thread.sleep(200);
 
         } catch (Exception e) {
             System.err.println("[CLIENT] Errore durante l'esecuzione: " + e.getMessage());
