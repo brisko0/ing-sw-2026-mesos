@@ -27,10 +27,6 @@ public abstract class GameState {
         throw new InvalidActionException("Cannot pick up character cards right now.");
     }
 
-    public void setGameSize(int gameSize) throws InvalidActionException {
-        throw new InvalidActionException("Cannot change the game size.");
-    }
-
     public void onEntry() {}
 
     public abstract State getState();

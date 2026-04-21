@@ -23,11 +23,6 @@ public class TotemPlacement extends GameState{
             throw new InvalidActionException("Questa tessera è già stata scelta. Scegline un'altra per il tuo totem!");
         }
 
-        // controllo integrità: il giocatore ha già un totem sulla board?
-        if (model.getPlayerToOfferTile().containsKey(p)) {
-            throw new InvalidActionException("Hai già piazzato il tuo totem per questo round.");
-        }
-
         // controlli finiti
 
         // chiama metodo stupido
