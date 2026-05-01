@@ -1,5 +1,9 @@
 package it.polimi.ingsw.am56.network.rmi.client;
 
+// Importa dal package core (o dove hai messo l'interfaccia)
+import it.polimi.ingsw.am56.core.ServerAdapter;
+import it.polimi.ingsw.am56.core.UpdateHandler;
+
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 import it.polimi.ingsw.am56.network.message.request.ClientRequest;
 import it.polimi.ingsw.am56.network.rmi.server.VirtualViewRmi;
@@ -7,9 +11,12 @@ import it.polimi.ingsw.am56.network.rmi.server.VirtualViewRmi;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi {
+// implementa anche ServerAdapter
+public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi, ServerAdapter {
 
     private VirtualServerRmi serverStub;
+
+    private UpdateHandler updateHandler;
 
     public RmiClient() throws RemoteException {
         super();
@@ -19,11 +26,16 @@ public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi {
         this.serverStub = serverStub;
     }
 
-    // metodo chiamata dalla UI
+    // la GUI potrÃ  registrarsi per ascoltare
+    @Override
+    public void setUpdateHandler(UpdateHandler handler) {
+        this.updateHandler = handler;
+    }
+
+    @Override
     public void sendRequest(ClientRequest request) {
         try {
             if (serverStub != null) {
-                // inviamo la richiesta passando this in modo da saper chi ha mandato la richiesta in caso di errore
                 serverStub.sendRequest(request, this);
             }
         } catch (RemoteException e) {
@@ -33,7 +45,11 @@ public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi {
 
     @Override
     public void showUpdate(ServerMessage message) throws RemoteException {
-        message.executeOnClient(this);
+        if (updateHandler != null) {
+            updateHandler.handleUpdate(message);
+        } else {
+            System.out.println("[RMI CLIENT] Messaggio ricevuto ma nessuna View collegata: " + message);
+        }
     }
 
     @Override
