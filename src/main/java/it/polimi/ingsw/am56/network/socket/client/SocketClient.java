@@ -1,6 +1,5 @@
 package it.polimi.ingsw.am56.network.socket.client;
 
-import it.polimi.ingsw.am56.network.NetworkClient;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 
 import java.io.IOException;
@@ -8,7 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class SocketClient implements NetworkClient {
+public class SocketClient {
     private final Socket socket;
     private final ObjectOutputStream out;
     private final ObjectInputStream in;
