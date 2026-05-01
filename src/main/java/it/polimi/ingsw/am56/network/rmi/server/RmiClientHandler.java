@@ -23,14 +23,14 @@ public class RmiClientHandler implements GameObserver, Runnable {
     @Override
     public void onModelChanged(GameEvent event) {
 
-        // 2. Creiamo il Messaggio (DTO) estraendo SOLO i dati sicuri e necessari per quell'evento
+        // creazione DTO update message
         ServerMessage msg = switch (event) {
 
             default ->
-                    new GameStateMessage();
+                    new TemporaryDefaultMessage();
         };
 
-        // 3. Mettiamo l'invio in coda
+        // invio in coda
         taskQueue.add(() -> {
             try {
                 clientStub.showUpdate(msg);
