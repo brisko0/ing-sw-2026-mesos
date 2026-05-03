@@ -9,6 +9,9 @@ module it.polimi.ingsw.am56 {
     opens it.polimi.ingsw.am56 to javafx.fxml;
     exports it.polimi.ingsw.am56;
 
+    exports it.polimi.ingsw.am56.view.GUI to javafx.graphics;
+    opens it.polimi.ingsw.am56.view.GUI to javafx.fxml;
+
     // Configurazione Model
     exports it.polimi.ingsw.am56.model;
     opens it.polimi.ingsw.am56.model to javafx.fxml;
@@ -35,4 +38,8 @@ module it.polimi.ingsw.am56 {
     opens it.polimi.ingsw.am56.network.message.request to java.rmi;
     exports it.polimi.ingsw.am56.network.message.update to java.rmi;
     opens it.polimi.ingsw.am56.network.message.update to java.rmi;
+    exports it.polimi.ingsw.am56.core;
+    opens it.polimi.ingsw.am56.core to javafx.fxml;
+    exports it.polimi.ingsw.am56.view.GUI.controllers to javafx.graphics;
+    opens it.polimi.ingsw.am56.view.GUI.controllers to javafx.fxml;
 }
