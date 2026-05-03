@@ -6,6 +6,8 @@ import it.polimi.ingsw.am56.network.message.request.LobbyStateRequest;
 import it.polimi.ingsw.am56.network.message.update.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
 public class PreLobbyController implements UpdateHandler, MessageVisitor {
@@ -14,6 +16,8 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
     @FXML private GridPane joinBox;
 
     private ServerAdapter serverAdapter;
+    private String selectedColor = null;
+    private ImageView lastSelectedTotem = null;
 
     public void setServerAdapter(ServerAdapter serverAdapter) {
         this.serverAdapter = serverAdapter;
@@ -46,5 +50,20 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
                 joinBox.setOpacity(0.5);
             }
         });
+    }
+
+    @FXML
+    private void selectColor(MouseEvent event) {
+        ImageView clickedTotem = (ImageView) event.getSource();
+
+        if (lastSelectedTotem != null) {
+            lastSelectedTotem.getStyleClass().remove("totem-selected");
+        }
+
+        clickedTotem.getStyleClass().add("totem-selected");
+        lastSelectedTotem = clickedTotem;
+
+        selectedColor = (String) clickedTotem.getUserData();
+        System.out.println("[PRE-LOBBY] Colore selezionato: " + selectedColor);
     }
 }
