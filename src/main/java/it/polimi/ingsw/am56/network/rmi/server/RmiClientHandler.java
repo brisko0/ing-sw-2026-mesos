@@ -26,9 +26,13 @@ public class RmiClientHandler implements GameObserver, Runnable {
         // creazione DTO update message
         ServerMessage msg = switch (event) {
 
+            case LOBBY_STATE_SYNC ->
+                    new PreLobbyStateMessage(model.getGameSize() != -1);
+
             default ->
                     new TemporaryDefaultMessage();
         };
+
 
         // invio in coda
         taskQueue.add(() -> {
