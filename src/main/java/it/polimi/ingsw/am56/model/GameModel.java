@@ -117,6 +117,11 @@ public class GameModel {
         this.currentPlayer = player;
     }
 
+    public void syncLobbyState() {
+        // Qui dentro possiamo usare tranquillamente il metodo privato!
+        notifyObservers(GameEvent.LOBBY_STATE_SYNC);
+    }
+
     public void addPlayer(Player p) throws InvalidActionException{
         state.addPlayer(p);
     }

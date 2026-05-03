@@ -1,6 +1,8 @@
 package it.polimi.ingsw.am56.model;
 
 public enum GameEvent {
+    LOBBY_STATE_SYNC,
+
     PLAYER_ADDED,
     GAME_STARTED,
     STATE_CHANGED,

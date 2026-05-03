@@ -9,6 +9,13 @@ import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 public class GameController {
     private final GameModel model;
 
+    public void checkLobbyState() {
+        synchronized (model) {
+            // Usiamo il nuovo metodo pubblico!
+            model.syncLobbyState();
+        }
+    }
+
     public GameController(GameModel model) {
         this.model = model;
     }
