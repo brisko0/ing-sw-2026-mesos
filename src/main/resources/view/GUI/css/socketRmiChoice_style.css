@@ -1,0 +1,58 @@
+.rmi-panel {
+    -fx-background-image: url("../images/SocketRmi/RMIBlock.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+.socket-panel {
+    -fx-background-image: url("../images/SocketRmi/SOCKETBlock.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+
+
+.mesos-input {
+    -fx-background-color: transparent;
+    -fx-background-image: url("../images/TextField.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+
+    -fx-border-width: 0;
+    -fx-text-fill: #3d1f14;
+    -fx-prompt-text-fill: rgba(61, 31, 20, 0.6);
+    -fx-font-size: 16px;
+    -fx-alignment: center-left;
+
+    -fx-padding: 0 10 0 20;
+}
+
+
+
+.mesos-button {
+    -fx-background-color: transparent;
+    -fx-background-image: url("../images/SocketRmi/ConnectButton.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+
+    -fx-pref-width: 150;
+    -fx-pref-height: 65;
+    -fx-max-width: 170;
+    -fx-max-height: 45;
+
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+}
+
+.mesos-button:hover {
+    -fx-opacity: 0.85;
+}
+
+.mesos-button:pressed {
+    -fx-opacity: 0.7;
+    -fx-translate-y: 2px;
+}

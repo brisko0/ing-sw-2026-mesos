@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+
+<StackPane fx:id="rootPane" prefHeight="576.0" prefWidth="1024.0"
+           stylesheets="@../css/socketRmiChoice_style.css" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="it.polimi.ingsw.am56.view.GUI.controllers.SocketRmiChoiceController">
+
+    <ImageView fitWidth="${rootPane.width}" fitHeight="${rootPane.height}" preserveRatio="false">
+        <Image url="@../images/background_empty2.png" />
+    </ImageView>
+
+    <GridPane alignment="CENTER">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="15"/>
+            <ColumnConstraints percentWidth="30"/>
+            <ColumnConstraints percentWidth="10"/>
+            <ColumnConstraints percentWidth="30"/>
+            <ColumnConstraints percentWidth="15"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints percentHeight="15"/>
+            <RowConstraints percentHeight="85"/>
+            <RowConstraints percentHeight="0"/>
+        </rowConstraints>
+
+        <GridPane fx:id="rmiBox" styleClass="rmi-panel" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="18"/>
+                <ColumnConstraints percentWidth="64" halignment="CENTER"/>
+                <ColumnConstraints percentWidth="18"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="52"/>
+                <RowConstraints percentHeight="9"/>
+                <RowConstraints percentHeight="3"/>
+                <RowConstraints percentHeight="6"/>
+                <RowConstraints percentHeight="3"/>
+                <RowConstraints percentHeight="8"/>
+                <RowConstraints percentHeight="16"/>
+            </rowConstraints>
+
+            <TextField fx:id="rmiIpField" promptText="NOME SERVER" styleClass="mesos-input"
+                       GridPane.columnIndex="1" GridPane.rowIndex="1" maxHeight="Infinity" maxWidth="Infinity"/>
+
+            <TextField fx:id="rmiPortField" promptText="PORTA" styleClass="mesos-input"
+                       GridPane.columnIndex="1" GridPane.rowIndex="3" maxHeight="Infinity" maxWidth="Infinity"/>
+
+            <Button text="" onAction="#handleRmiConnect" styleClass="mesos-button"
+                    GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        </GridPane>
+
+        <GridPane fx:id="socketBox" styleClass="socket-panel" GridPane.columnIndex="3" GridPane.rowIndex="1">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="18"/>
+                <ColumnConstraints percentWidth="64" halignment="CENTER"/>
+                <ColumnConstraints percentWidth="18"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="52"/>
+                <RowConstraints percentHeight="9"/>
+                <RowConstraints percentHeight="3"/>
+                <RowConstraints percentHeight="6"/>
+                <RowConstraints percentHeight="3"/>
+                <RowConstraints percentHeight="8"/>
+                <RowConstraints percentHeight="16"/>
+            </rowConstraints>
+
+            <TextField fx:id="socketIpField" promptText="IP SERVER" styleClass="mesos-input"
+                       GridPane.columnIndex="1" GridPane.rowIndex="1" maxHeight="Infinity" maxWidth="Infinity"/>
+
+            <TextField fx:id="socketPortField" promptText="PORTA" styleClass="mesos-input"
+                       GridPane.columnIndex="1" GridPane.rowIndex="3" maxHeight="Infinity" maxWidth="Infinity"/>
+
+            <Button text="" onAction="#handleSocketConnect" styleClass="mesos-button"
+                    GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        </GridPane>
+
+    </GridPane>
+</StackPane>
