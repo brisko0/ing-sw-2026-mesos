@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<StackPane fx:id="rootPane" prefHeight="576.0" prefWidth="1024.0"
+           stylesheets="@../css/lobby_style.css" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="it.polimi.ingsw.am56.view.GUI.controllers.LobbyController">
+
+    <ImageView fitWidth="${rootPane.width}" fitHeight="${rootPane.height}" preserveRatio="false">
+        <Image url="@../images/background_empty2.png" />
+    </ImageView>
+
+    <GridPane alignment="CENTER">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="20"/>
+            <ColumnConstraints percentWidth="60" halignment="CENTER"/>
+            <ColumnConstraints percentWidth="20"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints percentHeight="15"/>
+            <RowConstraints percentHeight="70" valignment="CENTER"/>
+            <RowConstraints percentHeight="15"/>
+        </rowConstraints>
+
+        <GridPane fx:id="lobbyBox" styleClass="lobby-panel" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="12"/> <ColumnConstraints percentWidth="76" halignment="CENTER"/>
+                <ColumnConstraints percentWidth="12"/> </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="20"/> <RowConstraints percentHeight="60" valignment="TOP"/> <RowConstraints percentHeight="10" valignment="BOTTOM"/> <RowConstraints percentHeight="10"/> </rowConstraints>
+
+            <VBox fx:id="playerListContainer" spacing="10" alignment="TOP_CENTER"
+                  GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <padding>
+                    <javafx.geometry.Insets top="10" />
+                </padding>
+            </VBox>
+
+            <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <padding>
+                    <javafx.geometry.Insets right="30" bottom="10" />
+                </padding>
+                <Label fx:id="statusLabel" text="In attesa di cacciatori... 1/4" styleClass="status-label"/>
+            </HBox>
+        </GridPane>
+    </GridPane>
+</StackPane>
