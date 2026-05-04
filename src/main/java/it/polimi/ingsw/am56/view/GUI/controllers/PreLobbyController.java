@@ -13,6 +13,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import java.io.IOException;
+
 
 public class PreLobbyController implements UpdateHandler, MessageVisitor {
 
@@ -36,21 +40,6 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
 
         System.out.println("[GUI PRE-LOBBY] Richiesta stato partita inviata...");
         this.serverAdapter.sendRequest(new LobbyStateRequest());
-    }
-
-    @FXML
-    private void selectColor(MouseEvent event) {
-        ImageView clickedTotem = (ImageView) event.getSource();
-
-        if (lastSelectedTotem != null) {
-            lastSelectedTotem.getStyleClass().remove("totem-selected");
-        }
-
-        clickedTotem.getStyleClass().add("totem-selected");
-        lastSelectedTotem = clickedTotem;
-
-        selectedColor = (String) clickedTotem.getUserData();
-        System.out.println("[PRE-LOBBY] Colore selezionato: " + selectedColor);
     }
 
     @Override
@@ -117,6 +106,44 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
             } else {
                 System.out.println("[LOBBY] scegliere un totem prima di unirsi");
             }
+        }
+    }
+
+    @FXML
+    private void selectColor(MouseEvent event) {
+        ImageView clickedTotem = (ImageView) event.getSource();
+
+        if (lastSelectedTotem != null) {
+            lastSelectedTotem.getStyleClass().remove("totem-selected");
+        }
+
+        clickedTotem.getStyleClass().add("totem-selected");
+        lastSelectedTotem = clickedTotem;
+
+        selectedColor = (String) clickedTotem.getUserData();
+        System.out.println("[PRE-LOBBY] Colore selezionato: " + selectedColor);
+    }
+
+    @Override
+    public void visit(LobbyStateMessage message) {
+        Platform.runLater(() -> goToLobby(message));
+    }
+
+    private void goToLobby(LobbyStateMessage message) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GUI/fxml/Lobby.fxml"));
+            Parent lobbyRoot = loader.load();
+
+            LobbyController lobbyController = loader.getController();
+            lobbyController.setServerAdapter(serverAdapter);
+
+            lobbyController.setLocalPlayerNickname(this.localPlayerNickname);
+
+            lobbyController.visit(message);
+
+            rootPane.getScene().setRoot(lobbyRoot);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
