@@ -16,6 +16,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 
 public class LobbyController implements UpdateHandler, MessageVisitor {
 
@@ -90,5 +93,22 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
         }
 
         playerListContainer.getChildren().add(row);
+    }
+
+    private void startCountdown() {
+        final int[] secondsLeft = {5};
+        statusLabel.setText("La partita inizierà tra " + secondsLeft[0] + "...");
+
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            secondsLeft[0]--;
+            if (secondsLeft[0] > 0) {
+                statusLabel.setText("La partita inizierà tra " + secondsLeft[0] + "...");
+            } else {
+                goToGame();
+            }
+        }));
+
+        timeline.setCycleCount(5);
+        timeline.play();
     }
 }
