@@ -3,6 +3,7 @@ package it.polimi.ingsw.am56.network.rmi.server;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.GameObserver;
 import it.polimi.ingsw.am56.model.GameEvent;
+import it.polimi.ingsw.am56.network.message.classesDTO.PlayerDTO;
 import it.polimi.ingsw.am56.network.message.update.*;
 
 import java.util.concurrent.BlockingQueue;
@@ -28,6 +29,14 @@ public class RmiClientHandler implements GameObserver, Runnable {
 
             case LOBBY_STATE_SYNC ->
                     new PreLobbyStateMessage(model.getGameSize() != -1);
+
+            case PLAYER_ADDED -> {
+                java.util.List<PlayerDTO> currentPlayers = model.getPlayers().stream()
+                        .map(p -> new PlayerDTO(p.getNickname(), p.getTotemColor()))
+                        .toList();
+
+                yield new LobbyStateMessage(currentPlayers, model.getGameSize());
+            }
 
             default ->
                     new TemporaryDefaultMessage();
