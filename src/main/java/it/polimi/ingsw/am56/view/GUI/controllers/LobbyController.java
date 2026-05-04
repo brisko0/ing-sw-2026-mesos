@@ -8,6 +8,8 @@ import it.polimi.ingsw.am56.network.message.update.MessageVisitor;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -19,6 +21,8 @@ import javafx.scene.layout.StackPane;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
+
+import java.io.IOException;
 
 public class LobbyController implements UpdateHandler, MessageVisitor {
 
@@ -110,5 +114,23 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
 
         timeline.setCycleCount(5);
         timeline.play();
+    }
+
+    private void goToGame() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GUI/fxml/ViewGame.fxml"));
+            Parent gameRoot = loader.load();
+
+            ViewGameController viewGameController = loader.getController();
+            viewGameController.setLocalPlayerNickname(this.localPlayerNickname);
+            viewGameController.setServerAdapter(this.serverAdapter);
+
+            rootPane.getScene().setRoot(gameRoot);
+
+            System.out.println("[GUI] Passaggio alla schermata di gioco completato.");
+        } catch (IOException e) {
+            System.err.println("[GUI] Errore nel caricamento del gioco: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
