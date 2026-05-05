@@ -1,57 +1,49 @@
 package it.polimi.ingsw.am56.network.rmi.server;
 
-import it.polimi.ingsw.am56.model.GameModel;
-import it.polimi.ingsw.am56.model.GameObserver;
-import it.polimi.ingsw.am56.model.GameEvent;
-import it.polimi.ingsw.am56.network.message.classesDTO.PlayerDTO;
+import it.polimi.ingsw.am56.network.ClientConnection;
 import it.polimi.ingsw.am56.network.message.update.*;
 
+import java.rmi.RemoteException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class RmiClientHandler implements GameObserver, Runnable {
+public class RmiClientHandler implements ClientConnection, Runnable {
     private final VirtualViewRmi clientStub;
-    private final GameModel model;
     private final BlockingQueue<Runnable> taskQueue;
     private boolean active = true;
 
-    public RmiClientHandler(VirtualViewRmi clientStub, GameModel model) {
+    public RmiClientHandler(VirtualViewRmi clientStub) {
         this.clientStub = clientStub;
-        this.model = model;
         this.taskQueue = new LinkedBlockingQueue<>();
     }
 
     @Override
-    public void onModelChanged(GameEvent event) {
-
-        // creazione DTO update message
-        ServerMessage msg = switch (event) {
-
-            case LOBBY_STATE_SYNC ->
-                    new PreLobbyStateMessage(model.getGameSize() != -1);
-
-            case PLAYER_ADDED -> {
-                java.util.List<PlayerDTO> currentPlayers = model.getPlayers().stream()
-                        .map(p -> new PlayerDTO(p.getNickname(), p.getTotemColor()))
-                        .toList();
-
-                yield new LobbyStateMessage(currentPlayers, model.getGameSize());
-            }
-
-            default ->
-                    new TemporaryDefaultMessage();
-        };
-
-
-        // invio in coda
+    public void sendMessage(ServerMessage message) {
         taskQueue.add(() -> {
             try {
-                clientStub.showUpdate(msg);
-            } catch (Exception e) {
-                System.err.println("[HANDLER] Errore di invio, disconnessione client...");
-                active = false;
+                clientStub.showUpdate(message);
+            } catch (RemoteException e) {
+                System.err.println("[RMI CONNECTION] Errore di invio, disconnessione client...");
+                disconnect();
             }
         });
+    }
+
+    @Override
+    public void sendError(String errorDetails) {
+        taskQueue.add(() -> {
+            try {
+                clientStub.reportError(errorDetails);
+            } catch (RemoteException e) {
+                disconnect();
+            }
+        });
+    }
+
+    @Override
+    public void disconnect() {
+        this.active = false;
+        // da avvisare il server che il client si è disconesso
     }
 
     @Override

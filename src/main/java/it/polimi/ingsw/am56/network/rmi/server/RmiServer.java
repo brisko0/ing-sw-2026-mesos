@@ -1,6 +1,7 @@
 package it.polimi.ingsw.am56.network.rmi.server;
 
 import it.polimi.ingsw.am56.controller.GameController;
+import it.polimi.ingsw.am56.controller.PlayerVirtualView;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import it.polimi.ingsw.am56.network.message.request.ClientRequest;
@@ -16,12 +17,14 @@ import java.util.concurrent.Executors;
 public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
     private final GameModel model;
     private final GameController controller;
+    private final int port;
 
     // per rendere rmi asincrono, pool di thread che gestisce le richieste in background
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    public RmiServer(GameModel model, GameController controller) throws RemoteException {
+    public RmiServer(int port, GameModel model, GameController controller) throws RemoteException {
         super();
+        this.port = port;
         this.model = model;
         this.controller = controller;
     }
@@ -29,9 +32,11 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
     @Override
     public void addClient(VirtualViewRmi clientStub) throws RemoteException {
         System.out.println("[SERVER] Nuovo client RMI connesso.");
-        RmiClientHandler handler = new RmiClientHandler(clientStub, this.model);
-        model.addObserver(handler);
+        RmiClientHandler handler = new RmiClientHandler(clientStub);
         new Thread(handler).start();
+
+        PlayerVirtualView virtualView = new PlayerVirtualView(this.model, handler);
+        model.addObserver(virtualView);
     }
 
     // nuovo metodo universale
@@ -56,19 +61,13 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
         });
     }
 
-    public static void main(String[] args) {
+    public void start() {
         try {
-            GameModel model = new GameModel();
-            GameController controller = new GameController(model);
-            RmiServer server = new RmiServer(model, controller);
-
-            Registry registry = LocateRegistry.createRegistry(1099);
-            registry.rebind("MesosServer", server);
-
-            System.out.println("RMI Server pronto su porta 1099...");
-            System.out.println("Architettura Asincrona e Command Pattern ATTIVI.");
+            Registry registry = LocateRegistry.createRegistry(port);
+            registry.rebind("MesosServer", this);
+            System.out.println("[RMI SERVER] RMI Server pronto sulla porta " + port);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("[RMI SERVER] Errore nell'avvio del server RMI: " + e.getMessage());
         }
     }
 }
