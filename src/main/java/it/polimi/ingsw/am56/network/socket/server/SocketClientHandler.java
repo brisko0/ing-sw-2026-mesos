@@ -4,14 +4,14 @@ import it.polimi.ingsw.am56.controller.GameController;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 import it.polimi.ingsw.am56.network.message.request.ClientRequest;
-import it.polimi.ingsw.am56.network.VirtualView;
+import it.polimi.ingsw.am56.network.ClientConnection;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class SocketClientHandler implements Runnable, VirtualView {
+public class SocketClientHandler implements Runnable, ClientConnection {
     private final Socket socket;
     private final GameController controller;
     private final ObjectOutputStream out;
@@ -31,35 +31,44 @@ public class SocketClientHandler implements Runnable, VirtualView {
     public void run() {
         try {
             while (active) {
-
                 ClientRequest request = (ClientRequest) in.readObject();
 
-                // polimorfismo delle request
-                request.executeOnServer(controller);
+                try {
+                    request.executeOnServer(controller);
+                } catch (InvalidActionException e) {
+                    this.sendError(e.getMessage());
+                }
             }
-        } catch (InvalidActionException e) {
-            // nel caso in cui il controller lancia l'eccezione, spediamo l'errore solo al client che l'ha generato
-            this.reportError(e.getMessage());
-
         } catch (IOException | ClassNotFoundException e) {
-            System.err.println("[SERVER] Connessione chiusa col client o classe non trovata.");
-            active = false;
+            System.err.println("[SOCKET SERVER] Connessione chiusa col client o classe non trovata.");
+            disconnect();
         }
     }
 
+
     @Override
-    public void showUpdate(ServerMessage message) {
+    public void sendMessage(ServerMessage message) {
         try {
-            out.writeObject(message);
-            out.reset();
-            out.flush();
+            synchronized (out) {
+                out.writeObject(message);
+                out.reset();
+                out.flush();
+            }
         } catch (IOException e) {
-            active = false;
+            disconnect();
         }
     }
 
     @Override
-    public void reportError(String details) {
-        System.err.println("Inviato errore al client: " + details);
+    public void sendError(String errorDetails) {
+        System.err.println("[SOCKET SERVER] Inviato errore al client: " + errorDetails);
+    }
+
+    @Override
+    public void disconnect() {
+        this.active = false;
+        try {
+            socket.close();
+        } catch (IOException ignored) {}
     }
 }
