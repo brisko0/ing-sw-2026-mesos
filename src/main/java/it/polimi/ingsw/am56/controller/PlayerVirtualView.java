@@ -41,7 +41,7 @@ public class PlayerVirtualView implements GameObserver {
     }
 
     // =========================================================================
-    // METODI HANDLER (Un metodo per ogni evento, pulito e incapsulato)
+    // metodi handler
     // =========================================================================
 
     private void handleLobbyStateSync() {
