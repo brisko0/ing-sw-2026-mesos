@@ -11,4 +11,5 @@ public interface MessageVisitor {
     default void visit(PlayerStatsUpdateMessage message) {}
     default void visit(EventResolvedMessage message) {}
     default void visit(EndRoundUpdateMessage message) {}
+    default void visit(BoardUpdatedMessage message) {}
 }
