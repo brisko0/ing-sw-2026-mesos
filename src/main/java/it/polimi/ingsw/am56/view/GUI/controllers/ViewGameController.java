@@ -748,7 +748,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
                 flyer = new ImageView(new Image(stream));
                 flyer.setFitHeight(160); flyer.setPreserveRatio(true);
 
-                DropShadow shadow = new DropShadow()
+                DropShadow shadow = new DropShadow();
                 shadow.setRadius(8); shadow.setOffsetY(3); shadow.setColor(Color.rgb(0,0,0,0.8));
                 flyer.setEffect(shadow);
             }
