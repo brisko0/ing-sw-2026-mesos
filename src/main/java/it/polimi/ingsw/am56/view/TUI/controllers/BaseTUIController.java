@@ -16,4 +16,33 @@ public abstract class BaseTUIController implements UpdateHandler, MessageVisitor
     }
 
     public abstract void onEnter();
+
+    @Override
+    public void handleUpdate(ServerMessage message) {
+        message.accept(this);
+    }
+
+    @Override
+    public void visit(GameSnapshotMessage message) {
+    }
+
+    @Override
+    public void visit(BoardUpdatedMessage message) {
+    }
+
+    @Override
+    public void visit(CurrentPlayerUpdateMessage message) {
+    }
+
+    @Override
+    public void visit(PlayerStatsUpdateMessage message) {
+    }
+
+    @Override
+    public void visit(LobbyStateMessage message) {
+    }
+
+    @Override
+    public void visit(TemporaryDefaultMessage message) {
+    }
 }
