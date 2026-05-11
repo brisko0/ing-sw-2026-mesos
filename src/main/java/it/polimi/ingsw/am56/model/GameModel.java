@@ -314,6 +314,7 @@ public class GameModel {
             if(c.getCardType() == CardType.EVENT){
                 c.resolveEffect(this);
                 c.resolveBuildingsEffects(this);
+                notifyObservers(GameEvent.EVENT_RESOLVED);
             }
         }
     }
