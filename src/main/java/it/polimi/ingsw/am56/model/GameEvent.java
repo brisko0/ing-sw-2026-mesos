@@ -13,4 +13,5 @@ public enum GameEvent {
     ROUND_ENDED,
     ERA_CHANGED,
     GAME_ENDED,
+    EVENT_RESOLVED,
 }
