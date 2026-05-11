@@ -50,13 +50,19 @@ public class TUIDrawer {
 
     public void printBoard(BoardDTO board) {
         System.out.println(YELLOW + BOLD + "\n--- PLANCIA DI GIOCO ---" + RESET);
-        System.out.println("Carte disponibili: " + board.upperCharEvIds().size() + " in alto, " + board.lowerCharEvIds().size() + " in basso.");
-        // TODO: migliorare la stampa della board con formattazione a griglia
+        System.out.println("Carte Edifici (Alto): " + board.upperBuildingsIds());
+        System.out.println("Carte Edifici (Basso): " + board.lowerBuildingsIds());
+        System.out.println("Carte Tribù/Eventi (Alto): " + board.upperCharEvIds());
+        System.out.println("Carte Tribù/Eventi (Basso): " + board.lowerCharEvIds());
+        System.out.println("Tessere Ordine: " + board.orderTileCount());
+        System.out.println("Tessere Offerta: " + board.offerTilesLetters());
+        System.out.println();
     }
 
     public void printPlayerStats(PlayerStatsDTO stats) {
-        System.out.println(BLUE + BOLD + "\n--- STATISTICHE: " + stats.nickname().toUpperCase() + " ---" + RESET);
+        System.out.println(BLUE + BOLD + "\n--- STATISTICHE: " + stats.nickname().toUpperCase() + " (" + stats.color() + ") ---" + RESET);
         System.out.println("Punti: " + stats.points() + " | Cibo: " + stats.food());
-        // TODO: stampare l'inventario delle carte
+        System.out.println("Invenzioni: " + stats.inventionCount());
+        System.out.println();
     }
 }
