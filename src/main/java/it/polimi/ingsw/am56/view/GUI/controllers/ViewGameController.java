@@ -788,4 +788,428 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
 
         parallelTransition.play();
     }
+    // ==========================================
+    // gestione totem e animazione
+    // ==========================================
+
+    private void animateTotemMove(TotemPositionDTO from, TotemPositionDTO to, List<TotemPositionDTO> finalState) {
+        StackPane startSlot = findSlot(from.locationType(), from.locationId());
+        StackPane endSlot = findSlot(to.locationType(), to.locationId());
+
+        if (startSlot == null || endSlot == null) {
+            this.currentTotems = finalState; refreshTotems(); return;
+        }
+
+        ImageView flyer = createTotemImage(to.totemColor());
+        if (flyer == null) return;
+
+        flyer.setViewOrder(-10.0);
+
+        StackPane.setAlignment(flyer, Pos.TOP_LEFT);
+        flyer.setMouseTransparent(true);
+
+        var startBounds = startSlot.localToScene(startSlot.getBoundsInLocal());
+        var endBounds = endSlot.localToScene(endSlot.getBoundsInLocal());
+        var rootBounds = rootPane.localToScene(rootPane.getBoundsInLocal());
+
+        double startOffsetY = "OFFER".equals(from.locationType()) ? -55 : 0;
+        double endOffsetY = "OFFER".equals(to.locationType()) ? -55 : 0;
+
+        double startX = startBounds.getMinX() - rootBounds.getMinX() + (startBounds.getWidth() / 2) - 30;
+        double startY = startBounds.getMinY() - rootBounds.getMinY() + (startBounds.getHeight() / 2) - 30 + startOffsetY;
+
+        double endX = endBounds.getMinX() - rootBounds.getMinX() + (endBounds.getWidth() / 2) - 30;
+        double endY = endBounds.getMinY() - rootBounds.getMinY() + (endBounds.getHeight() / 2) - 30 + endOffsetY;
+
+        flyer.setTranslateX(startX); flyer.setTranslateY(startY);
+        rootPane.getChildren().add(flyer);
+        startSlot.getChildren().removeIf(node -> "totem".equals(node.getUserData()));
+
+        TranslateTransition transition = new TranslateTransition(Duration.millis(600), flyer);
+        transition.setToX(endX); transition.setToY(endY);
+        transition.setInterpolator(Interpolator.EASE_BOTH);
+
+        transition.setOnFinished(event -> {
+            rootPane.getChildren().remove(flyer);
+            this.currentTotems = finalState;
+            refreshTotems();
+        });
+
+        transition.play();
+    }
+
+    private StackPane findSlot(String type, String id) {
+        if ("ORDER".equals(type)) {
+            StackPane s = orderTileSlots.get(id);
+            if (s == null) {
+                try {
+                    int parsedId = Integer.parseInt(id);
+                    return orderTileSlots.get(String.valueOf(parsedId + 1));
+                } catch (Exception e) { return null; }
+            }
+            return s;
+        } else {
+            return offerTileSlots.get(id.toUpperCase());
+        }
+    }
+
+    private void refreshTotems() {
+        if (currentTotems == null || currentTotems.isEmpty()) return;
+
+        for (StackPane slot : orderTileSlots.values()) slot.getChildren().removeIf(node -> "totem".equals(node.getUserData()));
+        for (StackPane slot : offerTileSlots.values()) slot.getChildren().removeIf(node -> "totem".equals(node.getUserData()));
+
+        for (TotemPositionDTO pos : currentTotems) {
+            StackPane targetSlot = null;
+            if ("ORDER".equals(pos.locationType())) {
+                targetSlot = orderTileSlots.get(pos.locationId());
+                if (targetSlot == null) {
+                    try {
+                        int parsedId = Integer.parseInt(pos.locationId());
+                        targetSlot = orderTileSlots.get(String.valueOf(parsedId + 1));
+                    } catch (NumberFormatException ignored) {}
+                }
+            } else if ("OFFER".equals(pos.locationType())) {
+                targetSlot = offerTileSlots.get(pos.locationId().toUpperCase());
+            }
+
+            if (targetSlot != null) {
+                ImageView totemImg = createTotemImage(pos.totemColor());
+                if (totemImg != null) {
+                    if ("OFFER".equals(pos.locationType())) totemImg.setTranslateY(-55);
+                    targetSlot.getChildren().add(totemImg);
+                }
+            }
+        }
+    }
+
+    private ImageView createTotemImage(String color) {
+        String path = "/view/GUI/images/totem3D/" + color.toLowerCase() + "_3D.png";
+        try {
+            var stream = getClass().getResourceAsStream(path);
+            if (stream == null) return null;
+            ImageView totemView = new ImageView(new Image(stream));
+            totemView.setFitHeight(60); totemView.setPreserveRatio(true);
+            totemView.setUserData("totem");
+            totemView.setStyle("-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 5, 0, 0, 2);");
+
+            totemView.setViewOrder(-5.0);
+
+            return totemView;
+        } catch (Exception e) { return null; }
+    }
+
+    // ==========================================
+    // animazione fine round
+    // ==========================================
+
+    private void animateEndRoundBoardShift(BoardDTO newBoard) {
+        isAnimatingBoard = true;
+        clearAllGlows();
+
+        ParallelTransition fadeOutLower = new ParallelTransition();
+
+        for (Node slot : lowerTribeBox.getChildren()) {
+            FadeTransition ft = new FadeTransition(Duration.millis(400), slot);
+            ft.setToValue(0);
+            fadeOutLower.getChildren().add(ft);
+        }
+
+        if (fadeOutLower.getChildren().isEmpty()) {
+            executeDrops(newBoard);
+        } else {
+            fadeOutLower.setOnFinished(e -> executeDrops(newBoard));
+            fadeOutLower.play();
+        }
+    }
+
+    private void executeDrops(BoardDTO newBoard) {
+        lowerTribeBox.getChildren().clear();
+        lowerTribeBox.setVisible(true); lowerTribeBox.setManaged(true);
+
+        List<Node> upperTribeNodes = new ArrayList<>(upperTribeBox.getChildren());
+
+        dropCardsSequentially(upperTribeNodes, lowerTribeBox, 0, () -> {
+
+            updateCardRow(lowerBuildingsBox, newBoard.lowerBuildingsIds());
+            updateCardRow(lowerTribeBox, newBoard.lowerCharEvIds());
+            updateCenterTiles(newBoard.orderTileCount(), newBoard.offerTilesLetters());
+
+            upperTribeBox.getChildren().clear();
+            upperTribeBox.setVisible(true); upperTribeBox.setManaged(true);
+
+            dealCardsSequentially(newBoard.upperCharEvIds(), upperTribeBox, 0, () -> {
+
+                updateCardRow(upperBuildingsBox, newBoard.upperBuildingsIds());
+
+                isAnimatingBoard = false;
+                applyGlowsBasedOnState();
+            });
+        });
+    }
+
+    private void dropCardsSequentially(List<Node> upperSlots, HBox lowerBox, int index, Runnable onComplete) {
+        if (index >= upperSlots.size()) {
+            if (onComplete != null) onComplete.run();
+            return;
+        }
+
+        Node upperSlot = upperSlots.get(index);
+
+        int cardId = -1;
+        if (upperSlot.getUserData() != null && upperSlot.getUserData().toString().startsWith("card_slot_")) {
+            cardId = Integer.parseInt(upperSlot.getUserData().toString().split("_")[2]);
+        }
+
+        if (cardId == -1) {
+            dropCardsSequentially(upperSlots, lowerBox, index + 1, onComplete);
+            return;
+        }
+
+        upperSlot.setVisible(false);
+
+        StackPane placeholder = createCardSlotNode(cardId);
+        placeholder.setOpacity(0);
+        lowerBox.getChildren().add(placeholder);
+
+        lowerBox.applyCss();
+        lowerBox.layout();
+
+        ImageView flyer = null;
+        try {
+            var stream = getClass().getResourceAsStream("/view/GUI/images/cards/card_" + cardId + ".png");
+            if (stream != null) {
+                flyer = new ImageView(new Image(stream));
+                flyer.setFitHeight(160); flyer.setPreserveRatio(true);
+                DropShadow shadow = new DropShadow();
+                shadow.setRadius(8); shadow.setOffsetY(3); shadow.setColor(Color.rgb(0,0,0,0.8));
+                flyer.setEffect(shadow);
+            }
+        } catch (Exception ignored) {}
+
+        if (flyer == null) {
+            dropCardsSequentially(upperSlots, lowerBox, index + 1, onComplete); return;
+        }
+
+        flyer.setViewOrder(-20.0);
+        StackPane.setAlignment(flyer, Pos.TOP_LEFT);
+        flyer.setMouseTransparent(true);
+
+        var startBounds = upperSlot.localToScene(upperSlot.getBoundsInLocal());
+        var endBounds = placeholder.localToScene(placeholder.getBoundsInLocal());
+        var rootBounds = rootPane.localToScene(rootPane.getBoundsInLocal());
+
+        flyer.setTranslateX(startBounds.getMinX() - rootBounds.getMinX());
+        flyer.setTranslateY(startBounds.getMinY() - rootBounds.getMinY());
+
+        rootPane.getChildren().add(flyer);
+
+        TranslateTransition drop = new TranslateTransition(Duration.millis(450), flyer);
+        drop.setToX(endBounds.getMinX() - rootBounds.getMinX());
+        drop.setToY(endBounds.getMinY() - rootBounds.getMinY());
+        drop.setInterpolator(Interpolator.EASE_IN);
+
+        final ImageView finalFlyer = flyer;
+
+        drop.setOnFinished(e -> {
+            rootPane.getChildren().remove(finalFlyer);
+            placeholder.setOpacity(1.0);
+
+            dropCardsSequentially(upperSlots, lowerBox, index + 1, onComplete);
+        });
+
+        drop.play();
+    }
+
+    private StackPane createCardSlotNode(int cardId) {
+        String imagePath = "/view/GUI/images/cards/card_" + cardId + ".png";
+        try {
+            var stream = getClass().getResourceAsStream(imagePath);
+            if (stream == null) return null;
+
+            ImageView cardView = new ImageView(new Image(stream));
+            cardView.setFitHeight(160);
+            cardView.setPreserveRatio(true);
+            cardView.setUserData("game_card");
+
+            DropShadow defaultShadow = new DropShadow();
+            defaultShadow.setRadius(8); defaultShadow.setOffsetY(3); defaultShadow.setColor(Color.rgb(0,0,0,0.8));
+            cardView.setEffect(defaultShadow);
+
+            applyHoverEffect(cardView, "Carta ID: " + cardId);
+
+            StackPane cardSlot = new StackPane(cardView);
+            cardSlot.setAlignment(Pos.CENTER);
+            cardSlot.setUserData("card_slot_" + cardId);
+
+            cardView.setOnMouseClicked(event -> handleCardClick(cardId, cardView));
+
+            return cardSlot;
+        } catch (Exception e) { return null; }
+    }
+
+    private void dealCardsSequentially(List<Integer> newCardIds, HBox targetBox, int index, Runnable onComplete) {
+        if (newCardIds == null || index >= newCardIds.size()) {
+            if (onComplete != null) onComplete.run();
+            return;
+        }
+
+        int cardId = newCardIds.get(index);
+
+        Node deckSlot = null;
+        for (Node node : centerTilesBox.getChildren()) {
+            if ("deck_slot".equals(node.getUserData())) {
+                deckSlot = node; break;
+            }
+        }
+
+        if (deckSlot == null) {
+            dealCardsSequentially(newCardIds, targetBox, index + 1, onComplete);
+            return;
+        }
+
+        StackPane placeholder = createCardSlotNode(cardId);
+        placeholder.setOpacity(0);
+        targetBox.getChildren().add(placeholder);
+
+        targetBox.applyCss();
+        targetBox.layout();
+
+        ImageView flyer = null;
+        try {
+            var stream = getClass().getResourceAsStream("/view/GUI/images/cards/card_" + cardId + ".png");
+            if (stream != null) {
+                flyer = new ImageView(new Image(stream));
+                flyer.setFitHeight(160); flyer.setPreserveRatio(true);
+                DropShadow shadow = new DropShadow();
+                shadow.setRadius(8); shadow.setOffsetY(3); shadow.setColor(Color.rgb(0,0,0,0.8));
+                flyer.setEffect(shadow);
+            }
+        } catch (Exception ignored) {}
+
+        if (flyer == null) {
+            dealCardsSequentially(newCardIds, targetBox, index + 1, onComplete); return;
+        }
+
+        flyer.setViewOrder(-20.0);
+        StackPane.setAlignment(flyer, Pos.TOP_LEFT);
+        flyer.setMouseTransparent(true);
+
+        var startBounds = deckSlot.localToScene(deckSlot.getBoundsInLocal());
+        var endBounds = placeholder.localToScene(placeholder.getBoundsInLocal());
+        var rootBounds = rootPane.localToScene(rootPane.getBoundsInLocal());
+
+        flyer.setTranslateX(startBounds.getMinX() - rootBounds.getMinX());
+        flyer.setTranslateY(startBounds.getMinY() - rootBounds.getMinY());
+
+        rootPane.getChildren().add(flyer);
+
+        TranslateTransition dealAnim = new TranslateTransition(Duration.millis(500), flyer);
+        dealAnim.setToX(endBounds.getMinX() - rootBounds.getMinX());
+        dealAnim.setToY(endBounds.getMinY() - rootBounds.getMinY());
+        dealAnim.setInterpolator(Interpolator.EASE_OUT);
+
+        final ImageView finalFlyer = flyer;
+        dealAnim.setOnFinished(e -> {
+            rootPane.getChildren().remove(finalFlyer);
+            placeholder.setOpacity(1.0);
+
+            dealCardsSequentially(newCardIds, targetBox, index + 1, onComplete);
+        });
+
+        dealAnim.play();
+    }
+
+    // ==========================================
+    // risoluzione e animazione eventi
+    // ==========================================
+
+    private void finishEventAnimationAndCheckQueue() {
+        isAnimatingEvent = false;
+
+        if (!eventAnimationQueue.isEmpty()) {
+            playNextEventAnimation();
+        } else {
+            while (!deferredActionsQueue.isEmpty()) {
+                deferredActionsQueue.poll().run();
+            }
+        }
+    }
+
+    private StackPane findCardSlotOnBoard(int cardId) {
+        String targetUserData = "card_slot_" + cardId;
+        HBox[] rows = {upperBuildingsBox, lowerBuildingsBox, upperTribeBox, lowerTribeBox};
+
+        for (HBox row : rows) {
+            for (Node slotNode : row.getChildren()) {
+                if (targetUserData.equals(slotNode.getUserData())) {
+                    return (StackPane) slotNode;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void playNextEventAnimation() {
+        if (isAnimatingEvent || eventAnimationQueue.isEmpty()) {
+            return;
+        }
+
+        isAnimatingEvent = true;
+        int cardId = eventAnimationQueue.poll();
+
+        StackPane eventSlot = findCardSlotOnBoard(cardId);
+
+        if (eventSlot == null) {
+            finishEventAnimationAndCheckQueue();
+            return;
+        }
+
+        eventSlot.setViewOrder(-100.0);
+
+        var startBounds = eventSlot.localToScene(eventSlot.getBoundsInLocal());
+        var rootBounds = rootPane.localToScene(rootPane.getBoundsInLocal());
+
+        double centerX = (rootBounds.getWidth() / 2) - (startBounds.getMinX() - rootBounds.getMinX() + startBounds.getWidth() / 2);
+        double centerY = (rootBounds.getHeight() / 2) - (startBounds.getMinY() - rootBounds.getMinY() + startBounds.getHeight() / 2);
+
+        TranslateTransition translateUp = new TranslateTransition(Duration.millis(700), eventSlot);
+        translateUp.setToX(centerX);
+        translateUp.setToY(centerY);
+
+        ScaleTransition scaleUp = new ScaleTransition(Duration.millis(700), eventSlot);
+        scaleUp.setToX(2.5);
+        scaleUp.setToY(2.5);
+
+        RotateTransition rotateUp = new RotateTransition(Duration.millis(700), eventSlot);
+        rotateUp.setByAngle(360);
+
+        ParallelTransition moveUp = new ParallelTransition(translateUp, scaleUp, rotateUp);
+        moveUp.setInterpolator(Interpolator.EASE_OUT);
+
+        PauseTransition readPause = new PauseTransition(Duration.millis(1500));
+
+        TranslateTransition translateDown = new TranslateTransition(Duration.millis(500), eventSlot);
+        translateDown.setToX(0);
+        translateDown.setToY(0);
+
+        ScaleTransition scaleDown = new ScaleTransition(Duration.millis(500), eventSlot);
+        scaleDown.setToX(1.0);
+        scaleDown.setToY(1.0);
+
+        RotateTransition rotateDown = new RotateTransition(Duration.millis(500), eventSlot);
+        rotateDown.setByAngle(-360);
+
+        ParallelTransition moveDown = new ParallelTransition(translateDown, scaleDown, rotateDown);
+        moveDown.setInterpolator(Interpolator.EASE_IN);
+
+        SequentialTransition fullSequence = new SequentialTransition(moveUp, readPause, moveDown);
+
+        fullSequence.setOnFinished(e -> {
+            eventSlot.setViewOrder(0.0);
+            finishEventAnimationAndCheckQueue();
+        });
+
+        fullSequence.play();
+    }
 }
