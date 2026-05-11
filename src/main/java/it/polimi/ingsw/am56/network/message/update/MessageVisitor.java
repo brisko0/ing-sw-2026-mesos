@@ -7,4 +7,6 @@ public interface MessageVisitor {
     default void visit(GameSnapshotMessage message) {}
     default void visit(TotemsStateMessage message) {}
     default void visit(CurrentPlayerUpdateMessage message) {}
+    default void visit(GameStateUpdateMessage message) {}
+    default void visit(PlayerStatsUpdateMessage message) {}
 }
