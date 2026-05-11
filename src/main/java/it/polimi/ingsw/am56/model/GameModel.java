@@ -172,7 +172,7 @@ public class GameModel {
         }
 
         board.fillUpperCharEv(gameSize, eraToCharEvdeck.get(currentEra));
-        board.fillUpperBuildings(gameSize, eraToBuildingsdeck.get(currentEra));
+        board.fillUpperBuildings(gameSize, eraToBuildingsdeck.get(currentEra), currentEra);
     }
 
     public void setCurrentPlayerOrder(){
@@ -302,7 +302,7 @@ public class GameModel {
         board.endRound(gameSize, eraToCharEvdeck.get(currentEra));
         if(currentEra < 3 && board.getUpperRowCharEv().size() < gameSize + 4){
             currentEra ++;
-            board.endEra(gameSize, eraToCharEvdeck.get(currentEra), eraToBuildingsdeck.get(currentEra));
+            board.endEra(gameSize, eraToCharEvdeck.get(currentEra), eraToBuildingsdeck.get(currentEra), currentEra);
             notifyObservers(GameEvent.ERA_CHANGED);
         }
         currentRound++;
