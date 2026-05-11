@@ -11,8 +11,13 @@ public class GameController {
 
     public void checkLobbyState() {
         synchronized (model) {
-            // Usiamo il nuovo metodo pubblico!
             model.syncLobbyState();
+        }
+    }
+
+    public void sendGameState() {
+        synchronized (model) {
+            model.syncGameState();
         }
     }
 
