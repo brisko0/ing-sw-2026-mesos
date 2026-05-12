@@ -76,6 +76,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     private boolean localCanPickUpper = false;
     private boolean localCanPickLower = false;
     private List<Integer> currentEventCardIds = new ArrayList<>();
+    private List<Integer> localAffordableBuildingIds = new ArrayList<>();
 
     public void setLocalPlayerNickname(String nickname) {
         this.localPlayerNickname = nickname;
@@ -337,17 +338,19 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             }
             else if (currentPhase.contains("CardPicking")) {
                 if (localCanPickUpper) {
-                    glowCardsInContainer(upperTribeBox);
+                    glowCardsInContainer(upperTribeBox, false);
+                    glowCardsInContainer(upperBuildingsBox, true);
                 }
 
                 if (localCanPickLower) {
-                    glowCardsInContainer(lowerTribeBox);
+                    glowCardsInContainer(lowerTribeBox, false);
+                    glowCardsInContainer(lowerBuildingsBox, true);
                 }
             }
         }
     }
 
-    private void glowCardsInContainer(HBox container) {
+    private void glowCardsInContainer(HBox container, boolean isBuildingContainer) {
         List<Node> children = new ArrayList<>(container.getChildren());
 
         for (Node slotNode : children) {
@@ -357,6 +360,10 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
                 int cardId = Integer.parseInt(slotData.split("_")[2]);
 
                 if (currentEventCardIds != null && currentEventCardIds.contains(cardId)) {
+                    continue;
+                }
+
+                if (isBuildingContainer && localAffordableBuildingIds != null && !localAffordableBuildingIds.contains(cardId)) {
                     continue;
                 }
 
@@ -586,6 +593,13 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
 
     private void updateOrAddPlayerDashboard(PlayerStatsDTO stats) {
         VBox dashboard = playerDashboards.get(stats.nickname());
+
+        if (stats.nickname().equals(localPlayerNickname)) {
+            this.localCanPickUpper = stats.canPickUpper();
+            this.localCanPickLower = stats.canPickLower();
+            this.localAffordableBuildingIds = stats.affordableBuildingIds();
+            applyGlowsBasedOnState();
+        }
 
         if (dashboard == null) {
             dashboard = new VBox(15);
