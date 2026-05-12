@@ -41,6 +41,8 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     @FXML private HBox lowerTribeBox;
     @FXML private HBox centerTilesBox;
 
+    @FXML private VBox quickStatsBox;
+
     @FXML private HBox playersStatsContainer;
 
     @FXML private VBox gameInfoBox;
@@ -113,7 +115,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     }
 
     // ==========================================
-    // effetti hover
+    // EFFETTI HOVER (ZOOM E TOOLTIP)
     // ==========================================
 
     private void applyHoverEffect(Node node, String description) {
@@ -144,7 +146,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     }
 
     // ==========================================
-    // ricezione messagig
+    // RICEZIONE MESSAGGI
     // ==========================================
 
     @Override
@@ -598,6 +600,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             this.localCanPickUpper = stats.canPickUpper();
             this.localCanPickLower = stats.canPickLower();
             this.localAffordableBuildingIds = stats.affordableBuildingIds();
+            updateQuickStatsPanel(stats);
             applyGlowsBasedOnState();
         }
 
@@ -729,6 +732,27 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         }
 
         row.getChildren().addAll(typeInfo, cardsList);
+    }
+
+    private void updateQuickStatsPanel(PlayerStatsDTO stats) {
+        if (quickStatsBox == null) return;
+
+        quickStatsBox.setVisible(true);
+
+        if (quickStatsBox.getChildren().size() > 1) {
+            quickStatsBox.getChildren().subList(1, quickStatsBox.getChildren().size()).clear();
+        }
+
+        quickStatsBox.getChildren().addAll(
+                createStatIcon("food", stats.food()),
+                createStatIcon("points", stats.points()),
+                createStatIcon("collector", stats.collectorCards().size()),
+                createStatIcon("hunter", stats.hunterCards().size()),
+                createStatIcon("builder", stats.builderCards().size()),
+                createStatIcon("shaman", stats.shamanCards().size()),
+                createStatIcon("artist", stats.artistCards().size()),
+                createStatIcon("inventor", stats.inventorCards().size())
+        );
     }
 
     private HBox createStatIcon(String iconName, int value) {

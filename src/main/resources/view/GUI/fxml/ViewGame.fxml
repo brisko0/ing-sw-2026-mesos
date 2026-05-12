@@ -70,6 +70,16 @@
                 </HBox>
             </VBox>
 
+            <VBox fx:id="quickStatsBox" visible="false" alignment="TOP_CENTER" spacing="10"
+                  StackPane.alignment="TOP_RIGHT" maxWidth="-Infinity" maxHeight="-Infinity"
+                  style="-fx-padding: 15; -fx-background-color: rgba(255, 255, 255, 0.85); -fx-background-radius: 10; -fx-border-color: #333333; -fx-border-radius: 10; -fx-border-width: 2; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 10, 0, 0, 5);">
+                <StackPane.margin>
+                    <Insets top="20" right="20"/>
+                </StackPane.margin>
+
+                <Label text="LE TUE RISORSE" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #333333;" wrapText="true" textAlignment="CENTER"/>
+            </VBox>
+
         </StackPane>
     </ScrollPane>
 
