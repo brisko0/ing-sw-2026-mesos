@@ -195,11 +195,27 @@ public class PlayerVirtualView implements GameObserver {
             canPickLower = p.getPickedLower() < ot.getLowerCards();
         }
 
+        List<Integer> affordableBuildings = new ArrayList<>();
+        int availableFood = stats.getFood();
+        int discount = stats.getBuildingSale();
+
+        model.getBoard().getUpperRowBuildings().forEach(b -> {
+            if (availableFood >= (b.getCost() - discount)) {
+                affordableBuildings.add(b.getCardId());
+            }
+        });
+
+        model.getBoard().getLowerRowBuildings().forEach(b -> {
+            if (availableFood >= (b.getCost() - discount)) {
+                affordableBuildings.add(b.getCardId());
+            }
+        });
+
         return new PlayerStatsDTO(
                 p.getNickname(), p.getTotemColor(), stats.getFood(), stats.getPoints(),
                 collectorIds, hunterIds, builderIds, shamanIds, artistIds, inventorIds,
                 stats.getFeedingSale(), stats.getBuildingSale(), stats.getShamanStars(), stats.getInventions().size(),
-                canPickUpper, canPickLower
+                canPickUpper, canPickLower, affordableBuildings
         );
     }
 }
