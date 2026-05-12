@@ -5,6 +5,7 @@ import it.polimi.ingsw.am56.model.GameObserver;
 import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.card.Card;
+import it.polimi.ingsw.am56.model.card.CardType;
 import it.polimi.ingsw.am56.model.GameEvent;
 import it.polimi.ingsw.am56.network.message.classesDTO.*;
 import it.polimi.ingsw.am56.network.message.update.*;
@@ -20,6 +21,8 @@ public class PlayerVirtualView implements GameObserver {
     private final ClientConnection networkConnection;
 
     private final Map<GameEvent, Runnable> eventHandlers = new EnumMap<>(GameEvent.class);
+
+    private int eventResolutionIndex = 0;
 
     public PlayerVirtualView(GameModel model, ClientConnection networkConnection) {
         this.model = model;
@@ -88,6 +91,7 @@ public class PlayerVirtualView implements GameObserver {
 
     private void handleTurnChanged() {
         Player current = model.getCurrentPlayer();
+        networkConnection.sendMessage(new PlayerStatsUpdateMessage(extractPlayerStats(current)));
         networkConnection.sendMessage(new CurrentPlayerUpdateMessage(
                 new CurrentPlayerDTO(current.getNickname(), current.getTotemColor())
         ));
@@ -115,6 +119,8 @@ public class PlayerVirtualView implements GameObserver {
                 model.getCurrentEra(), model.getCurrentRound());
 
         networkConnection.sendMessage(new EndRoundUpdateMessage(endSnap));
+
+        eventResolutionIndex = 0;
     }
 
     private void handleTotemReset() {
@@ -123,9 +129,16 @@ public class PlayerVirtualView implements GameObserver {
     }
 
     private void handleEventResolved() {
-        networkConnection.sendMessage(new EventResolvedMessage(
-                model.getBoard().getLowerRowCharEv().getFirst().getCardId()
-        ));
+        List<Card> lowerEvents = model.getBoard().getLowerRowCharEv().stream()
+                .filter(c -> c.getCardType() == CardType.EVENT)
+                .toList();
+
+        if (eventResolutionIndex < lowerEvents.size()) {
+            int cardId = lowerEvents.get(eventResolutionIndex).getCardId();
+            networkConnection.sendMessage(new EventResolvedMessage(cardId));
+
+            eventResolutionIndex++;
+        }
     }
 
     // =========================================================================
@@ -140,7 +153,15 @@ public class PlayerVirtualView implements GameObserver {
         List<String> offerLetters = model.getBoard().getOfferTiles().stream().map(OfferTile::getLetter).toList();
         int orderCount = model.getBoard().getOrderTiles().size();
 
-        return new BoardDTO(upperBuilds, lowerBuilds, upperTribe, lowerTribe, offerLetters, orderCount);
+        List<Integer> eventIds = new ArrayList<>();
+        model.getBoard().getUpperRowCharEv().forEach(c -> {
+            if (c.getCardType() == CardType.EVENT) eventIds.add(c.getCardId());
+        });
+        model.getBoard().getLowerRowCharEv().forEach(c -> {
+            if (c.getCardType() == CardType.EVENT) eventIds.add(c.getCardId());
+        });
+
+        return new BoardDTO(upperBuilds, lowerBuilds, upperTribe, lowerTribe, offerLetters, orderCount, eventIds);
     }
 
     private List<TotemPositionDTO> extractAllTotemPositions() {
@@ -176,10 +197,41 @@ public class PlayerVirtualView implements GameObserver {
             }
         }
 
+        boolean canPickUpper = false;
+        boolean canPickLower = false;
+        OfferTile ot = model.getPlayerToOfferTile().get(p);
+
+        if (ot != null) {
+            canPickUpper = p.getPickedUpper() < ot.getUpperCards();
+            canPickLower = p.getPickedLower() < ot.getLowerCards();
+        }
+
+        List<Integer> affordableBuildings = new ArrayList<>();
+        int availableFood = stats.getFood();
+        int discount = stats.getBuildingSale();
+
+        model.getBoard().getUpperRowBuildings().forEach(b -> {
+            if (availableFood >= (b.getCost() - discount)) {
+                affordableBuildings.add(b.getCardId());
+            }
+        });
+
+        model.getBoard().getLowerRowBuildings().forEach(b -> {
+            if (availableFood >= (b.getCost() - discount)) {
+                affordableBuildings.add(b.getCardId());
+            }
+        });
+
+        List<Integer> ownedBuildingCards = stats.getBuildingCards().stream()
+                .map(Card::getCardId)
+                .toList();
+
         return new PlayerStatsDTO(
                 p.getNickname(), p.getTotemColor(), stats.getFood(), stats.getPoints(),
                 collectorIds, hunterIds, builderIds, shamanIds, artistIds, inventorIds,
-                stats.getFeedingSale(), stats.getBuildingSale(), stats.getShamanStars(), stats.getInventions().size()
+                stats.getFeedingSale(), stats.getBuildingSale(), stats.getShamanStars(), stats.getInventions().size(),
+                canPickUpper, canPickLower,
+                affordableBuildings, ownedBuildingCards
         );
     }
 }
