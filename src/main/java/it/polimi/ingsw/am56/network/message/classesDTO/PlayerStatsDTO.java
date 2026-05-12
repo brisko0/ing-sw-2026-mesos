@@ -20,5 +20,7 @@ public record PlayerStatsDTO(
         int inventionCount,
 
         boolean canPickUpper,
-        boolean canPickLower
+        boolean canPickLower,
+
+        List<Integer> affordableBuildingIds
 ) implements Serializable {}
