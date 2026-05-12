@@ -22,8 +22,6 @@ public class PlayerVirtualView implements GameObserver {
 
     private final Map<GameEvent, Runnable> eventHandlers = new EnumMap<>(GameEvent.class);
 
-    private int eventResolutionIndex = 0;
-
     public PlayerVirtualView(GameModel model, ClientConnection networkConnection) {
         this.model = model;
         this.networkConnection = networkConnection;
@@ -119,8 +117,6 @@ public class PlayerVirtualView implements GameObserver {
                 model.getCurrentEra(), model.getCurrentRound());
 
         networkConnection.sendMessage(new EndRoundUpdateMessage(endSnap));
-
-        eventResolutionIndex = 0;
     }
 
     private void handleTotemReset() {
@@ -129,16 +125,9 @@ public class PlayerVirtualView implements GameObserver {
     }
 
     private void handleEventResolved() {
-        List<Card> lowerEvents = model.getBoard().getLowerRowCharEv().stream()
-                .filter(c -> c.getCardType() == CardType.EVENT)
-                .toList();
-
-        if (eventResolutionIndex < lowerEvents.size()) {
-            int cardId = lowerEvents.get(eventResolutionIndex).getCardId();
-            networkConnection.sendMessage(new EventResolvedMessage(cardId));
-
-            eventResolutionIndex++;
-        }
+        networkConnection.sendMessage(new EventResolvedMessage(
+                model.getBoard().getLowerRowCharEv().getFirst().getCardId()
+        ));
     }
 
     // =========================================================================
@@ -206,32 +195,11 @@ public class PlayerVirtualView implements GameObserver {
             canPickLower = p.getPickedLower() < ot.getLowerCards();
         }
 
-        List<Integer> affordableBuildings = new ArrayList<>();
-        int availableFood = stats.getFood();
-        int discount = stats.getBuildingSale();
-
-        model.getBoard().getUpperRowBuildings().forEach(b -> {
-            if (availableFood >= (b.getCost() - discount)) {
-                affordableBuildings.add(b.getCardId());
-            }
-        });
-
-        model.getBoard().getLowerRowBuildings().forEach(b -> {
-            if (availableFood >= (b.getCost() - discount)) {
-                affordableBuildings.add(b.getCardId());
-            }
-        });
-
-        List<Integer> ownedBuildingCards = stats.getBuildingCards().stream()
-                .map(Card::getCardId)
-                .toList();
-
         return new PlayerStatsDTO(
                 p.getNickname(), p.getTotemColor(), stats.getFood(), stats.getPoints(),
                 collectorIds, hunterIds, builderIds, shamanIds, artistIds, inventorIds,
                 stats.getFeedingSale(), stats.getBuildingSale(), stats.getShamanStars(), stats.getInventions().size(),
-                canPickUpper, canPickLower,
-                affordableBuildings, ownedBuildingCards
+                canPickUpper, canPickLower
         );
     }
 }
