@@ -22,6 +22,8 @@ public class PlayerVirtualView implements GameObserver {
 
     private final Map<GameEvent, Runnable> eventHandlers = new EnumMap<>(GameEvent.class);
 
+    private int eventResolutionIndex = 0;
+
     public PlayerVirtualView(GameModel model, ClientConnection networkConnection) {
         this.model = model;
         this.networkConnection = networkConnection;
@@ -117,6 +119,8 @@ public class PlayerVirtualView implements GameObserver {
                 model.getCurrentEra(), model.getCurrentRound());
 
         networkConnection.sendMessage(new EndRoundUpdateMessage(endSnap));
+
+        eventResolutionIndex = 0;
     }
 
     private void handleTotemReset() {
@@ -125,9 +129,16 @@ public class PlayerVirtualView implements GameObserver {
     }
 
     private void handleEventResolved() {
-        networkConnection.sendMessage(new EventResolvedMessage(
-                model.getBoard().getLowerRowCharEv().getFirst().getCardId()
-        ));
+        List<Card> lowerEvents = model.getBoard().getLowerRowCharEv().stream()
+                .filter(c -> c.getCardType() == CardType.EVENT)
+                .toList();
+
+        if (eventResolutionIndex < lowerEvents.size()) {
+            int cardId = lowerEvents.get(eventResolutionIndex).getCardId();
+            networkConnection.sendMessage(new EventResolvedMessage(cardId));
+
+            eventResolutionIndex++;
+        }
     }
 
     // =========================================================================
