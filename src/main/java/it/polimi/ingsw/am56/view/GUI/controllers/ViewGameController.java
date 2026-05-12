@@ -115,7 +115,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     }
 
     // ==========================================
-    // EFFETTI HOVER (ZOOM E TOOLTIP)
+    // effetti hover
     // ==========================================
 
     private void applyHoverEffect(Node node, String description) {
@@ -146,7 +146,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     }
 
     // ==========================================
-    // RICEZIONE MESSAGGI
+    // ricezione messaggi
     // ==========================================
 
     @Override
@@ -648,8 +648,8 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         HBox topStatsBox = (HBox) headerBox.getChildren().get(2);
         topStatsBox.getChildren().clear();
         topStatsBox.getChildren().addAll(
-                createStatIcon("food", stats.food()),
-                createStatIcon("points", stats.points())
+                createStatIcon("food", stats.food(), "Cibo posseduto"),
+                createStatIcon("points", stats.points(), "Punti Prestigio")
         );
 
         refreshCategoryRow((HBox) dashboard.getChildren().get(1), "collector", stats.collectorCards());
@@ -662,10 +662,10 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         HBox bottomStats = (HBox) dashboard.getChildren().get(7);
         bottomStats.getChildren().clear();
         bottomStats.getChildren().addAll(
-                createStatIcon("feedingSale", stats.feedingSale()),
-                createStatIcon("buildingSale", stats.buildingSale()),
-                createStatIcon("shamanStars", stats.shamanStars()),
-                createStatIcon("inventions", stats.inventionCount())
+                createStatIcon("feedingSale", stats.feedingSale(), "Sconto Cibo"),
+                createStatIcon("buildingSale", stats.buildingSale(), "Sconto Edifici"),
+                createStatIcon("shamanStars", stats.shamanStars(), "Stelle Sciamano"),
+                createStatIcon("inventions", stats.inventionCount(), "Invenzioni completate")
         );
 
         if (!pendingCardAnimations.isEmpty() && stats.nickname().equals(localPlayerNickname)) {
@@ -706,7 +706,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     private void refreshCategoryRow(HBox row, String type, List<Integer> cardIds) {
         row.getChildren().clear();
 
-        HBox typeInfo = createStatIcon(type, cardIds.size());
+        HBox typeInfo = createStatIcon(type, cardIds.size(), "Numero di " + type.toUpperCase());
         typeInfo.setMinWidth(60);
 
         HBox cardsList = new HBox(5);
@@ -743,19 +743,36 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             quickStatsBox.getChildren().subList(1, quickStatsBox.getChildren().size()).clear();
         }
 
-        quickStatsBox.getChildren().addAll(
-                createStatIcon("food", stats.food()),
-                createStatIcon("points", stats.points()),
-                createStatIcon("collector", stats.collectorCards().size()),
-                createStatIcon("hunter", stats.hunterCards().size()),
-                createStatIcon("builder", stats.builderCards().size()),
-                createStatIcon("shaman", stats.shamanCards().size()),
-                createStatIcon("artist", stats.artistCards().size()),
-                createStatIcon("inventor", stats.inventorCards().size())
+        VBox leftCol = new VBox(10);
+        leftCol.setAlignment(Pos.TOP_LEFT);
+        leftCol.getChildren().addAll(
+                createStatIcon("food", stats.food(), "Cibo posseduto"),
+                createStatIcon("points", stats.points(), "Punti Prestigio"),
+                createStatIcon("collector", stats.collectorCards().size(), "Numero di Raccoglitori"),
+                createStatIcon("hunter", stats.hunterCards().size(), "Numero di Cacciatori"),
+                createStatIcon("builder", stats.builderCards().size(), "Numero di Costruttori"),
+                createStatIcon("shaman", stats.shamanCards().size(), "Numero di Sciamani"),
+                createStatIcon("artist", stats.artistCards().size(), "Numero di Artisti"),
+                createStatIcon("inventor", stats.inventorCards().size(), "Numero di Inventori")
         );
+
+        VBox rightCol = new VBox(10);
+        rightCol.setAlignment(Pos.TOP_LEFT);
+        rightCol.getChildren().addAll(
+                createStatIcon("feedingSale", stats.feedingSale(), "Sconto Cibo per sfamare"),
+                createStatIcon("buildingSale", stats.buildingSale(), "Sconto Costruzione edifici"),
+                createStatIcon("shamanStars", stats.shamanStars(), "Stelle Sciamano accumulate"),
+                createStatIcon("inventions", stats.inventionCount(), "Invenzioni completate")
+        );
+
+        HBox columnsContainer = new HBox(20);
+        columnsContainer.setAlignment(Pos.TOP_CENTER);
+        columnsContainer.getChildren().addAll(leftCol, rightCol);
+
+        quickStatsBox.getChildren().add(columnsContainer);
     }
 
-    private HBox createStatIcon(String iconName, int value) {
+    private HBox createStatIcon(String iconName, int value, String tooltipText) {
         HBox container = new HBox(5);
         container.setAlignment(Pos.CENTER);
 
@@ -770,6 +787,11 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             Label valLabel = new Label(String.valueOf(value));
             valLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333333;");
             container.getChildren().addAll(icon, valLabel);
+
+            if (tooltipText != null && !tooltipText.isEmpty()) {
+                applyHoverEffect(container, tooltipText);
+            }
+
         } catch (Exception ignored) {}
 
         return container;
