@@ -10,5 +10,6 @@ public record BoardDTO(
         List<Integer> upperCharEvIds,
         List<Integer> lowerCharEvIds,
         List<String> offerTilesLetters,
-        int orderTileCount
+        int orderTileCount,
+        List<Integer> eventCardIds
 ) implements Serializable {}
