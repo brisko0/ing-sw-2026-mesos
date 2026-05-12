@@ -75,6 +75,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
 
     private boolean localCanPickUpper = false;
     private boolean localCanPickLower = false;
+    private List<Integer> currentEventCardIds = new ArrayList<>();
 
     public void setLocalPlayerNickname(String nickname) {
         this.localPlayerNickname = nickname;
@@ -150,6 +151,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         Platform.runLater(() -> {
             executeOrDefer(() -> {
                 GameSnapshotDTO snap = message.snapshot();
+                this.currentEventCardIds = snap.board().eventCardIds();
 
                 updateCardRow(upperBuildingsBox, snap.board().upperBuildingsIds());
                 updateCardRow(lowerBuildingsBox, snap.board().lowerBuildingsIds());
@@ -180,6 +182,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         Platform.runLater(() -> {
             executeOrDefer(() -> {
                 EndRoundSnapshotDTO snap = message.snapshot();
+                this.currentEventCardIds = snap.board().eventCardIds();
                 this.currentEraNum = snap.currentEra();
 
                 BoardDTO board = snap.board();
@@ -202,6 +205,8 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         Platform.runLater(() -> {
             executeOrDefer(() -> {
                 BoardDTO board = message.board();
+                this.currentEventCardIds = board.eventCardIds();
+
                 updateCardRow(upperBuildingsBox, board.upperBuildingsIds());
                 updateCardRow(lowerBuildingsBox, board.lowerBuildingsIds());
                 updateCardRow(upperTribeBox, board.upperCharEvIds());
@@ -349,8 +354,13 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             String slotData = slotNode.getUserData() != null ? slotNode.getUserData().toString() : "";
 
             if (slotData.startsWith("card_slot_")) {
-                StackPane slot = (StackPane) slotNode;
+                int cardId = Integer.parseInt(slotData.split("_")[2]);
 
+                if (currentEventCardIds != null && currentEventCardIds.contains(cardId)) {
+                    continue;
+                }
+
+                StackPane slot = (StackPane) slotNode;
                 if (!slot.getChildren().isEmpty()) {
                     Node cardNode = slot.getChildren().get(0);
                     if ("game_card".equals(cardNode.getUserData())) {
