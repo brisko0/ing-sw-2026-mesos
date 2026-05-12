@@ -17,5 +17,8 @@ public record PlayerStatsDTO(
         int feedingSale,
         int buildingSale,
         int shamanStars,
-        int inventionCount
+        int inventionCount,
+
+        boolean canPickUpper,
+        boolean canPickLower
 ) implements Serializable {}
