@@ -73,6 +73,9 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     private boolean isAnimatingEvent = false;
     private boolean isAnimatingBoard = false;
 
+    private boolean localCanPickUpper = false;
+    private boolean localCanPickLower = false;
+
     public void setLocalPlayerNickname(String nickname) {
         this.localPlayerNickname = nickname;
     }
@@ -328,10 +331,13 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
                 }
             }
             else if (currentPhase.contains("CardPicking")) {
-                glowCardsInContainer(upperBuildingsBox);
-                glowCardsInContainer(lowerBuildingsBox);
-                glowCardsInContainer(upperTribeBox);
-                glowCardsInContainer(lowerTribeBox);
+                if (localCanPickUpper) {
+                    glowCardsInContainer(upperTribeBox);
+                }
+
+                if (localCanPickLower) {
+                    glowCardsInContainer(lowerTribeBox);
+                }
             }
         }
     }
@@ -652,6 +658,13 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             for (Integer id : animatedCardsThisTurn) {
                 pendingCardAnimations.remove(id);
             }
+        }
+
+        if (stats.nickname().equals(localPlayerNickname)) {
+            this.localCanPickUpper = stats.canPickUpper();
+            this.localCanPickLower = stats.canPickLower();
+
+            applyGlowsBasedOnState();
         }
     }
 
