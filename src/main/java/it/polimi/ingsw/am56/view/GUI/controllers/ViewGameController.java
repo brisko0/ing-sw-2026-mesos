@@ -649,6 +649,8 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             dashboard.getChildren().add(createEmptyCategoryRow("artist", stats.nickname()));
             dashboard.getChildren().add(createEmptyCategoryRow("inventor", stats.nickname()));
 
+            dashboard.getChildren().add(createEmptyCategoryRow("buildings", stats.nickname()));
+
             HBox bottomStats = new HBox(20);
             bottomStats.setAlignment(Pos.CENTER);
             dashboard.getChildren().add(bottomStats);
@@ -676,7 +678,9 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         refreshCategoryRow((HBox) dashboard.getChildren().get(5), "artist", stats.artistCards());
         refreshCategoryRow((HBox) dashboard.getChildren().get(6), "inventor", stats.inventorCards());
 
-        HBox bottomStats = (HBox) dashboard.getChildren().get(7);
+        refreshCategoryRow((HBox) dashboard.getChildren().get(7), "buildings", stats.ownedBuildingCards());
+
+        HBox bottomStats = (HBox) dashboard.getChildren().get(8);
         bottomStats.getChildren().clear();
         bottomStats.getChildren().addAll(
                 createStatIcon("feedingSale", stats.feedingSale(), "Sconto sfamare tribù"),
@@ -754,7 +758,8 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     private void refreshCategoryRow(HBox row, String type, List<Integer> cardIds) {
         row.getChildren().clear();
 
-        HBox typeInfo = createStatIcon(type, cardIds.size(), "Carte di tipo " + type);
+        String tooltipText = type.equals("buildings") ? "Edifici costruiti" : "Carte di tipo " + type;
+        HBox typeInfo = createStatIcon(type, cardIds.size(), tooltipText);
         typeInfo.setMinWidth(60);
 
         HBox cardsList = new HBox(5);
@@ -813,6 +818,8 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         if (stats.shamanCards().contains(cardId)) return "shaman";
         if (stats.artistCards().contains(cardId)) return "artist";
         if (stats.inventorCards().contains(cardId)) return "inventor";
+
+        if (stats.ownedBuildingCards().contains(cardId)) return "buildings";
         return null;
     }
 

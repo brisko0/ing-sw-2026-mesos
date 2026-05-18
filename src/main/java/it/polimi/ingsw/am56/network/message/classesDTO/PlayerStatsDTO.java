@@ -8,12 +8,14 @@ public record PlayerStatsDTO(
         String color,
         int food,
         int points,
+        // Liste di ID invece di semplici interi per le carte tribù
         List<Integer> collectorCards,
         List<Integer> hunterCards,
         List<Integer> builderCards,
         List<Integer> shamanCards,
         List<Integer> artistCards,
         List<Integer> inventorCards,
+        // Statistiche riga inferiore
         int feedingSale,
         int buildingSale,
         int shamanStars,
@@ -22,5 +24,7 @@ public record PlayerStatsDTO(
         boolean canPickUpper,
         boolean canPickLower,
 
-        List<Integer> affordableBuildingIds
+        List<Integer> affordableBuildingIds,
+
+        List<Integer> ownedBuildingCards
 ) implements Serializable {}

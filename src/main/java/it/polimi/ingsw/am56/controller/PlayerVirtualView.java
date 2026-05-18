@@ -5,7 +5,7 @@ import it.polimi.ingsw.am56.model.GameObserver;
 import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.card.Card;
-import it.polimi.ingsw.am56.model.card.CardType;
+import it.polimi.ingsw.am56.model.card.CardType; // Import necessario per filtrare gli eventi
 import it.polimi.ingsw.am56.model.state.GameEvent;
 import it.polimi.ingsw.am56.network.message.classesDTO.*;
 import it.polimi.ingsw.am56.network.message.update.*;
@@ -20,8 +20,10 @@ public class PlayerVirtualView implements GameObserver {
     private final GameModel model;
     private final ClientConnection networkConnection;
 
+    // IL DISPATCHER: Associa ogni evento alla sua funzione di gestione
     private final Map<GameEvent, Runnable> eventHandlers = new EnumMap<>(GameEvent.class);
 
+    // Contatore per tracciare a che punto siamo nella risoluzione sequenziale degli eventi
     private int eventResolutionIndex = 0;
 
     public PlayerVirtualView(GameModel model, ClientConnection networkConnection) {
@@ -54,7 +56,7 @@ public class PlayerVirtualView implements GameObserver {
     }
 
     // =========================================================================
-    // handler
+    // METODI HANDLER (Un metodo per ogni evento, pulito e incapsulato)
     // =========================================================================
 
     private void handleLobbyStateSync() {
@@ -120,6 +122,7 @@ public class PlayerVirtualView implements GameObserver {
 
         networkConnection.sendMessage(new EndRoundUpdateMessage(endSnap));
 
+        // Resettiamo il contatore degli eventi pronti per il prossimo round
         eventResolutionIndex = 0;
     }
 
@@ -129,20 +132,23 @@ public class PlayerVirtualView implements GameObserver {
     }
 
     private void handleEventResolved() {
+        // Isola solo le carte evento presenti nella riga inferiore
         List<Card> lowerEvents = model.getBoard().getLowerRowCharEv().stream()
                 .filter(c -> c.getCardType() == CardType.EVENT)
                 .toList();
 
+        // Se l'indice è valido, prendiamo l'ID corretto in sequenza
         if (eventResolutionIndex < lowerEvents.size()) {
             int cardId = lowerEvents.get(eventResolutionIndex).getCardId();
             networkConnection.sendMessage(new EventResolvedMessage(cardId));
 
+            // Avanziamo l'indice per la prossima notify del loop nel GameModel
             eventResolutionIndex++;
         }
     }
 
     // =========================================================================
-    // metodi helper per estrarre dati
+    // HELPER METHODS (Logica riutilizzabile per estrarre dati)
     // =========================================================================
 
     private BoardDTO extractBoardDTO() {
@@ -222,11 +228,16 @@ public class PlayerVirtualView implements GameObserver {
             }
         });
 
+        List<Integer> ownedBuildingCards = stats.getBuildingCards().stream()
+                .map(Card::getCardId)
+                .toList();
+
         return new PlayerStatsDTO(
                 p.getNickname(), p.getTotemColor(), stats.getFood(), stats.getPoints(),
                 collectorIds, hunterIds, builderIds, shamanIds, artistIds, inventorIds,
                 stats.getFeedingSale(), stats.getBuildingSale(), stats.getShamanStars(), stats.getInventions().size(),
-                canPickUpper, canPickLower, affordableBuildings
+                canPickUpper, canPickLower,
+                affordableBuildings, ownedBuildingCards
         );
     }
 }
