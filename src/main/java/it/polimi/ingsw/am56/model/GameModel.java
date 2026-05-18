@@ -6,14 +6,15 @@ import it.polimi.ingsw.am56.model.board.OrderTile;
 import it.polimi.ingsw.am56.model.card.*;
 import it.polimi.ingsw.am56.model.card.buildingCard.BuildingCard;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
-import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import it.polimi.ingsw.am56.model.factory.board.BoardFactory;
 import it.polimi.ingsw.am56.model.factory.card.EventCardFactory;
 import it.polimi.ingsw.am56.model.factory.deck.BuildingDeckFactory;
 import it.polimi.ingsw.am56.model.factory.deck.CharacterDeckFactory;
+import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import it.polimi.ingsw.am56.model.state.GameEvent;
 import it.polimi.ingsw.am56.model.state.GameState;
 import it.polimi.ingsw.am56.model.state.PlayersFilling;
+import it.polimi.ingsw.am56.network.message.update.EventResolvedMessage;
 
 import java.util.*;
 
@@ -63,6 +64,7 @@ public class GameModel {
             observer.onModelChanged(event);
         }
     }
+
 
     public GameState getCurrentState() {
         return state;
@@ -119,6 +121,7 @@ public class GameModel {
     }
 
     public void syncLobbyState() {
+        // Qui dentro possiamo usare tranquillamente il metodo privato!
         notifyObservers(GameEvent.LOBBY_STATE_SYNC);
     }
 
@@ -140,7 +143,7 @@ public class GameModel {
         // commentato per avere la lista di player deterministica per testare
         // Collections.shuffle(players);
 
-        if(gameSize < 2 || gameSize > 5){
+        if(gameSize < 2 || gameSize > 5) {
             throw new InvalidActionException("Numero di giocatori non valido");
         }
 
@@ -151,7 +154,7 @@ public class GameModel {
         EventCardFactory eventCardFactory = new EventCardFactory();
 
         CharacterDeckFactory characterDeckFactory = new CharacterDeckFactory();
-        BuildingDeckFactory buildingDeckFactory = new BuildingDeckFactory();
+        BuildingDeckFactory buildingDeckfactory = new BuildingDeckFactory();
 
         Deck era1deck = characterDeckFactory.createDeck(1, gameSize);
 
@@ -160,20 +163,23 @@ public class GameModel {
         era1deck.getRemainingCards().addAll(eventCardFactory.createCards(1, gameSize));
         era1deck.shuffle();
 
-        getEraToCharEvdeck().put(1, era1deck);
+        eraToCharEvdeck.put(1, era1deck);
 
-        eraToBuildingsdeck.put(1, buildingDeckFactory.createDeck(1, gameSize));
+        eraToBuildingsdeck.put(1, buildingDeckfactory.createDeck(1, gameSize));
 
-        for (int era = 2; era <= 3; era++) {
+        for(int era = 2; era <= 3; era++) {
             Deck charEvDeck = characterDeckFactory.createDeck(era, gameSize);
             charEvDeck.getRemainingCards().addAll(eventCardFactory.createCards(era, gameSize));
             charEvDeck.shuffle();
             eraToCharEvdeck.put(era, charEvDeck);
-            eraToBuildingsdeck.put(era, buildingDeckFactory.createDeck(era, gameSize));
+            // carte building dovrebbero essere già mischiate per creazione deck?
+            eraToBuildingsdeck.put(era, buildingDeckfactory.createDeck(era, gameSize));
         }
 
         board.fillUpperCharEv(gameSize, eraToCharEvdeck.get(currentEra));
         board.fillUpperBuildings(gameSize, eraToBuildingsdeck.get(currentEra), currentEra);
+
+        syncLobbyState();
     }
 
     public void setCurrentPlayerOrder(){
@@ -193,6 +199,7 @@ public class GameModel {
                 .filter(p -> !playerToOrderTile.containsKey(p))
                 .toList();
 
+        // ordino i needToAct per lettera OfferTile e prendiamo il primo
         this.currentPlayer = needingToAct.stream()
                 .min(Comparator.comparing(p -> playerToOfferTile.get(p).getLetter()))
                 .orElse(null);
@@ -240,7 +247,7 @@ public class GameModel {
         state.pickUpCard(p, c);
     }
 
-    public void executeCardPick(Player p, Card c, boolean isUpper) {
+    public void executeCardPick(Player p, Card c, boolean isUpper) throws InvalidActionException {
 
         c.addCardToPlayer(p);
         if(isUpper) {
@@ -255,6 +262,7 @@ public class GameModel {
         c.resolveBuildingsEffects(this);
 
         notifyObservers(GameEvent.CARD_PICKED);
+
     }
 
     public void resetTotemToOrder(){
@@ -280,8 +288,7 @@ public class GameModel {
     private void applyOrderBonuses(){
         int foodEffect = playerToOrderTile.get(currentPlayer).getFoodEffect();
         int pointsEffect = playerToOrderTile.get(currentPlayer).getPointsEffect();
-
-        if(foodEffect >= 0){
+        if(foodEffect >= 0) {
             currentPlayer.getStats().addFood(foodEffect);
         }
         else {
@@ -307,6 +314,7 @@ public class GameModel {
             notifyObservers(GameEvent.ERA_CHANGED);
         }
         currentRound++;
+
         notifyObservers(GameEvent.ROUND_ENDED);
     }
 
@@ -321,8 +329,7 @@ public class GameModel {
     }
 
     public void endGameActions() {
-        for(Player p : players){
-
+        for(Player p : players) {
             p.getStats().addPoints(p.getStats().getBuilderPoints());
             p.getStats().addPoints(p.getStats().getCharacterTypeNum(CharacterType.INVENTOR) * p.getStats().getInventions().size());
             p.getStats().addPoints(10 * p.getStats().getCharacterTypeNum(CharacterType.ARTIST) / 2);
@@ -331,6 +338,16 @@ public class GameModel {
                 buildingCard.onGameEnding(this, p);
             }
         }
+
+        // salvataggio nel database
+
+        it.polimi.ingsw.am56.database.DatabaseManager dbManager = new it.polimi.ingsw.am56.database.DatabaseManager();
+        java.time.LocalDate today = java.time.LocalDate.now();
+
+        for(Player p : players) {
+            dbManager.savePlayerResult(p.getNickname(), p.getStats().getPoints(), getGameSize(), today);
+        }
+
         notifyObservers(GameEvent.GAME_ENDED);
     }
 }

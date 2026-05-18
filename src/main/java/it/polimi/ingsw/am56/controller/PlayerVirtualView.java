@@ -1,5 +1,6 @@
 package it.polimi.ingsw.am56.controller;
 
+import it.polimi.ingsw.am56.database.DatabaseManager;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.GameObserver;
 import it.polimi.ingsw.am56.model.Player;
@@ -173,13 +174,10 @@ public class PlayerVirtualView implements GameObserver {
             ));
         }
 
-        // 3. TODO: Interazione col Database per salvare matchRanking e recuperare globalLeaderboard
-        // Esempio:
-        // LeaderboardDAO db = DatabaseManager.getInstance().getLeaderboardDAO();
-        // db.saveMatchResults(model.getGameSize(), matchRanking);
-        // List<EndGameDTO> globalLeaderboard = db.getGlobalLeaderboard(model.getGameSize());
-
-        List<EndGameDTO> globalLeaderboard = new ArrayList<>();
+        // Il Model ha già salvato i dati della partita nel momento in cui ha generato l'evento GAME_ENDED.
+        // Possiamo scaricare la Global Leaderboard in totale sicurezza.
+        DatabaseManager db = new DatabaseManager();
+        List<EndGameDTO> globalLeaderboard = db.getGlobalLeaderboard(model.getGameSize());
 
         networkConnection.sendMessage(new GameEndedMessage(matchRanking, globalLeaderboard, model.getGameSize()));
     }
