@@ -1,58 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Priority?>
-<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.image.Image?>
 
-<StackPane prefHeight="720.0" prefWidth="1280.0" stylesheets="@../css/viewGame_style.css" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.polimi.ingsw.am56.view.GUI.controllers.EndGameController">
+<StackPane fx:id="rootPane" prefHeight="720.0" prefWidth="1280.0" stylesheets="@../css/endGame_style.css" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.polimi.ingsw.am56.view.GUI.controllers.EndGameController">
 
-    <VBox alignment="CENTER" spacing="0" style="-fx-background-color: rgba(0, 0, 0, 0.85);">
+    <ImageView fitWidth="${rootPane.width}" fitHeight="${rootPane.height}" preserveRatio="false">
+        <Image url="@../images/background_empty2.png" />
+    </ImageView>
 
-        <Label text="PARTITA TERMINATA" style="-fx-font-size: 45px; -fx-font-weight: bold; -fx-text-fill: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 5);">
-            <VBox.margin>
-                <Insets bottom="40"/>
-            </VBox.margin>
-        </Label>
+    <GridPane alignment="CENTER">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="12"/>
+            <ColumnConstraints percentWidth="33"/>
+            <ColumnConstraints percentWidth="10"/>
+            <ColumnConstraints percentWidth="33"/>
+            <ColumnConstraints percentWidth="12"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints percentHeight="10"/>
+            <RowConstraints percentHeight="80"/>
+            <RowConstraints percentHeight="10"/>
+        </rowConstraints>
 
-        <HBox alignment="CENTER" spacing="60">
+        <VBox styleClass="match-panel" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <ScrollPane fitToWidth="true" styleClass="transparent-scroll" VBox.vgrow="ALWAYS">
+                <VBox fx:id="matchRankingContainer" spacing="10" />
+            </ScrollPane>
+        </VBox>
 
-            <VBox alignment="TOP_CENTER" prefWidth="450" prefHeight="500" style="-fx-background-color: rgba(255, 255, 255, 0.95); -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 15, 0, 0, 5);">
+        <VBox styleClass="global-panel" GridPane.columnIndex="3" GridPane.rowIndex="1">
+            <ScrollPane fitToWidth="true" styleClass="transparent-scroll" VBox.vgrow="ALWAYS">
+                <VBox fx:id="globalLeaderboardContainer" spacing="10" />
+            </ScrollPane>
+        </VBox>
 
-                <ImageView fx:id="matchHeaderImage" fitWidth="450" preserveRatio="true">
-                    <Image url="@../images/endGame/gameLeaderboard.png" />
-                </ImageView>
-
-                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
-                    <VBox fx:id="matchRankingContainer" spacing="12">
-                        <padding>
-                            <Insets top="20" right="20" bottom="20" left="20"/>
-                        </padding>
-                    </VBox>
-                </ScrollPane>
-            </VBox>
-
-            <VBox alignment="TOP_CENTER" prefWidth="450" prefHeight="500" style="-fx-background-color: rgba(255, 255, 255, 0.95); -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 15, 0, 0, 5);">
-
-                <ImageView fx:id="globalHeaderImage" fitWidth="450" preserveRatio="true">
-                    <Image url="@../images/endGame/leaderboard.png" />
-                </ImageView>
-
-                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
-                    <VBox fx:id="globalLeaderboardContainer" spacing="12">
-                        <padding>
-                            <Insets top="20" right="20" bottom="20" left="20"/>
-                        </padding>
-                    </VBox>
-                </ScrollPane>
-            </VBox>
-
-        </HBox>
-    </VBox>
+    </GridPane>
 </StackPane>

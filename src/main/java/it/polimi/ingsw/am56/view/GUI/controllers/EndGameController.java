@@ -4,7 +4,6 @@ import it.polimi.ingsw.am56.network.message.classesDTO.EndGameDTO;
 import it.polimi.ingsw.am56.network.message.update.GameEndedMessage;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -35,7 +34,7 @@ public class EndGameController {
 
         if (ranking == null || ranking.isEmpty()) {
             Label emptyLabel = new Label("Nessun dato disponibile.");
-            emptyLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #7f8c8d;");
+            emptyLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #3d1f14; -fx-font-weight: bold;");
             container.getChildren().add(emptyLabel);
             return;
         }
@@ -49,37 +48,41 @@ public class EndGameController {
     private HBox createRankingRow(EndGameDTO entry, boolean isGlobal) {
         HBox row = new HBox(15);
         row.setAlignment(Pos.CENTER_LEFT);
-        row.setPadding(new Insets(12, 15, 12, 15));
 
-        String defaultStyle = "-fx-background-color: #f8f9fa; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #e0e0e0; -fx-border-width: 1;";
+        // Assegnazione delle classi CSS
+        if (entry.nickname().equals(localPlayerNickname)) {
+            row.getStyleClass().add("ranking-row-local");
+        } else {
+            row.getStyleClass().add("ranking-row");
+        }
 
-        String localPlayerStyle = "-fx-background-color: #fff9e6; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #f1c40f; -fx-border-width: 2;";
-
-        row.setStyle(entry.nickname().equals(localPlayerNickname) ? localPlayerStyle : defaultStyle);
-
+        // Posizione
         Label rankLbl = new Label("#" + entry.rank());
-        rankLbl.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
-        rankLbl.setMinWidth(45);
+        rankLbl.getStyleClass().add("rank-label");
+        rankLbl.setMinWidth(40);
 
+        // Nome
         String displayName = entry.nickname();
         if (entry.isWinner() && !isGlobal) {
             displayName += " 👑";
         }
         Label nameLbl = new Label(displayName.toUpperCase());
-        nameLbl.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #34495e;");
+        nameLbl.getStyleClass().add("name-label");
 
+        // Spaziatore centrale
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        VBox rightStats = new VBox(2);
+        // Dati a destra
+        VBox rightStats = new VBox(-2); // -2 per avvicinare i due testi
         rightStats.setAlignment(Pos.CENTER_RIGHT);
 
         Label scoreLbl = new Label(entry.score() + " PT");
-        scoreLbl.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #27ae60;");
+        scoreLbl.getStyleClass().add("score-label");
 
         String subInfoText = isGlobal ? entry.date() : "Cibo: " + entry.food();
         Label subLbl = new Label(subInfoText);
-        subLbl.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #95a5a6;");
+        subLbl.getStyleClass().add("sub-label");
 
         rightStats.getChildren().addAll(scoreLbl, subLbl);
 
