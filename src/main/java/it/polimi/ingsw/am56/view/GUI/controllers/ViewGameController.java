@@ -128,7 +128,6 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
 
             tooltipTextLabel.setText(description);
 
-            // Forza il ricalcolo delle dimensioni del tooltip per posizionarlo correttamente
             customTooltip.applyCss();
             customTooltip.layout();
 
@@ -150,11 +149,10 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
 
     private void positionTooltip(double mouseX, double mouseY) {
         double tooltipWidth = customTooltip.getWidth();
-        if (tooltipWidth == 0) tooltipWidth = 150; // Fallback se non ancora calcolato
+        if (tooltipWidth == 0) tooltipWidth = 150;
 
         double xOffset = 15;
 
-        // Se il tooltip esce dallo schermo a destra, lo ribaltiamo a sinistra del cursore
         if (rootPane != null && (mouseX + xOffset + tooltipWidth > rootPane.getWidth())) {
             xOffset = -tooltipWidth - 15;
         }
@@ -203,11 +201,15 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         Platform.runLater(() -> {
             executeOrDefer(() -> {
                 EndRoundSnapshotDTO snap = message.snapshot();
+
+                // Rileviamo se c'è stato un cambio d'era per le animazioni dei building
+                boolean isEraChange = snap.currentEra() > this.currentEraNum;
+
                 this.currentEraNum = snap.currentEra();
                 this.currentEventCardIds = snap.board().eventCardIds();
 
                 BoardDTO board = snap.board();
-                animateEndRoundBoardShift(board);
+                animateEndRoundBoardShift(board, isEraChange);
 
                 for (PlayerStatsDTO stats : snap.playersStats()) {
                     updateOrAddPlayerDashboard(stats);
@@ -989,10 +991,10 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     }
 
     // ==========================================
-    // LOGICA ANIMAZIONE FINE ROUND
+    // LOGICA ANIMAZIONE FINE ROUND E CAMBIO ERA
     // ==========================================
 
-    private void animateEndRoundBoardShift(BoardDTO newBoard) {
+    private void animateEndRoundBoardShift(BoardDTO newBoard, boolean isEraChange) {
         isAnimatingBoard = true;
         clearAllGlows();
 
@@ -1004,34 +1006,79 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             fadeOutLower.getChildren().add(ft);
         }
 
+        // Se è fine era, sfumiamo anche i building inferiori
+        if (isEraChange) {
+            for (Node slot : lowerBuildingsBox.getChildren()) {
+                FadeTransition ft = new FadeTransition(Duration.millis(400), slot);
+                ft.setToValue(0);
+                fadeOutLower.getChildren().add(ft);
+            }
+        }
+
         if (fadeOutLower.getChildren().isEmpty()) {
-            executeDrops(newBoard);
+            executeDrops(newBoard, isEraChange);
         } else {
-            fadeOutLower.setOnFinished(e -> executeDrops(newBoard));
+            fadeOutLower.setOnFinished(e -> executeDrops(newBoard, isEraChange));
             fadeOutLower.play();
         }
     }
 
-    private void executeDrops(BoardDTO newBoard) {
+    private void executeDrops(BoardDTO newBoard, boolean isEraChange) {
         lowerTribeBox.getChildren().clear();
         lowerTribeBox.setVisible(true); lowerTribeBox.setManaged(true);
 
+        if (isEraChange) {
+            lowerBuildingsBox.getChildren().clear();
+            lowerBuildingsBox.setVisible(true); lowerBuildingsBox.setManaged(true);
+        }
+
         List<Node> upperTribeNodes = new ArrayList<>(upperTribeBox.getChildren());
 
+        // STEP 1: Scendono le carte tribù
         dropCardsSequentially(upperTribeNodes, lowerTribeBox, 0, () -> {
 
-            updateCardRow(lowerBuildingsBox, newBoard.lowerBuildingsIds());
-            updateCardRow(lowerTribeBox, newBoard.lowerCharEvIds());
-            updateCenterTiles(newBoard.orderTileCount(), newBoard.offerTilesLetters());
+            // Definiamo il blocco che farà scendere le nuove carte dal mazzo
+            Runnable step3 = () -> {
+                upperTribeBox.getChildren().clear();
+                upperTribeBox.setVisible(true); upperTribeBox.setManaged(true);
 
-            upperTribeBox.getChildren().clear();
-            upperTribeBox.setVisible(true); upperTribeBox.setManaged(true);
+                if (isEraChange) {
+                    upperBuildingsBox.getChildren().clear();
+                    upperBuildingsBox.setVisible(true); upperBuildingsBox.setManaged(true);
+                }
 
-            dealCardsSequentially(newBoard.upperCharEvIds(), upperTribeBox, 0, () -> {
-                updateCardRow(upperBuildingsBox, newBoard.upperBuildingsIds());
-                isAnimatingBoard = false;
-                applyGlowsBasedOnState();
-            });
+                // STEP 3: Pescaggio nuove carte tribù
+                dealCardsSequentially(newBoard.upperCharEvIds(), upperTribeBox, 0, () -> {
+
+                    // Definiamo l'ultimo step
+                    Runnable finishStep = () -> {
+                        // Per sicurezza (ed eventuali acquisti avvenuti) aggiorniamo tutto con i dati freschi del DTO
+                        updateCardRow(upperBuildingsBox, newBoard.upperBuildingsIds());
+                        updateCardRow(lowerBuildingsBox, newBoard.lowerBuildingsIds());
+                        updateCardRow(upperTribeBox, newBoard.upperCharEvIds());
+                        updateCardRow(lowerTribeBox, newBoard.lowerCharEvIds());
+                        updateCenterTiles(newBoard.orderTileCount(), newBoard.offerTilesLetters());
+
+                        isAnimatingBoard = false;
+                        applyGlowsBasedOnState();
+                    };
+
+                    // STEP 4: Se cambio era, pescaggio nuovi building. Altrimenti finish.
+                    if (isEraChange) {
+                        dealCardsSequentially(newBoard.upperBuildingsIds(), upperBuildingsBox, 0, finishStep);
+                    } else {
+                        finishStep.run();
+                    }
+                });
+            };
+
+            // STEP 2: Se cambio era, scendono gli edifici. Altrimenti passiamo allo step 3.
+            if (isEraChange) {
+                List<Node> upperBuildingNodes = new ArrayList<>(upperBuildingsBox.getChildren());
+                dropCardsSequentially(upperBuildingNodes, lowerBuildingsBox, 0, step3);
+            } else {
+                step3.run();
+            }
         });
     }
 
