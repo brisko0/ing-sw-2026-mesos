@@ -41,14 +41,14 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     @FXML private HBox lowerTribeBox;
     @FXML private HBox centerTilesBox;
 
-    @FXML private VBox quickStatsBox;
-
     @FXML private HBox playersStatsContainer;
 
     @FXML private VBox gameInfoBox;
     @FXML private Label currentEraLabel;
     @FXML private Label currentRoundLabel;
     @FXML private Label currentPlayerLabel;
+
+    @FXML private VBox quickStatsBox;
 
     @FXML private VBox customTooltip;
     @FXML private Label tooltipTextLabel;
@@ -60,25 +60,27 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     private final Map<String, StackPane> offerTileSlots = new HashMap<>();
 
     private List<TotemPositionDTO> currentTotems = new ArrayList<>();
+    private List<Integer> currentEventCardIds = new ArrayList<>();
 
     private CurrentPlayerDTO currentPlayerInfo = null;
     private String currentPhase = null;
     private int currentEraNum = 1;
 
+    private boolean localCanPickUpper = false;
+    private boolean localCanPickLower = false;
+    private List<Integer> localAffordableBuildingIds = new ArrayList<>();
+
     private final List<Timeline> activeGlowTimelines = new ArrayList<>();
     private final List<Node> glowingNodes = new ArrayList<>();
 
+    // --- VARIABILI PER L'ANIMAZIONE CARTE E EVENTI ---
     private final Map<Integer, javafx.geometry.Bounds> pendingCardAnimations = new HashMap<>();
     private final Queue<Integer> eventAnimationQueue = new LinkedList<>();
     private final Queue<Runnable> deferredActionsQueue = new LinkedList<>();
 
+    // --- SEMAFORI PER LE ANIMAZIONI ---
     private boolean isAnimatingEvent = false;
     private boolean isAnimatingBoard = false;
-
-    private boolean localCanPickUpper = false;
-    private boolean localCanPickLower = false;
-    private List<Integer> currentEventCardIds = new ArrayList<>();
-    private List<Integer> localAffordableBuildingIds = new ArrayList<>();
 
     public void setLocalPlayerNickname(String nickname) {
         this.localPlayerNickname = nickname;
@@ -103,7 +105,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     }
 
     // ==========================================
-    // azioni differite
+    // SISTEMA DI AZIONI DIFFERITE
     // ==========================================
 
     private void executeOrDefer(Runnable action) {
@@ -115,7 +117,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     }
 
     // ==========================================
-    // effetti hover
+    // EFFETTI HOVER (ZOOM E TOOLTIP SMART)
     // ==========================================
 
     private void applyHoverEffect(Node node, String description) {
@@ -125,16 +127,17 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             scaleIn.setToX(1.15); scaleIn.setToY(1.15); scaleIn.play();
 
             tooltipTextLabel.setText(description);
-            customTooltip.setTranslateX(e.getSceneX() + 15);
-            customTooltip.setTranslateY(e.getSceneY() + 15);
+
+            // Forza il ricalcolo delle dimensioni del tooltip per posizionarlo correttamente
+            customTooltip.applyCss();
+            customTooltip.layout();
+
+            positionTooltip(e.getSceneX(), e.getSceneY());
 
             tooltipFade.stop(); tooltipFade.setToValue(1.0); tooltipFade.play();
         });
 
-        node.setOnMouseMoved(e -> {
-            customTooltip.setTranslateX(e.getSceneX() + 15);
-            customTooltip.setTranslateY(e.getSceneY() + 15);
-        });
+        node.setOnMouseMoved(e -> positionTooltip(e.getSceneX(), e.getSceneY()));
 
         node.setOnMouseExited(e -> {
             node.setViewOrder(0);
@@ -145,8 +148,23 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         });
     }
 
+    private void positionTooltip(double mouseX, double mouseY) {
+        double tooltipWidth = customTooltip.getWidth();
+        if (tooltipWidth == 0) tooltipWidth = 150; // Fallback se non ancora calcolato
+
+        double xOffset = 15;
+
+        // Se il tooltip esce dallo schermo a destra, lo ribaltiamo a sinistra del cursore
+        if (rootPane != null && (mouseX + xOffset + tooltipWidth > rootPane.getWidth())) {
+            xOffset = -tooltipWidth - 15;
+        }
+
+        customTooltip.setTranslateX(mouseX + xOffset);
+        customTooltip.setTranslateY(mouseY + 15);
+    }
+
     // ==========================================
-    // ricezione messaggi
+    // RICEZIONE MESSAGGI
     // ==========================================
 
     @Override
@@ -185,8 +203,8 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         Platform.runLater(() -> {
             executeOrDefer(() -> {
                 EndRoundSnapshotDTO snap = message.snapshot();
-                this.currentEventCardIds = snap.board().eventCardIds();
                 this.currentEraNum = snap.currentEra();
+                this.currentEventCardIds = snap.board().eventCardIds();
 
                 BoardDTO board = snap.board();
                 animateEndRoundBoardShift(board);
@@ -223,9 +241,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     @Override
     public void visit(PlayerStatsUpdateMessage message) {
         Platform.runLater(() -> {
-            executeOrDefer(() -> {
-                updateOrAddPlayerDashboard(message.stats());
-            });
+            executeOrDefer(() -> updateOrAddPlayerDashboard(message.stats()));
         });
     }
 
@@ -292,7 +308,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     }
 
     // ==========================================
-    // UI current player e glow
+    // LOGICA DI UI CURRENT PLAYER E GLOW
     // ==========================================
 
     private void updateCurrentPlayerUI() {
@@ -327,7 +343,6 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         clearAllGlows();
 
         if (isAnimatingBoard) return;
-
         if (currentPlayerInfo == null || localPlayerNickname == null || currentPhase == null) return;
 
         if (localPlayerNickname.equals(currentPlayerInfo.nickname())) {
@@ -343,7 +358,6 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
                     glowCardsInContainer(upperTribeBox, false);
                     glowCardsInContainer(upperBuildingsBox, true);
                 }
-
                 if (localCanPickLower) {
                     glowCardsInContainer(lowerTribeBox, false);
                     glowCardsInContainer(lowerBuildingsBox, true);
@@ -420,7 +434,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     }
 
     // ==========================================
-    // board
+    // GESTIONE BOARD CENTRALE
     // ==========================================
 
     private void updateCenterTiles(int orderTileCount, List<String> offerLetters) {
@@ -590,19 +604,20 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     }
 
     // ==========================================
-    // dashboard giocatori e animazione
+    // LOGICA DASHBOARD GIOCATORI E PANNELLI
     // ==========================================
 
     private void updateOrAddPlayerDashboard(PlayerStatsDTO stats) {
-        VBox dashboard = playerDashboards.get(stats.nickname());
-
         if (stats.nickname().equals(localPlayerNickname)) {
             this.localCanPickUpper = stats.canPickUpper();
             this.localCanPickLower = stats.canPickLower();
             this.localAffordableBuildingIds = stats.affordableBuildingIds();
+
             updateQuickStatsPanel(stats);
             applyGlowsBasedOnState();
         }
+
+        VBox dashboard = playerDashboards.get(stats.nickname());
 
         if (dashboard == null) {
             dashboard = new VBox(15);
@@ -662,10 +677,10 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         HBox bottomStats = (HBox) dashboard.getChildren().get(7);
         bottomStats.getChildren().clear();
         bottomStats.getChildren().addAll(
-                createStatIcon("feedingSale", stats.feedingSale(), "Sconto Cibo"),
-                createStatIcon("buildingSale", stats.buildingSale(), "Sconto Edifici"),
-                createStatIcon("shamanStars", stats.shamanStars(), "Stelle Sciamano"),
-                createStatIcon("inventions", stats.inventionCount(), "Invenzioni completate")
+                createStatIcon("feedingSale", stats.feedingSale(), "Sconto sfamare tribù"),
+                createStatIcon("buildingSale", stats.buildingSale(), "Sconto edifici"),
+                createStatIcon("shamanStars", stats.shamanStars(), "Stelle sciamano"),
+                createStatIcon("inventions", stats.inventionCount(), "Invenzioni")
         );
 
         if (!pendingCardAnimations.isEmpty() && stats.nickname().equals(localPlayerNickname)) {
@@ -686,13 +701,44 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
                 pendingCardAnimations.remove(id);
             }
         }
+    }
 
-        if (stats.nickname().equals(localPlayerNickname)) {
-            this.localCanPickUpper = stats.canPickUpper();
-            this.localCanPickLower = stats.canPickLower();
+    private void updateQuickStatsPanel(PlayerStatsDTO stats) {
+        if (quickStatsBox == null) return;
 
-            applyGlowsBasedOnState();
+        quickStatsBox.setVisible(true);
+
+        if (quickStatsBox.getChildren().size() > 1) {
+            quickStatsBox.getChildren().subList(1, quickStatsBox.getChildren().size()).clear();
         }
+
+        VBox leftCol = new VBox(10);
+        leftCol.setAlignment(Pos.TOP_LEFT);
+        leftCol.getChildren().addAll(
+                createStatIcon("food", stats.food(), "Cibo posseduto"),
+                createStatIcon("points", stats.points(), "Punti Prestigio"),
+                createStatIcon("collector", stats.collectorCards().size(), "Numero Raccoglitori"),
+                createStatIcon("hunter", stats.hunterCards().size(), "Numero Cacciatori"),
+                createStatIcon("builder", stats.builderCards().size(), "Numero Costruttori"),
+                createStatIcon("shaman", stats.shamanCards().size(), "Numero Sciamani"),
+                createStatIcon("artist", stats.artistCards().size(), "Numero Artisti"),
+                createStatIcon("inventor", stats.inventorCards().size(), "Numero Inventori")
+        );
+
+        VBox rightCol = new VBox(10);
+        rightCol.setAlignment(Pos.TOP_LEFT);
+        rightCol.getChildren().addAll(
+                createStatIcon("feedingSale", stats.feedingSale(), "Sconto sfamare tribù"),
+                createStatIcon("buildingSale", stats.buildingSale(), "Sconto Costruzione Edifici"),
+                createStatIcon("shamanStars", stats.shamanStars(), "Stelle Sciamano accumulate"),
+                createStatIcon("inventions", stats.inventionCount(), "Invenzioni completate")
+        );
+
+        HBox columnsContainer = new HBox(20);
+        columnsContainer.setAlignment(Pos.TOP_CENTER);
+        columnsContainer.getChildren().addAll(leftCol, rightCol);
+
+        quickStatsBox.getChildren().add(columnsContainer);
     }
 
     private HBox createEmptyCategoryRow(String type, String playerNick) {
@@ -706,7 +752,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     private void refreshCategoryRow(HBox row, String type, List<Integer> cardIds) {
         row.getChildren().clear();
 
-        HBox typeInfo = createStatIcon(type, cardIds.size(), "Numero di " + type.toUpperCase());
+        HBox typeInfo = createStatIcon(type, cardIds.size(), "Carte di tipo " + type);
         typeInfo.setMinWidth(60);
 
         HBox cardsList = new HBox(5);
@@ -734,47 +780,9 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         row.getChildren().addAll(typeInfo, cardsList);
     }
 
-    private void updateQuickStatsPanel(PlayerStatsDTO stats) {
-        if (quickStatsBox == null) return;
-
-        quickStatsBox.setVisible(true);
-
-        if (quickStatsBox.getChildren().size() > 1) {
-            quickStatsBox.getChildren().subList(1, quickStatsBox.getChildren().size()).clear();
-        }
-
-        VBox leftCol = new VBox(10);
-        leftCol.setAlignment(Pos.TOP_LEFT);
-        leftCol.getChildren().addAll(
-                createStatIcon("food", stats.food(), "Cibo posseduto"),
-                createStatIcon("points", stats.points(), "Punti Prestigio"),
-                createStatIcon("collector", stats.collectorCards().size(), "Numero di Raccoglitori"),
-                createStatIcon("hunter", stats.hunterCards().size(), "Numero di Cacciatori"),
-                createStatIcon("builder", stats.builderCards().size(), "Numero di Costruttori"),
-                createStatIcon("shaman", stats.shamanCards().size(), "Numero di Sciamani"),
-                createStatIcon("artist", stats.artistCards().size(), "Numero di Artisti"),
-                createStatIcon("inventor", stats.inventorCards().size(), "Numero di Inventori")
-        );
-
-        VBox rightCol = new VBox(10);
-        rightCol.setAlignment(Pos.TOP_LEFT);
-        rightCol.getChildren().addAll(
-                createStatIcon("feedingSale", stats.feedingSale(), "Sconto Cibo per sfamare"),
-                createStatIcon("buildingSale", stats.buildingSale(), "Sconto Costruzione edifici"),
-                createStatIcon("shamanStars", stats.shamanStars(), "Stelle Sciamano accumulate"),
-                createStatIcon("inventions", stats.inventionCount(), "Invenzioni completate")
-        );
-
-        HBox columnsContainer = new HBox(20);
-        columnsContainer.setAlignment(Pos.TOP_CENTER);
-        columnsContainer.getChildren().addAll(leftCol, rightCol);
-
-        quickStatsBox.getChildren().add(columnsContainer);
-    }
-
     private HBox createStatIcon(String iconName, int value, String tooltipText) {
         HBox container = new HBox(5);
-        container.setAlignment(Pos.CENTER);
+        container.setAlignment(Pos.CENTER_LEFT);
 
         String path = "/view/GUI/images/stats/" + iconName + ".png";
         try {
@@ -791,7 +799,6 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             if (tooltipText != null && !tooltipText.isEmpty()) {
                 applyHoverEffect(container, tooltipText);
             }
-
         } catch (Exception ignored) {}
 
         return container;
@@ -871,8 +878,9 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
 
         parallelTransition.play();
     }
+
     // ==========================================
-    // gestione totem e animazione
+    // ANIMAZIONE E GESTIONE TOTEM
     // ==========================================
 
     private void animateTotemMove(TotemPositionDTO from, TotemPositionDTO to, List<TotemPositionDTO> finalState) {
@@ -975,15 +983,13 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             totemView.setFitHeight(60); totemView.setPreserveRatio(true);
             totemView.setUserData("totem");
             totemView.setStyle("-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 5, 0, 0, 2);");
-
             totemView.setViewOrder(-5.0);
-
             return totemView;
         } catch (Exception e) { return null; }
     }
 
     // ==========================================
-    // animazione fine round
+    // LOGICA ANIMAZIONE FINE ROUND
     // ==========================================
 
     private void animateEndRoundBoardShift(BoardDTO newBoard) {
@@ -1022,9 +1028,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             upperTribeBox.setVisible(true); upperTribeBox.setManaged(true);
 
             dealCardsSequentially(newBoard.upperCharEvIds(), upperTribeBox, 0, () -> {
-
                 updateCardRow(upperBuildingsBox, newBoard.upperBuildingsIds());
-
                 isAnimatingBoard = false;
                 applyGlowsBasedOnState();
             });
@@ -1097,7 +1101,6 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         drop.setOnFinished(e -> {
             rootPane.getChildren().remove(finalFlyer);
             placeholder.setOpacity(1.0);
-
             dropCardsSequentially(upperSlots, lowerBox, index + 1, onComplete);
         });
 
@@ -1196,7 +1199,6 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         dealAnim.setOnFinished(e -> {
             rootPane.getChildren().remove(finalFlyer);
             placeholder.setOpacity(1.0);
-
             dealCardsSequentially(newCardIds, targetBox, index + 1, onComplete);
         });
 
@@ -1204,7 +1206,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     }
 
     // ==========================================
-    // risoluzione e animazione eventi
+    // LOGICA ANIMAZIONE RISOLUZIONE EVENTI
     // ==========================================
 
     private void finishEventAnimationAndCheckQueue() {
