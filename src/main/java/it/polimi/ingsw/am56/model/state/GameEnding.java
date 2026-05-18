@@ -2,7 +2,11 @@ package it.polimi.ingsw.am56.model.state;
 
 import it.polimi.ingsw.am56.model.GameModel;
 
-public class GameEnding extends GameState{
+import java.io.Serial;
+
+public class GameEnding extends GameState {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     public GameEnding(GameModel model) {
         super(model);
@@ -10,6 +14,10 @@ public class GameEnding extends GameState{
 
     @Override
     public void onEntry() {
+        endGameActions();
+    }
+
+    public void endGameActions() {
         model.endGameActions();
     }
 

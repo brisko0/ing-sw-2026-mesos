@@ -5,7 +5,11 @@ import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
+import java.io.Serial;
+
 public class TotemPlacement extends GameState{
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     public TotemPlacement(GameModel model) {
         super(model);
@@ -13,19 +17,15 @@ public class TotemPlacement extends GameState{
 
     @Override
     public void handleTotemPlacement(Player p, OfferTile t) throws InvalidActionException {
-        // il giocatore che ha cliccato è quello di turno, cioè currentPlayer?
+
         if (!p.equals(model.getCurrentPlayer())) {
             throw new InvalidActionException("Non è il tuo turno! Deve muovere il player " + model.getCurrentPlayer().getNickname());
         }
 
-        // la tessera è libera?
         if (!t.isFree()) {
-            throw new InvalidActionException("Questa tessera è già stata scelta. Scegline un'altra per il tuo totem!");
+            throw new InvalidActionException("Questa tessera è già stata scelta. Scegline un'altra per il tuo totem");
         }
 
-        // controlli finiti
-
-        // chiama metodo stupido
         model.executeTotemPlacement(p, t);
 
         if(!model.getPlayerToOrderTile().isEmpty()) {

@@ -6,7 +6,11 @@ import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
+import java.io.Serial;
+
 public class CardPicking extends GameState {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     public CardPicking(GameModel model) {
         super(model);
@@ -37,7 +41,7 @@ public class CardPicking extends GameState {
     public void pickUpCard(Player p, Card c) throws InvalidActionException {
 
         if (!p.equals(model.getCurrentPlayer())) {
-            throw new InvalidActionException("Non è il tuo turno! Deve muovere il player " + model.getCurrentPlayer().getNickname());
+            throw new InvalidActionException("Non è il tuo turno! Deve scegliere una carta il player " + model.getCurrentPlayer().getNickname());
         }
 
         boolean isUpper = model.getBoard().getUpperRowCharEv().contains(c) || model.getBoard().getUpperRowBuildings().contains(c);

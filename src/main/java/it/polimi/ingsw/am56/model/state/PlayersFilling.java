@@ -4,9 +4,12 @@ import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
+import java.io.Serial;
 import java.util.List;
 
 public class PlayersFilling extends GameState{
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     public PlayersFilling(GameModel model) {
         super(model);
@@ -14,7 +17,6 @@ public class PlayersFilling extends GameState{
 
     @Override
     public void addPlayer(Player p) throws InvalidActionException {
-
         for (Player existing : model.getPlayers()) {
             if (existing.getNickname().equalsIgnoreCase(p.getNickname())) {
                 throw new InvalidActionException("Nickname già in uso!");
@@ -23,11 +25,11 @@ public class PlayersFilling extends GameState{
 
         for (Player existing : model.getPlayers()) {
             if (existing.getTotemColor().equalsIgnoreCase(p.getTotemColor())) {
-                throw new InvalidActionException("Colore del totem già in uso!");
+                throw new InvalidActionException("Colore del totem non disponibile!");
             }
         }
 
-        if(model.getPlayers().size() == model.getGameSize()) {
+        if (model.getPlayers().size() == model.getGameSize()) {
             throw new InvalidActionException("Impossibile unirsi, partita già al completo!");
         }
 
