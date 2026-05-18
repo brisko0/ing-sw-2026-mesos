@@ -1,4 +1,4 @@
-package it.polimi.ingsw.am56;
+package it.polimi.ingsw.am56.TUIClients;
 
 import it.polimi.ingsw.am56.network.NetworkConnectionFactory;
 import it.polimi.ingsw.am56.view.TUI.TUIContext;
