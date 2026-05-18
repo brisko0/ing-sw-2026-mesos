@@ -17,37 +17,29 @@ import java.util.List;
 public class EndGameController {
 
     @FXML private StackPane rootPane;
-    @FXML private HBox scalableContainer; // Il contenitore che ingrandiremo/rim rimpiccioliremo
+    @FXML private HBox scalableContainer;
     @FXML private VBox matchRankingContainer;
     @FXML private VBox globalLeaderboardContainer;
 
+    @FXML private Label matchGameSizeLabel;
+    @FXML private Label globalGameSizeLabel;
+
     private String localPlayerNickname;
 
-    /**
-     * Metodo chiamato automaticamente da JavaFX quando l'FXML viene caricato
-     */
     @FXML
     public void initialize() {
-        // Applichiamo un listener: se la finestra cambia dimensione, ricalcola lo zoom
         rootPane.widthProperty().addListener((obs, oldVal, newVal) -> scaleUI());
         rootPane.heightProperty().addListener((obs, oldVal, newVal) -> scaleUI());
     }
 
-    /**
-     * Calcola il moltiplicatore per mantenere la UI perfettamente proporzionata
-     */
     private void scaleUI() {
         if (rootPane.getWidth() == 0 || rootPane.getHeight() == 0) return;
 
-        // Risoluzione base di riferimento (la grandezza ideale del nostro HBox)
         double baseWidth = 1280.0;
         double baseHeight = 720.0;
 
-        // Troviamo il fattore di scala prendendo il minore tra larghezza e altezza,
-        // così siamo certi che l'interfaccia non uscirà mai fuori dallo schermo.
         double scaleFactor = Math.min(rootPane.getWidth() / baseWidth, rootPane.getHeight() / baseHeight);
 
-        // Applichiamo lo zoom (sia per schermi più piccoli che massimizzati)
         scalableContainer.setScaleX(scaleFactor);
         scalableContainer.setScaleY(scaleFactor);
     }
@@ -56,8 +48,11 @@ public class EndGameController {
         this.localPlayerNickname = localNickname;
 
         Platform.runLater(() -> {
-            // Un colpo a vuoto per forzare la prima scalatura prima che venga visualizzata la scena
             scaleUI();
+
+            String sizeText = "Game Size: " + message.gameSize();
+            matchGameSizeLabel.setText(sizeText);
+            globalGameSizeLabel.setText(sizeText);
 
             populateRanking(matchRankingContainer, message.matchRanking(), false);
             populateRanking(globalLeaderboardContainer, message.globalLeaderboard(), true);
