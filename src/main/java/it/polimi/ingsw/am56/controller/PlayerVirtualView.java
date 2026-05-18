@@ -5,12 +5,13 @@ import it.polimi.ingsw.am56.model.GameObserver;
 import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.card.Card;
-import it.polimi.ingsw.am56.model.card.CardType; // Import necessario per filtrare gli eventi
+import it.polimi.ingsw.am56.model.card.CardType;
 import it.polimi.ingsw.am56.model.state.GameEvent;
 import it.polimi.ingsw.am56.network.message.classesDTO.*;
 import it.polimi.ingsw.am56.network.message.update.*;
 import it.polimi.ingsw.am56.network.ClientConnection;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -43,6 +44,7 @@ public class PlayerVirtualView implements GameObserver {
         eventHandlers.put(GameEvent.ROUND_ENDED,      this::handleRoundEnded);
         eventHandlers.put(GameEvent.TOTEM_RESET,      this::handleTotemReset);
         eventHandlers.put(GameEvent.EVENT_RESOLVED,   this::handleEventResolved);
+        eventHandlers.put(GameEvent.GAME_ENDED,       this::handleGameEnded);
     }
 
     @Override
@@ -56,7 +58,7 @@ public class PlayerVirtualView implements GameObserver {
     }
 
     // =========================================================================
-    // METODI HANDLER (Un metodo per ogni evento, pulito e incapsulato)
+    // METODI HANDLER
     // =========================================================================
 
     private void handleLobbyStateSync() {
@@ -122,7 +124,6 @@ public class PlayerVirtualView implements GameObserver {
 
         networkConnection.sendMessage(new EndRoundUpdateMessage(endSnap));
 
-        // Resettiamo il contatore degli eventi pronti per il prossimo round
         eventResolutionIndex = 0;
     }
 
@@ -132,23 +133,59 @@ public class PlayerVirtualView implements GameObserver {
     }
 
     private void handleEventResolved() {
-        // Isola solo le carte evento presenti nella riga inferiore
         List<Card> lowerEvents = model.getBoard().getLowerRowCharEv().stream()
                 .filter(c -> c.getCardType() == CardType.EVENT)
                 .toList();
 
-        // Se l'indice è valido, prendiamo l'ID corretto in sequenza
         if (eventResolutionIndex < lowerEvents.size()) {
             int cardId = lowerEvents.get(eventResolutionIndex).getCardId();
             networkConnection.sendMessage(new EventResolvedMessage(cardId));
-
-            // Avanziamo l'indice per la prossima notify del loop nel GameModel
             eventResolutionIndex++;
         }
     }
 
+    private void handleGameEnded() {
+        List<Player> sortedPlayers = new ArrayList<>(model.getPlayers());
+        sortedPlayers.sort((p1, p2) -> {
+            int scoreCompare = Integer.compare(p2.getStats().getPoints(), p1.getStats().getPoints());
+            if (scoreCompare == 0) {
+                return Integer.compare(p2.getStats().getFood(), p1.getStats().getFood());
+            }
+            return scoreCompare;
+        });
+
+        List<EndGameDTO> matchRanking = new ArrayList<>();
+        int rank = 1;
+        int highestScore = sortedPlayers.isEmpty() ? 0 : sortedPlayers.get(0).getStats().getPoints();
+        int highestFood = sortedPlayers.isEmpty() ? 0 : sortedPlayers.get(0).getStats().getFood();
+        String todayDate = LocalDate.now().toString();
+
+        for (Player p : sortedPlayers) {
+            boolean isWinner = (p.getStats().getPoints() == highestScore && p.getStats().getFood() == highestFood);
+
+            matchRanking.add(new EndGameDTO(
+                    rank++,
+                    p.getNickname(),
+                    p.getStats().getPoints(),
+                    p.getStats().getFood(),
+                    isWinner,
+                    todayDate
+            ));
+        }
+
+        // 3. TODO: Interazione col Database per salvare matchRanking e recuperare globalLeaderboard
+        // Esempio:
+        // LeaderboardDAO db = DatabaseManager.getInstance().getLeaderboardDAO();
+        // db.saveMatchResults(model.getGameSize(), matchRanking);
+        // List<EndGameDTO> globalLeaderboard = db.getGlobalLeaderboard(model.getGameSize());
+
+        List<EndGameDTO> globalLeaderboard = new ArrayList<>();
+
+        networkConnection.sendMessage(new GameEndedMessage(matchRanking, globalLeaderboard, model.getGameSize()));
+    }
+
     // =========================================================================
-    // HELPER METHODS (Logica riutilizzabile per estrarre dati)
+    // HELPER METHODS
     // =========================================================================
 
     private BoardDTO extractBoardDTO() {
