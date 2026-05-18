@@ -7,8 +7,9 @@
     -fx-background-size: 100% 100%;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
-    /* Nuovi margini calcolati per la dimensione 560x680 */
-    -fx-padding: 140 88 88 88;
+    /* ORDINE: TOP - RIGHT - BOTTOM - LEFT */
+    /* Valori aumentati drasticamente per restare DENTRO i bordi */
+    -fx-padding: 190 120 100 120;
 }
 
 .global-panel {
@@ -16,71 +17,81 @@
     -fx-background-size: 100% 100%;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
-    -fx-padding: 140 88 88 88;
+    /* ORDINE: TOP - RIGHT - BOTTOM - LEFT */
+    -fx-padding: 190 120 100 120;
 }
 
 /* ==================================================== */
-/* RIGHE GIOCATORI                                      */
+/* RIGHE GIOCATORI (Stile Registro Pulito)              */
 /* ==================================================== */
 .ranking-row {
-    -fx-background-color: rgba(255, 255, 255, 0.4); /* Sfondo molto leggero per far intravedere il blocco dietro */
-    -fx-background-radius: 12;
-    -fx-border-color: rgba(61, 31, 20, 0.5); /* Marroncino Mesos */
-    -fx-border-width: 2;
-    -fx-border-radius: 12;
-    -fx-padding: 10 15 10 15;
+    -fx-background-color: transparent; /* Nessuno sfondo colorato */
+    -fx-border-color: rgba(61, 31, 20, 0.15); /* Linea divisoria sottilissima sotto */
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 15 5 15 5; /* Rimosso l'eccesso di padding laterale */
 }
 
-/* Riga speciale per il giocatore locale (Dorata e più visibile) */
+/* Riga speciale per il giocatore locale (Niente sfondo, spicca il testo) */
 .ranking-row-local {
-    -fx-background-color: rgba(255, 246, 214, 0.7);
-    -fx-background-radius: 12;
-    -fx-border-color: #f39c12;
-    -fx-border-width: 3;
-    -fx-border-radius: 12;
-    -fx-padding: 10 15 10 15;
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(179, 57, 0, 0.3); /* Linea inferiore intonata al testo */
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 15 5 15 5;
 }
 
 /* ==================================================== */
-/* TESTI DENTRO LE RIGHE                                */
+/* TESTI DENTRO LE RIGHE (Dimensioni Coerenti)          */
 /* ==================================================== */
-.rank-label {
+
+.rank-label, .name-label, .score-label {
     -fx-font-family: "Segoe UI", sans-serif;
-    -fx-font-size: 22px;
-    -fx-font-weight: 900;
-    -fx-text-fill: #3d1f14;
+    -fx-font-size: 18px; /* Dimensione identica per tutto */
+    -fx-font-weight: normal; /* Rimosso l'effetto super-bold cartonato */
+    -fx-text-fill: #3d1f14; /* Colore "inchiostro" scuro */
 }
 
-.name-label {
-    -fx-font-family: "Segoe UI", sans-serif;
-    -fx-font-size: 18px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #3d1f14;
-}
-
+/* Diamo solo un filo di importanza in più al punteggio per leggibilità */
 .score-label {
-    -fx-font-family: "Segoe UI", sans-serif;
-    -fx-font-size: 22px;
-    -fx-font-weight: 900;
-    -fx-text-fill: #27ae60;
+    -fx-font-weight: bold;
 }
 
 .sub-label {
     -fx-font-family: "Segoe UI", sans-serif;
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-text-fill: rgba(61, 31, 20, 0.8);
+    -fx-font-size: 14px;
+    -fx-text-fill: rgba(61, 31, 20, 0.6);
 }
 
 /* ==================================================== */
-/* SCROLLPANE TRASPARENTE                               */
+/* HIGHLIGHT GIOCATORE LOCALE                           */
 /* ==================================================== */
+/* Sfruttiamo il CSS per colorare le label dentro la riga speciale,
+   senza bisogno di modificare il codice Java! */
+
+.ranking-row-local .rank-label,
+.ranking-row-local .name-label,
+.ranking-row-local .score-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #b33900; /* Un rosso/ruggine elegante che risalta sulla pergamena */
+}
+
+.ranking-row-local .sub-label {
+    -fx-text-fill: rgba(179, 57, 0, 0.7);
+}
+
+/* ==================================================== */
+/* SCROLLPANE TOTALMENTE TRASPARENTE                    */
+/* ==================================================== */
+/* Forza la rimozione di tutti gli sfondi grigi/bianchi
+   tipici dei componenti JavaFX di default */
+
 .transparent-scroll {
+    -fx-background: transparent;
     -fx-background-color: transparent;
-    -fx-background-insets: 0;
+    -fx-control-inner-background: transparent;
     -fx-padding: 0;
 }
 
-.transparent-scroll > .viewport {
+.transparent-scroll .viewport,
+.transparent-scroll .content {
     -fx-background-color: transparent;
 }
