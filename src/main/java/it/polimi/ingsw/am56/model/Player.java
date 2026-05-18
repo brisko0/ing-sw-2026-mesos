@@ -1,6 +1,12 @@
 package it.polimi.ingsw.am56.model;
 
-public class Player {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class Player implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final String nickname;
     private final String totemColor;
     private int pickedUpper;

@@ -4,9 +4,14 @@ import it.polimi.ingsw.am56.model.card.buildingCard.BuildingCard;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterCard;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.*;
 
-public class PlayerStats {
+public class PlayerStats implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private int food;
     private int points;
     private int shamanStars;
