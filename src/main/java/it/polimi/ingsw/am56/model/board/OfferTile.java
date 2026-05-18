@@ -1,7 +1,12 @@
 package it.polimi.ingsw.am56.model.board;
 
-public class OfferTile {
-    // string a causa di JSON
+import java.io.Serial;
+import java.io.Serializable;
+
+public class OfferTile implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final String letter;
     private final int food;
     private final int upperCards;

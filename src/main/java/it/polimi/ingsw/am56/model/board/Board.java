@@ -5,12 +5,17 @@ import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.card.Deck;
 import it.polimi.ingsw.am56.model.card.buildingCard.BuildingCard;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class Board {
+public class Board implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private List<OrderTile> orderTiles;
     private List<OfferTile> offerTiles;
     private List<BuildingCard> upperRowBuildings;

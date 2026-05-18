@@ -1,6 +1,12 @@
 package it.polimi.ingsw.am56.model.board;
 
-public class OrderTile {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class OrderTile implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final int orderTileId;
     private final int foodEffect;
     private final int pointsEffect;
