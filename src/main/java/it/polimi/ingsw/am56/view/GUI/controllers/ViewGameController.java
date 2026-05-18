@@ -318,21 +318,24 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     @Override
     public void visit(GameEndedMessage message) {
         Platform.runLater(() -> {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GUI/fxml/EndGame.fxml"));
-                Parent endGameRoot = loader.load();
+            executeOrDefer(() -> {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GUI/fxml/EndGame.fxml"));
+                    Parent endGameRoot = loader.load();
 
-                EndGameController controller = loader.getController();
-                controller.initData(message, localPlayerNickname);
+                    EndGameController controller = loader.getController();
+                    controller.initData(message, localPlayerNickname);
 
-                Stage stage = (Stage) rootPane.getScene().getWindow();
-                Scene endGameScene = new Scene(endGameRoot);
-                stage.setScene(endGameScene);
-                stage.centerOnScreen();
+                    Stage stage = (Stage) rootPane.getScene().getWindow();
+                    Scene endGameScene = new Scene(endGameRoot);
+                    stage.setScene(endGameScene);
+                    stage.centerOnScreen();
 
-            } catch (IOException e) {
-                System.err.println("[GUI ERROR] Impossibile caricare la schermata EndGame: " + e.getMessage());
-            }
+                } catch (Exception e) {
+                    System.err.println("[GUI ERROR] Impossibile caricare la schermata EndGame: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
         });
     }
 
