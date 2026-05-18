@@ -1,10 +1,15 @@
 package it.polimi.ingsw.am56.model.card;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Deck {
+public class Deck implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final int deckId;
     private final int era;
     private List<Card> cards;

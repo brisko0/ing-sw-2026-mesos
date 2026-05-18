@@ -2,8 +2,16 @@ package it.polimi.ingsw.am56.model.card;
 
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.Player;
+import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
-public abstract class Card {
+import java.io.Serial;
+import java.io.Serializable;
+
+public abstract class Card implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+
     private final int cardId;
     private final int era;
     private final int minPlayers;
@@ -16,11 +24,11 @@ public abstract class Card {
 
     public abstract void resolveEffect(GameModel gameModel);
 
-    public void addCardToPlayer(Player player){}
-
-    public int getCardId() {
-        return cardId;
+    public void addCardToPlayer(Player player) throws InvalidActionException {
+        throw new InvalidActionException("Non è possibile pescare una carta evento!");
     }
+
+    public abstract CardType getCardType();
 
     public int getEra() {
         return era;
@@ -32,9 +40,11 @@ public abstract class Card {
 
     public void resolveBuildingsEffects(GameModel gameModel) {}
 
-    public abstract CardType getCardType();
-
     public int getCost() {
         return 0;
+    }
+
+    public int getCardId() {
+        return cardId;
     }
 }
