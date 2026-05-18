@@ -13,15 +13,15 @@
         <Image url="@../images/background_empty2.png" />
     </ImageView>
 
-    <HBox alignment="CENTER" spacing="80">
+    <HBox fx:id="scalableContainer" alignment="CENTER" spacing="50" maxWidth="1280" maxHeight="720">
 
-        <VBox styleClass="match-panel" maxWidth="480" prefWidth="480" maxHeight="650" prefHeight="650">
+        <VBox styleClass="match-panel" prefWidth="560" prefHeight="680">
             <ScrollPane fitToWidth="true" styleClass="transparent-scroll" VBox.vgrow="ALWAYS">
                 <VBox fx:id="matchRankingContainer" spacing="10" />
             </ScrollPane>
         </VBox>
 
-        <VBox styleClass="global-panel" maxWidth="480" prefWidth="480" maxHeight="650" prefHeight="650">
+        <VBox styleClass="global-panel" prefWidth="560" prefHeight="680">
             <ScrollPane fitToWidth="true" styleClass="transparent-scroll" VBox.vgrow="ALWAYS">
                 <VBox fx:id="globalLeaderboardContainer" spacing="10" />
             </ScrollPane>

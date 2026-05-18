@@ -7,10 +7,8 @@
     -fx-background-size: 100% 100%;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
-    /* TOP: 130px (per spingere sotto il titolo disegnato)
-       RIGHT, BOTTOM, LEFT: 75px (per rispettare lo spessore della cornice grafica di ~62px + margine)
-    */
-    -fx-padding: 130 75 75 75;
+    /* Nuovi margini calcolati per la dimensione 560x680 */
+    -fx-padding: 140 88 88 88;
 }
 
 .global-panel {
@@ -18,7 +16,7 @@
     -fx-background-size: 100% 100%;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
-    -fx-padding: 130 75 75 75;
+    -fx-padding: 140 88 88 88;
 }
 
 /* ==================================================== */
