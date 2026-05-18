@@ -11,6 +11,7 @@ import it.polimi.ingsw.am56.model.factory.board.BoardFactory;
 import it.polimi.ingsw.am56.model.factory.card.EventCardFactory;
 import it.polimi.ingsw.am56.model.factory.deck.BuildingDeckFactory;
 import it.polimi.ingsw.am56.model.factory.deck.CharacterDeckFactory;
+import it.polimi.ingsw.am56.model.state.GameEvent;
 import it.polimi.ingsw.am56.model.state.GameState;
 import it.polimi.ingsw.am56.model.state.PlayersFilling;
 

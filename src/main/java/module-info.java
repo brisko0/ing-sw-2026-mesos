@@ -42,4 +42,6 @@ module it.polimi.ingsw.am56 {
     opens it.polimi.ingsw.am56.core to javafx.fxml;
     exports it.polimi.ingsw.am56.view.GUI.controllers to javafx.graphics;
     opens it.polimi.ingsw.am56.view.GUI.controllers to javafx.fxml;
+    exports it.polimi.ingsw.am56.model.state;
+    opens it.polimi.ingsw.am56.model.state to javafx.fxml;
 }

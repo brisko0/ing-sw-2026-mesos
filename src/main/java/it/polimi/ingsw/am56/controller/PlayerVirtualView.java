@@ -6,7 +6,7 @@ import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.card.CardType;
-import it.polimi.ingsw.am56.model.GameEvent;
+import it.polimi.ingsw.am56.model.state.GameEvent;
 import it.polimi.ingsw.am56.network.message.classesDTO.*;
 import it.polimi.ingsw.am56.network.message.update.*;
 import it.polimi.ingsw.am56.network.ClientConnection;

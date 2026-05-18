@@ -10,6 +10,7 @@ import it.polimi.ingsw.am56.model.card.characterCard.InventorCharCard;
 import it.polimi.ingsw.am56.model.card.eventCard.ShamansEvCard;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import it.polimi.ingsw.am56.model.state.CardPicking;
+import it.polimi.ingsw.am56.model.state.GameEvent;
 import it.polimi.ingsw.am56.model.state.State;
 import it.polimi.ingsw.am56.model.state.TotemPlacement;
 import org.junit.jupiter.api.BeforeEach;

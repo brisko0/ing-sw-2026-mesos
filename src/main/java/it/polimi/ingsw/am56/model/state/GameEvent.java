@@ -1,4 +1,4 @@
-package it.polimi.ingsw.am56.model;
+package it.polimi.ingsw.am56.model.state;
 
 public enum GameEvent {
     LOBBY_STATE_SYNC,
