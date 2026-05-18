@@ -7,8 +7,10 @@
     -fx-background-size: 100% 100%;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
-    /* TOP RIGHT BOTTOM LEFT: Il Top padding (130) spinge i testi sotto l'intestazione dell'immagine */
-    -fx-padding: 130 30 40 30;
+    /* TOP: 130px (per spingere sotto il titolo disegnato)
+       RIGHT, BOTTOM, LEFT: 75px (per rispettare lo spessore della cornice grafica di ~62px + margine)
+    */
+    -fx-padding: 130 75 75 75;
 }
 
 .global-panel {
@@ -16,7 +18,7 @@
     -fx-background-size: 100% 100%;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
-    -fx-padding: 130 30 40 30;
+    -fx-padding: 130 75 75 75;
 }
 
 /* ==================================================== */

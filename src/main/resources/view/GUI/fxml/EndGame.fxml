@@ -3,9 +3,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -15,31 +13,19 @@
         <Image url="@../images/background_empty2.png" />
     </ImageView>
 
-    <GridPane alignment="CENTER">
-        <columnConstraints>
-            <ColumnConstraints percentWidth="12"/>
-            <ColumnConstraints percentWidth="33"/>
-            <ColumnConstraints percentWidth="10"/>
-            <ColumnConstraints percentWidth="33"/>
-            <ColumnConstraints percentWidth="12"/>
-        </columnConstraints>
-        <rowConstraints>
-            <RowConstraints percentHeight="10"/>
-            <RowConstraints percentHeight="80"/>
-            <RowConstraints percentHeight="10"/>
-        </rowConstraints>
+    <HBox alignment="CENTER" spacing="80">
 
-        <VBox styleClass="match-panel" GridPane.columnIndex="1" GridPane.rowIndex="1">
+        <VBox styleClass="match-panel" maxWidth="480" prefWidth="480" maxHeight="650" prefHeight="650">
             <ScrollPane fitToWidth="true" styleClass="transparent-scroll" VBox.vgrow="ALWAYS">
                 <VBox fx:id="matchRankingContainer" spacing="10" />
             </ScrollPane>
         </VBox>
 
-        <VBox styleClass="global-panel" GridPane.columnIndex="3" GridPane.rowIndex="1">
+        <VBox styleClass="global-panel" maxWidth="480" prefWidth="480" maxHeight="650" prefHeight="650">
             <ScrollPane fitToWidth="true" styleClass="transparent-scroll" VBox.vgrow="ALWAYS">
                 <VBox fx:id="globalLeaderboardContainer" spacing="10" />
             </ScrollPane>
         </VBox>
 
-    </GridPane>
+    </HBox>
 </StackPane>
