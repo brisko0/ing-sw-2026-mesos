@@ -20,6 +20,12 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -306,6 +312,27 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         Platform.runLater(() -> {
             eventAnimationQueue.add(message.cardId());
             playNextEventAnimation();
+        });
+    }
+
+    @Override
+    public void visit(GameEndedMessage message) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GUI/fxml/EndGame.fxml"));
+                Parent endGameRoot = loader.load();
+
+                EndGameController controller = loader.getController();
+                controller.initData(message, localPlayerNickname);
+
+                Stage stage = (Stage) rootPane.getScene().getWindow();
+                Scene endGameScene = new Scene(endGameRoot);
+                stage.setScene(endGameScene);
+                stage.centerOnScreen();
+
+            } catch (IOException e) {
+                System.err.println("[GUI ERROR] Impossibile caricare la schermata EndGame: " + e.getMessage());
+            }
         });
     }
 
