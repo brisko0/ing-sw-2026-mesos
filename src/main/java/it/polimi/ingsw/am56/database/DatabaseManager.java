@@ -9,18 +9,17 @@ import java.util.List;
 
 public class DatabaseManager {
 
-    // Sostituisci con la TUA stringa presa da Supabase
-    private static final String DB_URL = "jdbc:postgresql://[TUO-HOST].supabase.com:6543/postgres";
-    private static final String USER = "postgres.[TUO-PROGETTO]";
-    private static final String PASS = "la_tua_password";
+    private static final String DB_URL = System.getenv("SUPABASE_DB_URL");
+    private static final String USER = System.getenv("SUPABASE_DB_USER");
+    private static final String PASS = System.getenv("SUPABASE_DB_PASS");
 
     private Connection getConnection() throws SQLException {
+        if (DB_URL == null || USER == null || PASS == null) {
+            throw new SQLException("Credenziali del database mancanti! Configura le variabili d'ambiente (SUPABASE_DB_URL, SUPABASE_DB_USER, SUPABASE_DB_PASS).");
+        }
         return DriverManager.getConnection(DB_URL, USER, PASS);
     }
 
-    /**
-     * Salva il risultato di un singolo giocatore a fine partita
-     */
     public void savePlayerResult(String nickname, int score, int gameSize, LocalDate date) {
         String sql = "INSERT INTO match_leaderboard (nickname, score, game_size, game_date) VALUES (?, ?, ?, ?)";
 
@@ -40,12 +39,8 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Recupera la classifica globale per un determinato numero di giocatori
-     */
     public List<EndGameDTO> getGlobalLeaderboard(int gameSize) {
         List<EndGameDTO> leaderboard = new ArrayList<>();
-        // Ordina per punteggio (decrescente) e in caso di parità per data (dal più vecchio al più recente)
         String sql = "SELECT nickname, score, game_date FROM match_leaderboard WHERE game_size = ? ORDER BY score DESC, game_date ASC";
 
         try (Connection conn = getConnection();
