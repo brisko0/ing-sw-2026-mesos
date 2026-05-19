@@ -2,6 +2,7 @@ package it.polimi.ingsw.am56.view.GUI.controllers;
 
 import it.polimi.ingsw.am56.core.ConnectionFactory;
 import it.polimi.ingsw.am56.core.ServerAdapter;
+import it.polimi.ingsw.am56.network.ConnectionManager;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,7 +13,7 @@ import java.io.IOException;
 
 public class SocketRmiChoiceController {
 
-    @FXML private StackPane rootPane;
+    @FXML private StackPane rootPane; // Ci serve per ottenere la Scena attuale
 
     @FXML private TextField rmiIpField;
     @FXML private TextField rmiPortField;
@@ -27,16 +28,25 @@ public class SocketRmiChoiceController {
     }
 
     @FXML
+    public void initialize() {
+        String ip   = System.getenv().getOrDefault("MESOS_SERVER_IP",    "127.0.0.1");
+        String rPort= System.getenv().getOrDefault("MESOS_RMI_PORT",     "1099");
+        String sPort= System.getenv().getOrDefault("MESOS_SOCKET_PORT",  "12345");
+
+        rmiIpField.setText(ip);
+        rmiPortField.setText(rPort);
+        socketIpField.setText(ip);
+        socketPortField.setText(sPort);
+    }
+
+    @FXML
     private void handleRmiConnect() {
         String ip = rmiIpField.getText().trim();
         try {
             int port = Integer.parseInt(rmiPortField.getText().trim());
-
-            serverAdapter = connectionFactory.createRmiConnection(ip, port);
-            System.out.println("[GUI] Connessione RMI stabilita con " + ip + ":" + port);
-
+            ServerAdapter raw = connectionFactory.createRmiConnection(ip, port);
+            serverAdapter = new ConnectionManager(ip, port, true, connectionFactory, raw);
             goToLobby();
-
         } catch (Exception e) {
             System.err.println("[GUI] Errore di connessione RMI: " + e.getMessage());
         }
@@ -47,26 +57,25 @@ public class SocketRmiChoiceController {
         String ip = socketIpField.getText().trim();
         try {
             int port = Integer.parseInt(socketPortField.getText().trim());
-
-            serverAdapter = connectionFactory.createSocketConnection(ip, port);
-            System.out.println("[GUI] Connessione Socket stabilita con " + ip + ":" + port);
-
+            ServerAdapter raw = connectionFactory.createSocketConnection(ip, port);
+            serverAdapter = new ConnectionManager(ip, port, false, connectionFactory, raw);
             goToLobby();
-
         } catch (Exception e) {
             System.err.println("[GUI] Errore di connessione Socket: " + e.getMessage());
         }
     }
 
-
+    // --- Metodo per cambiare scena ---
     private void goToLobby() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GUI/fxml/PreLobby.fxml"));
             Parent lobbyRoot = loader.load();
 
+            // Otteniamo il controller della nuova schermata e gli passiamo il serverAdapter!
             PreLobbyController preLobbyController = loader.getController();
             preLobbyController.setServerAdapter(serverAdapter);
 
+            // Cambiamo la radice (root) della scena attuale, mantenendo la stessa finestra
             rootPane.getScene().setRoot(lobbyRoot);
 
         } catch (IOException e) {
