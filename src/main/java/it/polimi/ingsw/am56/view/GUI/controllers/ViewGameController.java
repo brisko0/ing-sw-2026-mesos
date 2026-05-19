@@ -5,6 +5,7 @@ import it.polimi.ingsw.am56.core.UpdateHandler;
 import it.polimi.ingsw.am56.network.message.classesDTO.*;
 import it.polimi.ingsw.am56.network.message.request.GameSyncRequest;
 import it.polimi.ingsw.am56.network.message.request.CardPickRequest;
+import it.polimi.ingsw.am56.network.message.request.ReconnectRequest;
 import it.polimi.ingsw.am56.network.message.request.TotemMoveRequest;
 import it.polimi.ingsw.am56.network.message.update.*;
 import javafx.animation.*;
@@ -58,6 +59,8 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
 
     @FXML private VBox customTooltip;
     @FXML private Label tooltipTextLabel;
+
+    @FXML private VBox reconnectingOverlay;
 
     private FadeTransition tooltipFade;
 
@@ -174,7 +177,9 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     @Override
     public void visit(GameSnapshotMessage message) {
         Platform.runLater(() -> {
+            reconnectingOverlay.setVisible(false);
             executeOrDefer(() -> {
+
                 GameSnapshotDTO snap = message.snapshot();
                 this.currentEventCardIds = snap.board().eventCardIds();
 
@@ -1380,5 +1385,19 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         });
 
         fullSequence.play();
+    }
+
+    // ==========================================
+    // logica di riconnessione
+    // ==========================================
+
+    @Override
+    public void handleDisconnect() {
+        Platform.runLater(() -> reconnectingOverlay.setVisible(true));
+    }
+
+    @Override
+    public void handleReconnected() {
+        serverAdapter.sendRequest(new ReconnectRequest(localPlayerNickname));
     }
 }
