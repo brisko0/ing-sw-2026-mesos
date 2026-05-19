@@ -5,29 +5,30 @@ import it.polimi.ingsw.am56.core.UpdateHandler;
 import it.polimi.ingsw.am56.network.message.request.AddPlayerRequest;
 import it.polimi.ingsw.am56.network.message.request.CreateGameRequest;
 import it.polimi.ingsw.am56.network.message.request.LobbyStateRequest;
+import it.polimi.ingsw.am56.network.message.request.ReconnectRequest;
 import it.polimi.ingsw.am56.network.message.update.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import java.io.IOException;
 
+import java.io.IOException;
 
 public class PreLobbyController implements UpdateHandler, MessageVisitor {
 
     private ServerAdapter serverAdapter;
     private String selectedColor = null;
     private ImageView lastSelectedTotem = null;
-
     private String localPlayerNickname;
 
-    @FXML private StackPane rootPane;
+    private boolean gameInProgress = false;
 
+    @FXML private StackPane rootPane;
     @FXML private GridPane createBox;
     @FXML private GridPane joinBox;
     @FXML private TextField createNicknameField;
@@ -37,8 +38,6 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
     public void setServerAdapter(ServerAdapter serverAdapter) {
         this.serverAdapter = serverAdapter;
         this.serverAdapter.setUpdateHandler(this);
-
-        System.out.println("[GUI PRE-LOBBY] Richiesta stato partita inviata...");
         this.serverAdapter.sendRequest(new LobbyStateRequest());
     }
 
@@ -47,17 +46,23 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
         message.accept(this);
     }
 
+    // -------------------------------------------------------------------------
+    // Server message handlers
+    // -------------------------------------------------------------------------
+
     @Override
     public void visit(PreLobbyStateMessage message) {
+        this.gameInProgress = message.isGameInProgress();
+
         Platform.runLater(() -> {
             if (message.isGameAlreadyCreated()) {
-                System.out.println("[GUI PRE-LOBBY] Partita esistente: attivo JOIN, disattivo CREATE.");
+                // Both lobby-join and reconnect show only the JOIN box.
+                // The difference is handled internally in handleJoinGame().
                 createBox.setDisable(true);
                 createBox.setOpacity(0.5);
                 joinBox.setDisable(false);
                 joinBox.setOpacity(1.0);
             } else {
-                System.out.println("[GUI PRE-LOBBY] Nessuna partita: attivo CREATE, disattivo JOIN.");
                 createBox.setDisable(false);
                 createBox.setOpacity(1.0);
                 joinBox.setDisable(true);
@@ -65,6 +70,20 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
             }
         });
     }
+
+    @Override
+    public void visit(LobbyStateMessage message) {
+        Platform.runLater(() -> goToLobby(message));
+    }
+
+    @Override
+    public void visit(GameSnapshotMessage message) {
+        Platform.runLater(() -> goToGameDirectly());
+    }
+
+    // -------------------------------------------------------------------------
+    // Button handlers
+    // -------------------------------------------------------------------------
 
     @FXML
     private void handleCreateGame() {
@@ -75,36 +94,39 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
             try {
                 int size = Integer.parseInt(sizeStr);
                 if (size < 2 || size > 5) {
-                    System.out.println("[LOBBY] errore: la partita deve essere da 2 a 5 giocatori");
+                    System.out.println("[LOBBY] La partita deve essere da 2 a 5 giocatori.");
                     return;
                 }
-
                 this.localPlayerNickname = nickname;
-
-                System.out.println("[LOBBY] invio richiesta creazione: " + nickname + " (" + selectedColor + ")");
                 serverAdapter.sendRequest(new CreateGameRequest(nickname, selectedColor, size));
             } catch (NumberFormatException e) {
-                System.err.println("[LOBBY] errore: la dimensione deve essere un numero");
+                System.err.println("[LOBBY] La dimensione deve essere un numero.");
             }
         } else {
-            System.out.println("[LOBBY] compilare tutti i campi e scegliere un colore");
+            System.out.println("[LOBBY] Compilare tutti i campi e scegliere un colore.");
         }
     }
 
     @FXML
     private void handleJoinGame() {
         String nickname = joinNicknameField.getText().trim();
-        if (!nickname.isEmpty() && selectedColor != null) {
 
-            this.localPlayerNickname = nickname;
-
-            System.out.println("[LOBBY] invio richiesta di partecipazione: " + nickname + " (totem: " + selectedColor + ")");
-            serverAdapter.sendRequest(new AddPlayerRequest(nickname, selectedColor));
-        } else {
-            if (nickname.isEmpty()) {
-                System.out.println("[LOBBY] inserire un nickname prima di unirsi");
+        if (gameInProgress) {
+            // Reconnect after crash: only nickname needed, no color.
+            if (!nickname.isEmpty()) {
+                this.localPlayerNickname = nickname;
+                System.out.println("[LOBBY] Invio ReconnectRequest per: " + nickname);
+                serverAdapter.sendRequest(new ReconnectRequest(nickname));
             } else {
-                System.out.println("[LOBBY] scegliere un totem prima di unirsi");
+                System.out.println("[LOBBY] Inserire il nickname originale per riconnettersi.");
+            }
+        } else {
+            // Normal join during lobby phase.
+            if (!nickname.isEmpty() && selectedColor != null) {
+                this.localPlayerNickname = nickname;
+                serverAdapter.sendRequest(new AddPlayerRequest(nickname, selectedColor));
+            } else {
+                System.out.println("[LOBBY] Inserire nickname e scegliere un colore.");
             }
         }
     }
@@ -116,18 +138,14 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
         if (lastSelectedTotem != null) {
             lastSelectedTotem.getStyleClass().remove("totem-selected");
         }
-
         clickedTotem.getStyleClass().add("totem-selected");
         lastSelectedTotem = clickedTotem;
-
         selectedColor = (String) clickedTotem.getUserData();
-        System.out.println("[PRE-LOBBY] Colore selezionato: " + selectedColor);
     }
 
-    @Override
-    public void visit(LobbyStateMessage message) {
-        Platform.runLater(() -> goToLobby(message));
-    }
+    // -------------------------------------------------------------------------
+    // Scene transitions
+    // -------------------------------------------------------------------------
 
     private void goToLobby(LobbyStateMessage message) {
         try {
@@ -136,13 +154,28 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
 
             LobbyController lobbyController = loader.getController();
             lobbyController.setServerAdapter(serverAdapter);
-
             lobbyController.setLocalPlayerNickname(this.localPlayerNickname);
-
             lobbyController.visit(message);
 
             rootPane.getScene().setRoot(lobbyRoot);
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void goToGameDirectly() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GUI/fxml/ViewGame.fxml"));
+            Parent gameRoot = loader.load();
+
+            ViewGameController viewGameController = loader.getController();
+            viewGameController.setLocalPlayerNickname(this.localPlayerNickname);
+            viewGameController.setServerAdapter(serverAdapter);
+
+            rootPane.getScene().setRoot(gameRoot);
+            System.out.println("[GUI] Riconnessione avvenuta, schermata di gioco caricata.");
+        } catch (IOException e) {
+            System.err.println("[GUI] Errore nel caricamento del gioco: " + e.getMessage());
             e.printStackTrace();
         }
     }

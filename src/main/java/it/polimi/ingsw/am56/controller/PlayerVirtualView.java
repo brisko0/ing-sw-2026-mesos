@@ -8,6 +8,7 @@ import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.card.CardType;
 import it.polimi.ingsw.am56.model.state.GameEvent;
+import it.polimi.ingsw.am56.model.state.State;
 import it.polimi.ingsw.am56.network.message.classesDTO.*;
 import it.polimi.ingsw.am56.network.message.update.*;
 import it.polimi.ingsw.am56.network.ClientConnection;
@@ -64,8 +65,15 @@ public class PlayerVirtualView implements GameObserver {
 
     private void handleLobbyStateSync() {
         List<String> takenNicknames = model.getPlayers().stream().map(Player::getNickname).toList();
-        List<String> takenColors = model.getPlayers().stream().map(Player::getTotemColor).toList();
-        networkConnection.sendMessage(new PreLobbyStateMessage(model.getGameSize() != -1, takenNicknames, takenColors));
+        List<String> takenColors    = model.getPlayers().stream().map(Player::getTotemColor).toList();
+
+        boolean isGameCreated    = model.getGameSize() != -1;
+        boolean isGameInProgress = isGameCreated
+                && model.getCurrentState().getState() != State.PLAYERS_FILLING;
+
+        networkConnection.sendMessage(
+                new PreLobbyStateMessage(isGameCreated, isGameInProgress, takenNicknames, takenColors)
+        );
     }
 
     private void handlePlayerAdded() {
@@ -157,8 +165,8 @@ public class PlayerVirtualView implements GameObserver {
 
         List<EndGameDTO> matchRanking = new ArrayList<>();
         int rank = 1;
-        int highestScore = sortedPlayers.isEmpty() ? 0 : sortedPlayers.get(0).getStats().getPoints();
-        int highestFood = sortedPlayers.isEmpty() ? 0 : sortedPlayers.get(0).getStats().getFood();
+        int highestScore = sortedPlayers.isEmpty() ? 0 : sortedPlayers.getFirst().getStats().getPoints();
+        int highestFood = sortedPlayers.isEmpty() ? 0 : sortedPlayers.getFirst().getStats().getFood();
         String todayDate = LocalDate.now().toString();
 
         for (Player p : sortedPlayers) {
