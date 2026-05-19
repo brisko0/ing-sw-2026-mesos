@@ -52,8 +52,6 @@ public class SocketClient implements ServerAdapter {
             try {
                 while (true) {
                     ServerMessage msg = (ServerMessage) in.readObject();
-
-                    // executeOnClient rimosso
                     if (updateHandler != null) {
                         updateHandler.handleUpdate(msg);
                     } else {
@@ -61,7 +59,10 @@ public class SocketClient implements ServerAdapter {
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {
-                System.err.println("Disconnesso dal server.");
+                System.err.println("[SOCKET] Connessione persa: " + e.getMessage());
+                if (updateHandler != null) {
+                    updateHandler.handleDisconnect();
+                }
             }
         }).start();
     }
