@@ -4,7 +4,12 @@ import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
 
+import java.io.Serial;
+
 public class PointsPerCharType extends BuildingCard {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final CharacterType characterType;
     private final int pointsPerCharacter;
     public PointsPerCharType(int cardId, int era, int numPlayers, int cost, int points, CharacterType characterType, int pointsPerCharacter) {

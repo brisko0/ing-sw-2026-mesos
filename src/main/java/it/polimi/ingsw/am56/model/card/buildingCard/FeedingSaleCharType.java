@@ -6,7 +6,12 @@ import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
 import it.polimi.ingsw.am56.model.card.eventCard.EvType;
 import it.polimi.ingsw.am56.model.card.eventCard.EventCard;
 
+import java.io.Serial;
+
 public class FeedingSaleCharType extends BuildingCard {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final CharacterType characterType;
     public FeedingSaleCharType(int cardId, int era, int minPlayers, int cost, int points, CharacterType characterType) {
         super(cardId, era, minPlayers, cost, points);

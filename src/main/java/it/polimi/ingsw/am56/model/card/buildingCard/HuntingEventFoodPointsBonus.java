@@ -6,7 +6,12 @@ import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
 import it.polimi.ingsw.am56.model.card.eventCard.EvType;
 import it.polimi.ingsw.am56.model.card.eventCard.EventCard;
 
+import java.io.Serial;
+
 public class HuntingEventFoodPointsBonus extends BuildingCard {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     public HuntingEventFoodPointsBonus(int cardId, int era, int numPlayers, int cost, int points) {
         super(cardId, era, numPlayers, cost, points);
     }

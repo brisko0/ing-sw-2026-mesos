@@ -6,10 +6,16 @@ import it.polimi.ingsw.am56.model.card.eventCard.EvType;
 import it.polimi.ingsw.am56.model.card.eventCard.EventCard;
 import it.polimi.ingsw.am56.model.card.eventCard.ShamansEvCard;
 
+import java.io.Serial;
+
 public class ShamanNoLoss extends BuildingCard {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     public ShamanNoLoss(int cardId, int era, int numPlayers, int cost, int points) {
         super(cardId, era, numPlayers, cost, points);
     }
+
     @Override
     public void onEventResolving(GameModel gameModel, EventCard evCard, Player player) {
         if(evCard.getEventType() == EvType.SHAMAN){
