@@ -3,7 +3,12 @@ package it.polimi.ingsw.am56.model.card.eventCard;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.Player;
 
+import java.io.Serial;
+
 public class SustenanceEvCard extends EventCard {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final int losePointsPerChar;
 
     public SustenanceEvCard(int cardId, int era, int minPlayers, int losePointsPerCharSustenance) {
@@ -11,6 +16,7 @@ public class SustenanceEvCard extends EventCard {
         this.losePointsPerChar = losePointsPerCharSustenance;
     }
 
+    @Override
     public void resolveEffect(GameModel gameModel) {
         for(Player player : gameModel.getPlayers()) {
             int playerFood = player.getStats().getFood();
@@ -25,7 +31,9 @@ public class SustenanceEvCard extends EventCard {
         }
     }
 
+    @Override
     public EvType getEventType() {
         return EvType.SUSTENANCE;
     }
+
 }

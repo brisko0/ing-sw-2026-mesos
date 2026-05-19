@@ -3,7 +3,12 @@ package it.polimi.ingsw.am56.model.card.eventCard;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.Player;
 
+import java.io.Serial;
+
 public class ShamansEvCard extends EventCard {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final int winPoints;
     private final int losePoints;
 
@@ -13,8 +18,9 @@ public class ShamansEvCard extends EventCard {
         this.losePoints = losePoints;
     }
 
+    @Override
     public void resolveEffect(GameModel gameModel) {
-        int minStars = 10;
+        int minStars = 20;
         int maxStars = 0;
         for(Player player : gameModel.getPlayers()){
             int playerStars = player.getStats().getShamanStars();
