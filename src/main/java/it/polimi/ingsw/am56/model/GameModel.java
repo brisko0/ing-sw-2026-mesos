@@ -151,6 +151,7 @@ public class GameModel implements Serializable {
         this.state = state;
         notifyObservers(GameEvent.STATE_CHANGED);
         state.onEntry();
+        saveGame();
     }
 
     public void setCurrentPlayer(Player player) {
@@ -172,6 +173,7 @@ public class GameModel implements Serializable {
     public void executeAddPlayer(Player p) {
         players.add(p);
         notifyObservers(GameEvent.PLAYER_ADDED);
+        saveGame();
     }
 
     public void initializeGame(int gameSize) throws InvalidActionException {
@@ -205,6 +207,7 @@ public class GameModel implements Serializable {
         board.fillUpperCharEv(gameSize, eraToCharEvdeck.get(currentEra));
         board.fillUpperBuildings(gameSize, eraToBuildingsdeck.get(currentEra), currentEra);
 
+        saveGame();
         syncLobbyState();
     }
 
@@ -221,6 +224,7 @@ public class GameModel implements Serializable {
                 .min(Comparator.comparingInt(p -> playerToOrderTile.get(p).getOrderTileId()))
                 .orElse(null);
 
+        saveGame();
         notifyObservers(GameEvent.TURN_CHANGED);
     }
 
@@ -233,6 +237,7 @@ public class GameModel implements Serializable {
                 .min(Comparator.comparing(p -> playerToOfferTile.get(p).getLetter()))
                 .orElse(null);
 
+        saveGame();
         notifyObservers(GameEvent.TURN_CHANGED);
     }
 
@@ -251,6 +256,7 @@ public class GameModel implements Serializable {
         OrderTile oldOrderTile = playerToOrderTile.remove(p);
         oldOrderTile.setIsFree(true);
 
+        saveGame();
         notifyObservers(GameEvent.TOTEM_PLACED);
     }
 
@@ -288,6 +294,8 @@ public class GameModel implements Serializable {
         board.removeCard(c);
         c.resolveEffect(this);
         c.resolveBuildingsEffects(this);
+
+        saveGame();
         notifyObservers(GameEvent.CARD_PICKED);
     }
 
@@ -308,6 +316,7 @@ public class GameModel implements Serializable {
         currentPlayer.setPickedUpper(0);
         currentPlayer.setPickedLower(0);
 
+        saveGame();
         notifyObservers(GameEvent.TOTEM_RESET);
     }
 
@@ -339,7 +348,6 @@ public class GameModel implements Serializable {
         }
         currentRound++;
 
-        // Persist after each round so a crash never loses more than one round of progress
         saveGame();
 
         notifyObservers(GameEvent.ROUND_ENDED);

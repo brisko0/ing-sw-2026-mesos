@@ -2,6 +2,7 @@ package it.polimi.ingsw.am56.network;
 
 import it.polimi.ingsw.am56.controller.GameController;
 import it.polimi.ingsw.am56.model.GameModel;
+import it.polimi.ingsw.am56.model.PersistenceManager;
 import it.polimi.ingsw.am56.network.rmi.server.RmiServer;
 import it.polimi.ingsw.am56.network.socket.server.SocketServer;
 
@@ -13,9 +14,17 @@ public class ServerApp {
         System.out.println("avvio mesos server (uniti RMI + Socket)");
 
         try {
-            GameModel sharedModel = new GameModel();
-            GameController sharedController = new GameController(sharedModel);
 
+            GameModel sharedModel = PersistenceManager.hasSave() ? PersistenceManager.load() : null;
+
+            if (sharedModel == null) {
+                sharedModel = new GameModel();
+                System.out.println("[SERVER] Nessun salvataggio trovato. Nuova partita.");
+            } else {
+                System.out.println("[SERVER] Partita precedente caricata dal salvataggio.");
+            }
+
+            GameController sharedController = new GameController(sharedModel);
 
             RmiServer rmiServer = new RmiServer(RMI_PORT, sharedModel, sharedController);
             rmiServer.start();
