@@ -11,12 +11,24 @@ public class PersistenceManager {
     private PersistenceManager() {}
 
     public static void save(GameModel model) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(
-                new BufferedOutputStream(Files.newOutputStream(SAVE_PATH)))) {
-            oos.writeObject(model);
+        Path tmp = SAVE_PATH.resolveSibling(SAVE_FILE + ".tmp");
+        try {
+            try (ObjectOutputStream oos = new ObjectOutputStream(
+                    new BufferedOutputStream(Files.newOutputStream(tmp)))) {
+                oos.writeObject(model);
+                oos.flush();
+            }
+            try {
+                Files.move(tmp, SAVE_PATH,
+                        StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(tmp, SAVE_PATH, StandardCopyOption.REPLACE_EXISTING);
+            }
             System.out.println("[PERSISTENCE] Game state saved to " + SAVE_PATH.toAbsolutePath());
         } catch (IOException e) {
             System.err.println("[PERSISTENCE] Failed to save game state: " + e.getMessage());
+            try { Files.deleteIfExists(tmp); } catch (IOException ignored) {}
         }
     }
 
