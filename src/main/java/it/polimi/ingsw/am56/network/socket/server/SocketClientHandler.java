@@ -66,9 +66,11 @@ public class SocketClientHandler implements Runnable, ClientConnection {
 
     @Override
     public void disconnect() {
+        if (!active) return;
         this.active = false;
         try {
             socket.close();
         } catch (IOException ignored) {}
+        controller.handleDisconnect();
     }
 }

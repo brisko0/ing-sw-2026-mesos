@@ -1,7 +1,5 @@
 package it.polimi.ingsw.am56.controller;
 
-import it.polimi.ingsw.am56.database.DatabaseManager;
-import it.polimi.ingsw.am56.database.LeaderboardDAO;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.GameObserver;
 import it.polimi.ingsw.am56.model.Player;
@@ -49,8 +47,9 @@ public class PlayerVirtualView implements GameObserver {
         eventHandlers.put(GameEvent.CARD_PICKED,      this::handleCardPicked);
         eventHandlers.put(GameEvent.ROUND_ENDED,      this::handleRoundEnded);
         eventHandlers.put(GameEvent.TOTEM_RESET,      this::handleTotemReset);
-        eventHandlers.put(GameEvent.EVENT_RESOLVED,   this::handleEventResolved);
-        eventHandlers.put(GameEvent.GAME_ENDED,       this::handleGameEnded);
+        eventHandlers.put(GameEvent.EVENT_RESOLVED,      this::handleEventResolved);
+        eventHandlers.put(GameEvent.GAME_ENDED,          this::handleGameEnded);
+        eventHandlers.put(GameEvent.PLAYER_DISCONNECTED, this::handlePlayerDisconnected);
     }
 
     @Override
@@ -164,6 +163,10 @@ public class PlayerVirtualView implements GameObserver {
         } else {
             System.err.println("[VIRTUAL VIEW] GameEndedMessage non disponibile al momento della notifica.");
         }
+    }
+
+    private void handlePlayerDisconnected() {
+        networkConnection.sendMessage(new GameAbortedMessage());
     }
 
     // =========================================================================

@@ -1,7 +1,7 @@
 package it.polimi.ingsw.am56.view.GUI;
 
 import it.polimi.ingsw.am56.core.ConnectionFactory;
-import it.polimi.ingsw.am56.network.NetworkConnectionFactory;
+import it.polimi.ingsw.am56.network.NetworkConnectionFactory; // Assicurati che l'import sia corretto
 import it.polimi.ingsw.am56.view.GUI.controllers.SocketRmiChoiceController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -37,16 +37,7 @@ public class GUIApp extends Application {
         primaryStage.setMinWidth(800);
         primaryStage.setMinHeight(500);
 
+        primaryStage.setOnCloseRequest(e -> System.exit(0));
         primaryStage.show();
-    }
-
-
-    public static void main(String[] args) {
-
-        NetworkConnectionFactory factory = new NetworkConnectionFactory();
-
-        GUIApp.setConnectionFactory(factory);
-
-        launch(args);
     }
 }

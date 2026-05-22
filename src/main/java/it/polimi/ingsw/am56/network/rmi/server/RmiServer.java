@@ -43,7 +43,7 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
 
     @Override
     public void addClient(VirtualViewRmi clientStub) throws RemoteException {
-        RmiClientHandler rmiConnection = new RmiClientHandler(clientStub);
+        RmiClientHandler rmiConnection = new RmiClientHandler(clientStub, controller);
         new Thread(rmiConnection).start();
         PlayerVirtualView virtualView =
                 new PlayerVirtualView(model, rmiConnection, endGameService);

@@ -106,4 +106,9 @@ public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi, Se
         // per mostrare popup di errore nella GUI
         System.err.println("[CLIENT] Errore dal server: " + details);
     }
+
+    @Override
+    public void ping() throws RemoteException {
+        // no-op: solo per verificare che il client sia vivo
+    }
 }

@@ -93,6 +93,10 @@ public class GameModel implements Serializable {
         observers.remove(observer);
     }
 
+    public void notifyDisconnection() {
+        notifyObservers(GameEvent.PLAYER_DISCONNECTED);
+    }
+
     private void notifyObservers(GameEvent event) {
         for (GameObserver observer : observers) {
             observer.onModelChanged(event);

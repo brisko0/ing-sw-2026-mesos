@@ -61,6 +61,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     @FXML private Label tooltipTextLabel;
 
     @FXML private VBox reconnectingOverlay;
+    @FXML private VBox gameAbortedOverlay;
 
     private FadeTransition tooltipFade;
 
@@ -341,6 +342,16 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
                     e.printStackTrace();
                 }
             });
+        });
+    }
+
+    @Override
+    public void visit(GameAbortedMessage message) {
+        Platform.runLater(() -> {
+            gameAbortedOverlay.setVisible(true);
+            PauseTransition delay = new PauseTransition(Duration.seconds(3));
+            delay.setOnFinished(e -> Platform.exit());
+            delay.play();
         });
     }
 

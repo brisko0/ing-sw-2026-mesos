@@ -13,6 +13,16 @@ public class GameController {
         this.model = model;
     }
 
+    public void handleDisconnect() {
+        synchronized (model) {
+            model.notifyDisconnection();
+        }
+        new Thread(() -> {
+            try { Thread.sleep(500); } catch (InterruptedException ignored) {}
+            System.exit(0);
+        }).start();
+    }
+
     public void checkLobbyState() {
         synchronized (model) {
             model.syncLobbyState();
