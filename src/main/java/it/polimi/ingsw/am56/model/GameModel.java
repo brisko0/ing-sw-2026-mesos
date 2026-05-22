@@ -1,5 +1,7 @@
 package it.polimi.ingsw.am56.model;
 
+import it.polimi.ingsw.am56.database.DatabaseManager;
+import it.polimi.ingsw.am56.database.LeaderboardDAO;
 import it.polimi.ingsw.am56.model.board.Board;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.board.OrderTile;
@@ -19,6 +21,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.*;
 
 public class GameModel implements Serializable {
@@ -372,13 +375,6 @@ public class GameModel implements Serializable {
             for (BuildingCard buildingCard : p.getStats().getBuildingCards()) {
                 buildingCard.onGameEnding(this, p);
             }
-        }
-
-        // Save to database
-        it.polimi.ingsw.am56.database.DatabaseManager dbManager = new it.polimi.ingsw.am56.database.DatabaseManager();
-        java.time.LocalDate today = java.time.LocalDate.now();
-        for (Player p : players) {
-            dbManager.savePlayerResult(p.getNickname(), p.getStats().getPoints(), getGameSize(), today);
         }
 
         // Delete the save file: the game ended normally, next server start should be fresh

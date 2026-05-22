@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseManager {
+public class DatabaseManager implements LeaderboardDAO {
 
     private static final String DB_URL = System.getenv("SUPABASE_DB_URL");
     private static final String USER = System.getenv("SUPABASE_DB_USER");
@@ -20,25 +20,29 @@ public class DatabaseManager {
         return DriverManager.getConnection(DB_URL, USER, PASS);
     }
 
-    public void savePlayerResult(String nickname, int score, int gameSize, LocalDate date) {
+    @Override
+    public void saveMatchResults(int gameSize, List<EndGameDTO> results, LocalDate date) {
         String sql = "INSERT INTO match_leaderboard (nickname, score, game_size, game_date) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, nickname);
-            pstmt.setInt(2, score);
-            pstmt.setInt(3, gameSize);
-            pstmt.setDate(4, Date.valueOf(date));
-
-            pstmt.executeUpdate();
-            System.out.println("[DB] Risultato salvato per: " + nickname);
+            for (EndGameDTO result : results) {
+                pstmt.setString(1, result.nickname());
+                pstmt.setInt(2, result.score());
+                pstmt.setInt(3, gameSize);
+                pstmt.setDate(4, Date.valueOf(date));
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();
+            System.out.println("[DB] Match results saved for " + results.size() + " players.");
 
         } catch (SQLException e) {
-            System.err.println("[DB ERROR] Impossibile salvare il risultato: " + e.getMessage());
+            System.err.println("[DB ERROR] Unable to save results: " + e.getMessage());
         }
     }
 
+    @Override
     public List<EndGameDTO> getGlobalLeaderboard(int gameSize) {
         List<EndGameDTO> leaderboard = new ArrayList<>();
         String sql = "SELECT nickname, score, game_date FROM match_leaderboard WHERE game_size = ? ORDER BY score DESC, game_date ASC";

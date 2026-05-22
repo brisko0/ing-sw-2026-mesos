@@ -1,6 +1,7 @@
 package it.polimi.ingsw.am56.network;
 
 import it.polimi.ingsw.am56.controller.GameController;
+import it.polimi.ingsw.am56.controller.GameResultSaver;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.PersistenceManager;
 import it.polimi.ingsw.am56.network.rmi.server.RmiServer;
@@ -23,6 +24,9 @@ public class ServerApp {
             } else {
                 System.out.println("[SERVER] Partita precedente caricata dal salvataggio.");
             }
+
+            GameResultSaver resultSaver = new GameResultSaver(sharedModel);
+            sharedModel.addObserver(resultSaver);
 
             GameController sharedController = new GameController(sharedModel);
 

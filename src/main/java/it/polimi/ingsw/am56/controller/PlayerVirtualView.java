@@ -1,6 +1,7 @@
 package it.polimi.ingsw.am56.controller;
 
 import it.polimi.ingsw.am56.database.DatabaseManager;
+import it.polimi.ingsw.am56.database.LeaderboardDAO;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.GameObserver;
 import it.polimi.ingsw.am56.model.Player;
@@ -182,9 +183,7 @@ public class PlayerVirtualView implements GameObserver {
             ));
         }
 
-        // Il Model ha già salvato i dati della partita nel momento in cui ha generato l'evento GAME_ENDED.
-        // Possiamo scaricare la Global Leaderboard in totale sicurezza.
-        DatabaseManager db = new DatabaseManager();
+        LeaderboardDAO db = new DatabaseManager();
         List<EndGameDTO> globalLeaderboard = db.getGlobalLeaderboard(model.getGameSize());
 
         networkConnection.sendMessage(new GameEndedMessage(matchRanking, globalLeaderboard, model.getGameSize()));
