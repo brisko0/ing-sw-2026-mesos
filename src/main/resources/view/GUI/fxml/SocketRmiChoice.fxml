@@ -8,6 +8,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.Label?>
 
 <StackPane fx:id="rootPane" prefHeight="576.0" prefWidth="1024.0"
            stylesheets="@../css/socketRmiChoice_style.css" xmlns:fx="http://javafx.com/fxml/1"
@@ -84,4 +85,10 @@
         </GridPane>
 
     </GridPane>
+
+    <Label fx:id="errorLabel" visible="false"
+           style="-fx-text-fill: red; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-color: rgba(0,0,0,0.6); -fx-padding: 8 16 8 16;"
+           StackPane.alignment="BOTTOM_CENTER"
+           translateY="-40"/>
+
 </StackPane>

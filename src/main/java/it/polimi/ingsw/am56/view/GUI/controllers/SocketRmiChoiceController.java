@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
+import javafx.scene.control.Label;
 
 import java.io.IOException;
 
@@ -19,6 +20,8 @@ public class SocketRmiChoiceController {
     @FXML private TextField rmiPortField;
     @FXML private TextField socketIpField;
     @FXML private TextField socketPortField;
+
+    @FXML private Label errorLabel;
 
     private ConnectionFactory connectionFactory;
     private ServerAdapter serverAdapter;
@@ -46,9 +49,11 @@ public class SocketRmiChoiceController {
             int port = Integer.parseInt(rmiPortField.getText().trim());
             ServerAdapter raw = connectionFactory.createRmiConnection(ip, port);
             serverAdapter = new ConnectionManager(ip, port, true, connectionFactory, raw);
+            errorLabel.setVisible(false);
             goToLobby();
         } catch (Exception e) {
             System.err.println("[GUI] Errore di connessione RMI: " + e.getMessage());
+            showError("Nessun server RMI attivo su " + ip + ":" + rmiPortField.getText().trim());
         }
     }
 
@@ -59,10 +64,24 @@ public class SocketRmiChoiceController {
             int port = Integer.parseInt(socketPortField.getText().trim());
             ServerAdapter raw = connectionFactory.createSocketConnection(ip, port);
             serverAdapter = new ConnectionManager(ip, port, false, connectionFactory, raw);
+            errorLabel.setVisible(false);
             goToLobby();
         } catch (Exception e) {
             System.err.println("[GUI] Errore di connessione Socket: " + e.getMessage());
+            showError("Nessun server Socket attivo su " + ip + ":" + socketPortField.getText().trim());
         }
+    }
+
+    private void showError(String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ignored) {}
+            javafx.application.Platform.runLater(() -> errorLabel.setVisible(false));
+        }).start();
     }
 
     // --- Metodo per cambiare scena ---
