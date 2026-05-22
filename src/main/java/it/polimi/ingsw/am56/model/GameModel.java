@@ -16,6 +16,7 @@ import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import it.polimi.ingsw.am56.model.state.GameEvent;
 import it.polimi.ingsw.am56.model.state.GameState;
 import it.polimi.ingsw.am56.model.state.PlayersFilling;
+import it.polimi.ingsw.am56.model.state.State;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -154,7 +155,9 @@ public class GameModel implements Serializable {
         this.state = state;
         notifyObservers(GameEvent.STATE_CHANGED);
         state.onEntry();
-        saveGame();
+        if (state.getState() != State.GAME_ENDING) {
+            saveGame();
+        }
     }
 
     public void setCurrentPlayer(Player player) {
