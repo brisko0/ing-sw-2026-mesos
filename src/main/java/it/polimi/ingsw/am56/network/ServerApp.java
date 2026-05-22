@@ -1,7 +1,9 @@
 package it.polimi.ingsw.am56.network;
 
+import it.polimi.ingsw.am56.controller.EndGameService;
 import it.polimi.ingsw.am56.controller.GameController;
-import it.polimi.ingsw.am56.controller.GameResultSaver;
+import it.polimi.ingsw.am56.database.DatabaseManager;
+import it.polimi.ingsw.am56.database.LeaderboardDAO;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.PersistenceManager;
 import it.polimi.ingsw.am56.network.rmi.server.RmiServer;
@@ -13,28 +15,27 @@ public class ServerApp {
 
     public static void main(String[] args) {
         System.out.println("avvio mesos server (uniti RMI + Socket)");
-
         try {
-
-            GameModel sharedModel = PersistenceManager.hasSave() ? PersistenceManager.load() : null;
-
+            GameModel sharedModel = PersistenceManager.hasSave()
+                    ? PersistenceManager.load() : null;
             if (sharedModel == null) {
                 sharedModel = new GameModel();
                 System.out.println("[SERVER] Nessun salvataggio trovato. Nuova partita.");
-            } else {
-                System.out.println("[SERVER] Partita precedente caricata dal salvataggio.");
             }
 
-            GameResultSaver resultSaver = new GameResultSaver(sharedModel);
-            sharedModel.addObserver(resultSaver);
+            LeaderboardDAO leaderboardDao = new DatabaseManager();
+
+            EndGameService endGameService = new EndGameService(sharedModel, leaderboardDao);
+            sharedModel.addObserver(endGameService);
 
             GameController sharedController = new GameController(sharedModel);
 
-            RmiServer rmiServer = new RmiServer(RMI_PORT, sharedModel, sharedController);
+            RmiServer rmiServer = new RmiServer(
+                    RMI_PORT, sharedModel, sharedController, endGameService);
             rmiServer.start();
 
-
-            SocketServer socketServer = new SocketServer(SOCKET_PORT, sharedModel, sharedController);
+            SocketServer socketServer = new SocketServer(
+                    SOCKET_PORT, sharedModel, sharedController, endGameService);
             socketServer.start();
 
         } catch (Exception e) {

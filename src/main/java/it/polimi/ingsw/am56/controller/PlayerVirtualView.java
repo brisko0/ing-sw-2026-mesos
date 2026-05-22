@@ -30,9 +30,12 @@ public class PlayerVirtualView implements GameObserver {
     // Contatore per tracciare a che punto siamo nella risoluzione sequenziale degli eventi
     private int eventResolutionIndex = 0;
 
-    public PlayerVirtualView(GameModel model, ClientConnection networkConnection) {
+    private final EndGameService endGameService;
+
+    public PlayerVirtualView(GameModel model, ClientConnection networkConnection, EndGameService endGameService) {
         this.model = model;
         this.networkConnection = networkConnection;
+        this.endGameService = endGameService;
         registerHandlers();
     }
 
@@ -155,38 +158,12 @@ public class PlayerVirtualView implements GameObserver {
     }
 
     private void handleGameEnded() {
-        List<Player> sortedPlayers = new ArrayList<>(model.getPlayers());
-        sortedPlayers.sort((p1, p2) -> {
-            int scoreCompare = Integer.compare(p2.getStats().getPoints(), p1.getStats().getPoints());
-            if (scoreCompare == 0) {
-                return Integer.compare(p2.getStats().getFood(), p1.getStats().getFood());
-            }
-            return scoreCompare;
-        });
-
-        List<EndGameDTO> matchRanking = new ArrayList<>();
-        int rank = 1;
-        int highestScore = sortedPlayers.isEmpty() ? 0 : sortedPlayers.getFirst().getStats().getPoints();
-        int highestFood = sortedPlayers.isEmpty() ? 0 : sortedPlayers.getFirst().getStats().getFood();
-        String todayDate = LocalDate.now().toString();
-
-        for (Player p : sortedPlayers) {
-            boolean isWinner = (p.getStats().getPoints() == highestScore && p.getStats().getFood() == highestFood);
-
-            matchRanking.add(new EndGameDTO(
-                    rank++,
-                    p.getNickname(),
-                    p.getStats().getPoints(),
-                    p.getStats().getFood(),
-                    isWinner,
-                    todayDate
-            ));
+        GameEndedMessage msg = endGameService.getEndGameMessage();
+        if (msg != null) {
+            networkConnection.sendMessage(msg);
+        } else {
+            System.err.println("[VIRTUAL VIEW] GameEndedMessage non disponibile al momento della notifica.");
         }
-
-        LeaderboardDAO db = new DatabaseManager();
-        List<EndGameDTO> globalLeaderboard = db.getGlobalLeaderboard(model.getGameSize());
-
-        networkConnection.sendMessage(new GameEndedMessage(matchRanking, globalLeaderboard, model.getGameSize()));
     }
 
     // =========================================================================

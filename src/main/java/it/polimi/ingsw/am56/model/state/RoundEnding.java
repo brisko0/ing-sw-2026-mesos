@@ -20,7 +20,7 @@ public class RoundEnding extends GameState{
     private void endRoundActions(){
         model.endRound();
 
-        if(model.getCurrentRound() == 11){
+        if(model.getCurrentRound() == 3){
             model.setState(new GameEnding(model));
             return;
         }
