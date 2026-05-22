@@ -45,7 +45,16 @@ public class DatabaseManager implements LeaderboardDAO {
     @Override
     public List<EndGameDTO> getGlobalLeaderboard(int gameSize) {
         List<EndGameDTO> leaderboard = new ArrayList<>();
-        String sql = "SELECT nickname, score, game_date FROM match_leaderboard WHERE game_size = ? ORDER BY score DESC, game_date ASC";
+        String sql = """
+        SELECT nickname, score, game_date
+        FROM (
+            SELECT DISTINCT ON (nickname) nickname, score, game_date
+            FROM match_leaderboard
+            WHERE game_size = ?
+            ORDER BY nickname, score DESC
+        ) best
+        ORDER BY score DESC
+        """;
 
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
