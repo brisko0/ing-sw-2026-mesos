@@ -9,6 +9,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
 
 <StackPane fx:id="rootPane" prefHeight="576.0" prefWidth="1024.0"
            stylesheets="@../css/pre_lobby_style.css" xmlns:fx="http://javafx.com/fxml/1"
@@ -95,4 +97,16 @@
                     GridPane.columnIndex="1" GridPane.rowIndex="5" />
         </GridPane>
     </GridPane>
+
+    <VBox fx:id="reconnectingOverlay"
+          visible="false"
+          alignment="CENTER"
+          spacing="20"
+          style="-fx-background-color: rgba(0,0,0,0.65);">
+        <Label text="Connessione al server persa"
+               style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+        <Label text="Riconnessione in corso..."
+               style="-fx-font-size: 16px; -fx-text-fill: #cccccc;"/>
+    </VBox>
+
 </StackPane>

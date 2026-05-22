@@ -3,6 +3,7 @@ package it.polimi.ingsw.am56.view.GUI.controllers;
 import it.polimi.ingsw.am56.core.ServerAdapter;
 import it.polimi.ingsw.am56.core.UpdateHandler;
 import it.polimi.ingsw.am56.network.message.classesDTO.PlayerDTO;
+import it.polimi.ingsw.am56.network.message.request.LobbyStateRequest;
 import it.polimi.ingsw.am56.network.message.update.LobbyStateMessage;
 import it.polimi.ingsw.am56.network.message.update.MessageVisitor;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
@@ -32,6 +33,8 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
     @FXML private StackPane rootPane;
     @FXML private VBox playerListContainer;
     @FXML private Label statusLabel;
+
+    @FXML private VBox reconnectingOverlay;
 
     public void setLocalPlayerNickname(String nickname) {
         this.localPlayerNickname = nickname;
@@ -132,5 +135,22 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
             System.err.println("[GUI] Errore nel caricamento del gioco: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // persistenza
+    // -------------------------------------------------------------------------
+
+    @Override
+    public void handleDisconnect() {
+        Platform.runLater(() -> reconnectingOverlay.setVisible(true));
+    }
+
+    @Override
+    public void handleReconnected() {
+        Platform.runLater(() -> {
+            reconnectingOverlay.setVisible(false);
+            serverAdapter.sendRequest(new LobbyStateRequest());
+        });
     }
 }

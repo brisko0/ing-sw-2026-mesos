@@ -16,6 +16,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 
@@ -34,6 +35,8 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
     @FXML private TextField createNicknameField;
     @FXML private TextField gameSizeField;
     @FXML private TextField joinNicknameField;
+
+    @FXML private VBox reconnectingOverlay;
 
     public void setServerAdapter(ServerAdapter serverAdapter) {
         this.serverAdapter = serverAdapter;
@@ -178,5 +181,22 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
             System.err.println("[GUI] Errore nel caricamento del gioco: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // persistenza
+    // -------------------------------------------------------------------------
+
+    @Override
+    public void handleDisconnect() {
+        Platform.runLater(() -> reconnectingOverlay.setVisible(true));
+    }
+
+    @Override
+    public void handleReconnected() {
+        Platform.runLater(() -> {
+            reconnectingOverlay.setVisible(false);
+            serverAdapter.sendRequest(new LobbyStateRequest()); // richiede lo stato aggiornato
+        });
     }
 }
