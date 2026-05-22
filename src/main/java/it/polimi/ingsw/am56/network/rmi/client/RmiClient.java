@@ -15,12 +15,36 @@ public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi, Se
     private VirtualServerRmi serverStub;
     private UpdateHandler updateHandler;
 
+    private volatile boolean heartbeatActive = true;
+
     public RmiClient() throws RemoteException {
         super();
     }
 
     public void setServerStub(VirtualServerRmi serverStub) {
         this.serverStub = serverStub;
+        startHeartbeat();
+    }
+
+    private void startHeartbeat() { // ← NUOVO (metodo)
+        Thread t = new Thread(() -> {
+            while (heartbeatActive) {
+                try {
+                    Thread.sleep(3000);
+                    serverStub.ping();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (RemoteException e) {
+                    heartbeatActive = false;
+                    System.err.println("[RMI CLIENT] Server non raggiungibile (heartbeat).");
+                    if (updateHandler != null) updateHandler.handleDisconnect();
+                    return;
+                }
+            }
+        }, "rmi-heartbeat");
+        t.setDaemon(true);
+        t.start();
     }
 
     @Override
@@ -31,14 +55,13 @@ public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi, Se
     @Override
     public void sendRequest(ClientRequest request) {
         try {
-            if (serverStub != null) {
+            if (serverStub != null)
                 serverStub.sendRequest(request, this);
-            }
         } catch (RemoteException e) {
+            heartbeatActive = false;
             System.err.println("[CLIENT] Impossibile inviare la richiesta al server.");
-            if (updateHandler != null) {
+            if (updateHandler != null)
                 updateHandler.handleDisconnect();
-            }
         }
     }
 

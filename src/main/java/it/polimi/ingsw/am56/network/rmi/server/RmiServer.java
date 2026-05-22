@@ -19,7 +19,6 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
     private final GameController controller;
     private final int port;
 
-    // per rendere rmi asincrono, pool di thread che gestisce le richieste in background
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public RmiServer(int port, GameModel model, GameController controller) throws RemoteException {
@@ -27,38 +26,6 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
         this.port = port;
         this.model = model;
         this.controller = controller;
-    }
-
-    @Override
-    public void addClient(VirtualViewRmi clientStub) throws RemoteException {
-        System.out.println("[SERVER] Nuovo client RMI connesso.");
-        RmiClientHandler handler = new RmiClientHandler(clientStub);
-        new Thread(handler).start();
-
-        PlayerVirtualView virtualView = new PlayerVirtualView(this.model, handler);
-        model.addObserver(virtualView);
-    }
-
-    // nuovo metodo universale
-    @Override
-    public void sendRequest(ClientRequest request, VirtualViewRmi clientStub) throws RemoteException {
-
-        // server mette la richiesta in coda e il client viene sbloccato immediatamente
-        // per evitare di bloccare il client chiamante utilizzo un ExecutorService
-        executor.submit(() -> {
-            try {
-                // polimorfismo nel controller
-                request.executeOnServer(controller);
-
-            } catch (InvalidActionException e) {
-                // nel caso in cui la mossa genera un eccezione la mandiamo solo al client che l'ha generata
-                try {
-                    clientStub.reportError(e.getMessage());
-                } catch (RemoteException re) {
-                    System.err.println("[SERVER] Impossibile notificare l'errore al client.");
-                }
-            }
-        });
     }
 
     public void start() {
@@ -69,5 +36,36 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
         } catch (Exception e) {
             System.err.println("[RMI SERVER] Errore nell'avvio del server RMI: " + e.getMessage());
         }
+    }
+
+    @Override
+    public void addClient(VirtualViewRmi clientStub) throws RemoteException {
+        System.out.println("[SERVER] Nuovo client RMI connesso.");
+
+        RmiClientHandler rmiConnection = new RmiClientHandler(clientStub);
+        new Thread(rmiConnection).start();
+
+        PlayerVirtualView virtualView = new PlayerVirtualView(this.model, rmiConnection);
+        model.addObserver(virtualView);
+    }
+
+    @Override
+    public void sendRequest(ClientRequest request, VirtualViewRmi clientStub) throws RemoteException {
+        executor.submit(() -> {
+            try {
+                request.executeOnServer(controller);
+            } catch (InvalidActionException e) {
+                try {
+                    clientStub.reportError(e.getMessage());
+                } catch (RemoteException re) {
+                    System.err.println("[SERVER] Impossibile notificare l'errore al client RMI.");
+                }
+            }
+        });
+    }
+
+    @Override
+    public void ping() throws RemoteException {
+        // no-op: solo per verificare che il server sia vivo
     }
 }
