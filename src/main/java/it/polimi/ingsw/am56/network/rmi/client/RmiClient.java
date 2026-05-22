@@ -16,6 +16,8 @@ public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi, Se
     private UpdateHandler updateHandler;
 
     private volatile boolean heartbeatActive = true;
+    private static final int HEARTBEAT_INTERVAL_MS = 3000;
+    private static final int PING_TIMEOUT_MS = 2000;
 
     public RmiClient() throws RemoteException {
         super();
@@ -26,25 +28,49 @@ public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi, Se
         startHeartbeat();
     }
 
-    private void startHeartbeat() { // ← NUOVO (metodo)
+    private void startHeartbeat() {
         Thread t = new Thread(() -> {
             while (heartbeatActive) {
                 try {
-                    Thread.sleep(3000);
-                    serverStub.ping();
+                    Thread.sleep(HEARTBEAT_INTERVAL_MS);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     return;
-                } catch (RemoteException e) {
-                    heartbeatActive = false;
-                    System.err.println("[RMI CLIENT] Server non raggiungibile (heartbeat).");
-                    if (updateHandler != null) updateHandler.handleDisconnect();
+                }
+                if (!heartbeatActive) return;
+
+                Thread pingThread = new Thread(() -> {
+                    try {
+                        serverStub.ping();
+                    } catch (RemoteException e) {
+                        triggerDisconnect();
+                    }
+                }, "rmi-ping");
+                pingThread.setDaemon(true);
+                pingThread.start();
+
+                try {
+                    pingThread.join(PING_TIMEOUT_MS);
+                    if (pingThread.isAlive()) {
+                        pingThread.interrupt();
+                        triggerDisconnect();
+                        return;
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     return;
                 }
             }
         }, "rmi-heartbeat");
         t.setDaemon(true);
         t.start();
+    }
+
+    private void triggerDisconnect() {
+        if (!heartbeatActive) return;
+        heartbeatActive = false;
+        System.err.println("[RMI CLIENT] Server non raggiungibile (heartbeat).");
+        if (updateHandler != null) updateHandler.handleDisconnect();
     }
 
     @Override
