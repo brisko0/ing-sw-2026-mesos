@@ -69,9 +69,36 @@ public class EndGameController {
             return;
         }
 
-        for (EndGameDTO entry : ranking) {
-            HBox row = createRankingRow(entry, isGlobal);
-            container.getChildren().add(row);
+        if (!isGlobal) {
+            for (EndGameDTO entry : ranking) {
+                container.getChildren().add(createRankingRow(entry, false));
+            }
+            return;
+        }
+
+        EndGameDTO localEntry = ranking.stream()
+                .filter(e -> e.nickname().equals(localPlayerNickname))
+                .findFirst()
+                .orElse(null);
+
+        boolean localInTopFive = localEntry != null && localEntry.rank() <= 5;
+
+        if (localInTopFive) {
+            int showCount = Math.min(5, ranking.size());
+            for (int i = 0; i < showCount; i++) {
+                container.getChildren().add(createRankingRow(ranking.get(i), true));
+            }
+        } else {
+            int showCount = Math.min(3, ranking.size());
+            for (int i = 0; i < showCount; i++) {
+                container.getChildren().add(createRankingRow(ranking.get(i), true));
+            }
+            if (localEntry != null) {
+                Label dots = new Label("...");
+                dots.setStyle("-fx-font-size: 18px; -fx-text-fill: #888888; -fx-padding: 2 0 2 20;");
+                container.getChildren().add(dots);
+                container.getChildren().add(createRankingRow(localEntry, true));
+            }
         }
     }
 

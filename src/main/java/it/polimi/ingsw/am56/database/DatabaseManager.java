@@ -60,21 +60,19 @@ public class DatabaseManager implements LeaderboardDAO {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, gameSize);
-            ResultSet rs = pstmt.executeQuery();
 
-            int rank = 1;
-            while (rs.next()) {
-                String nick = rs.getString("nickname");
-                int score = rs.getInt("score");
-                String date = rs.getDate("game_date").toString();
-
-                // (Nota: per la global board passiamo isWinner=false e food=0 perché non servono)
-                leaderboard.add(new EndGameDTO(rank, nick, score, 0, false, date));
-                rank++;
+            try (ResultSet rs = pstmt.executeQuery()) {
+                int rank = 1;
+                while (rs.next()) {
+                    String nick = rs.getString("nickname");
+                    int score = rs.getInt("score");
+                    String date = rs.getDate("game_date").toString();
+                    leaderboard.add(new EndGameDTO(rank++, nick, score, 0, false, date));
+                }
             }
 
         } catch (SQLException e) {
-            System.err.println("[DB ERROR] Impossibile recuperare la classifica: " + e.getMessage());
+            System.err.println("[DB ERROR] Unable to retrieve leaderboard: " + e.getMessage());
         }
 
         return leaderboard;
