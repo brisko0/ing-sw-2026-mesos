@@ -1,13 +1,13 @@
 package it.polimi.ingsw.am56.model;
 
-import it.polimi.ingsw.am56.database.DatabaseManager;
-import it.polimi.ingsw.am56.database.LeaderboardDAO;
 import it.polimi.ingsw.am56.model.board.Board;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.board.OrderTile;
 import it.polimi.ingsw.am56.model.card.*;
 import it.polimi.ingsw.am56.model.card.buildingCard.BuildingCard;
 import it.polimi.ingsw.am56.model.card.characterCard.CharacterType;
+import it.polimi.ingsw.am56.model.card.eventCard.EvType;
+import it.polimi.ingsw.am56.model.card.eventCard.EventCard;
 import it.polimi.ingsw.am56.model.factory.board.BoardFactory;
 import it.polimi.ingsw.am56.model.factory.card.EventCardFactory;
 import it.polimi.ingsw.am56.model.factory.deck.BuildingDeckFactory;
@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class GameModel implements Serializable {
 
@@ -349,7 +349,7 @@ public class GameModel implements Serializable {
     }
 
     public void endRound() {
-        resolveEvents();
+        resolveEvents(currentRound == 10);
         board.endRound(gameSize, eraToCharEvdeck.get(currentEra));
         if (currentEra < 3 && board.getUpperRowCharEv().size() < gameSize + 4) {
             currentEra++;
@@ -363,13 +363,22 @@ public class GameModel implements Serializable {
         notifyObservers(GameEvent.ROUND_ENDED);
     }
 
-    private void resolveEvents() {
-        for (Card c : board.getLowerRowCharEv()) {
-            if (c.getCardType() == CardType.EVENT) {
-                c.resolveEffect(this);
-                c.resolveBuildingsEffects(this);
-                notifyObservers(GameEvent.EVENT_RESOLVED);
-            }
+    private void resolveEvents(boolean includeUpperRow) {
+        Stream<Card> stream = board.getLowerRowCharEv().stream();
+        if (includeUpperRow) {
+            stream = Stream.concat(stream, board.getUpperRowCharEv().stream());
+        }
+
+        List<EventCard> events = stream
+                .filter(c -> c.getCardType() == CardType.EVENT)
+                .map(c -> (EventCard) c)
+                .sorted(Comparator.comparing(e -> e.getEventType() == EvType.SUSTENANCE))
+                .toList();
+
+        for (EventCard e : events) {
+            e.resolveEffect(this);
+            e.resolveBuildingsEffects(this);
+            notifyObservers(GameEvent.EVENT_RESOLVED);
         }
     }
 
