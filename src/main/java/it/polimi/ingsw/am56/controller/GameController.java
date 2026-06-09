@@ -1,6 +1,7 @@
 package it.polimi.ingsw.am56.controller;
 
 import it.polimi.ingsw.am56.model.GameModel;
+import it.polimi.ingsw.am56.model.PersistenceManager;
 import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.card.Card;
@@ -16,6 +17,7 @@ public class GameController {
     public void handleDisconnect() {
         synchronized (model) {
             model.notifyDisconnection();
+            PersistenceManager.deleteSave();
         }
         new Thread(() -> {
             try { Thread.sleep(500); } catch (InterruptedException ignored) {}
