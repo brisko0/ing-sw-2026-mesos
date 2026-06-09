@@ -7,11 +7,37 @@ import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class GameController {
     private final GameModel model;
 
+    private Set<String> expectedReconnects;
+    private final Set<String> reconnectedSoFar = new HashSet<>();
+    private Timer reconnectTimer;
+
     public GameController(GameModel model) {
         this.model = model;
+    }
+
+    public synchronized void startReconnectWindow(Set<String> expected, long timeoutMs) {
+        this.expectedReconnects = new HashSet<>(expected);
+        this.reconnectedSoFar.clear();
+        this.reconnectTimer = new Timer("reconnect-window", true);
+        this.reconnectTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                synchronized (model) {
+                    if (expectedReconnects != null
+                            && !reconnectedSoFar.containsAll(expectedReconnects)) {
+                        handleDisconnect();
+                    }
+                }
+            }
+        }, timeoutMs);
     }
 
     public void handleDisconnect() {
@@ -61,6 +87,14 @@ public class GameController {
             }
             System.out.println("[CONTROLLER] Riconnessione di: " + nickname);
             model.syncGameState();
+
+            if (expectedReconnects != null) {
+                reconnectedSoFar.add(nickname);
+                if (reconnectedSoFar.containsAll(expectedReconnects)) {
+                    reconnectTimer.cancel();
+                    expectedReconnects = null;
+                }
+            }
         }
     }
 

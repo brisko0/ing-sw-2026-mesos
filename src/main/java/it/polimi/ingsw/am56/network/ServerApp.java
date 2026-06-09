@@ -6,8 +6,13 @@ import it.polimi.ingsw.am56.database.DatabaseManager;
 import it.polimi.ingsw.am56.database.LeaderboardDAO;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.PersistenceManager;
+import it.polimi.ingsw.am56.model.Player;
+import it.polimi.ingsw.am56.model.state.State;
 import it.polimi.ingsw.am56.network.rmi.server.RmiServer;
 import it.polimi.ingsw.am56.network.socket.server.SocketServer;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ServerApp {
     private static final int RMI_PORT = 1099;
@@ -29,6 +34,17 @@ public class ServerApp {
             sharedModel.addObserver(endGameService);
 
             GameController sharedController = new GameController(sharedModel);
+
+            if (sharedModel.getPlayers() != null
+                    && !sharedModel.getPlayers().isEmpty()
+                    && sharedModel.getCurrentState().getState() != State.GAME_ENDING) {
+                Set<String> expected = sharedModel.getPlayers().stream()
+                        .map(Player::getNickname)
+                        .collect(Collectors.toSet());
+                sharedController.startReconnectWindow(expected, 10_000L);
+                System.out.println("[SERVER] Riconnessione: attesa di " + expected
+                        + " entro 10s, altrimenti partita abortita.");
+            }
 
             RmiServer rmiServer = new RmiServer(
                     RMI_PORT, sharedModel, sharedController, endGameService);
