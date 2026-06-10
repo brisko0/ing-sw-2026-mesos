@@ -8,8 +8,24 @@ import it.polimi.ingsw.am56.model.factory.card.CharacterCardFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * {@link DeckFactory} implementation that assembles the shuffled character {@link Deck} for a
+ * given era. Delegates the loading and filtering of the individual {@link CharacterCard}s to
+ * {@link CharacterCardFactory}, then wraps them in a {@link Deck} (the {@link Deck} constructor
+ * shuffles the cards in place).
+ * <p>
+ * The deck's id and era fields are both set to {@code era} — there is exactly one character
+ * deck per era, so the era doubles as a stable identifier.
+ */
 public class CharacterDeckFactory implements DeckFactory {
 
+    /**
+     * Builds the character deck for the given era and player count.
+     *
+     * @param era      era to build the deck for (1, 2 or 3)
+     * @param gameSize number of players in the game
+     * @return a shuffled deck of the character cards available for the given era and player count
+     */
     @Override
     public Deck createDeck(int era, int gameSize) {
 
