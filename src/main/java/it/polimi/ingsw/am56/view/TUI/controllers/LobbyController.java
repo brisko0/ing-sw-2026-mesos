@@ -57,7 +57,10 @@ public class LobbyController extends BaseTUIController {
         List<String> names = currentLobbyState.players().stream()
                 .map(PlayerDTO::nickname)
                 .toList();
+        List<String> colors = currentLobbyState.players().stream()
+                .map(PlayerDTO::color)
+                .toList();
 
-        drawer.printLobbyState(names, currentLobbyState.gameSize());
+        drawer.printLobbyState(names, colors, currentLobbyState.gameSize());
     }
 }

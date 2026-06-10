@@ -19,9 +19,12 @@ import it.polimi.ingsw.am56.network.message.update.GameSnapshotMessage;
 import it.polimi.ingsw.am56.network.message.update.GameStateUpdateMessage;
 import it.polimi.ingsw.am56.network.message.update.PlayerStatsUpdateMessage;
 import it.polimi.ingsw.am56.network.message.update.TotemsStateMessage;
+import it.polimi.ingsw.am56.view.TUI.CardCatalog.ClassKind;
 import it.polimi.ingsw.am56.view.TUI.TUIContext;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,6 +34,8 @@ import java.util.Set;
 public class GameController extends BaseTUIController {
 
     private static final long RENDER_DEBOUNCE_MS = 80;
+
+    private static final int LOG_LIMIT = 5;
 
     private final Object lock = new Object();
 
@@ -42,6 +47,8 @@ public class GameController extends BaseTUIController {
     private int currentEra;
     private int currentRound;
     private long stateVersion = 0;
+
+    private final Deque<String> recentLog = new ArrayDeque<>();
 
     private final Object renderLock = new Object();
     private boolean dirty = false;
@@ -69,7 +76,7 @@ public class GameController extends BaseTUIController {
     }
 
     // ------------------------------------------------------------------
-    // Server-push handlers — only mutate state + signal renderer + bump version.
+    // Server-push handlers
     // ------------------------------------------------------------------
 
     @Override
@@ -93,7 +100,11 @@ public class GameController extends BaseTUIController {
     @Override
     public void visit(PlayerStatsUpdateMessage message) {
         synchronized (lock) {
-            playerStats.put(message.stats().nickname(), message.stats());
+            PlayerStatsDTO incoming = message.stats();
+            PlayerStatsDTO previous = playerStats.get(incoming.nickname());
+            String picked = diffPickedCard(previous, incoming);
+            if (picked != null) appendLog(picked);
+            playerStats.put(incoming.nickname(), incoming);
             bumpAndNotify();
         }
         markDirty();
@@ -102,9 +113,12 @@ public class GameController extends BaseTUIController {
     @Override
     public void visit(TotemsStateMessage message) {
         synchronized (lock) {
-            this.totems = message.totems() != null
+            List<TotemPositionDTO> incoming = message.totems() != null
                     ? new ArrayList<>(message.totems())
                     : new ArrayList<>();
+            String placement = diffOfferPlacement(this.totems, incoming);
+            if (placement != null) appendLog(placement);
+            this.totems = incoming;
             bumpAndNotify();
         }
         markDirty();
@@ -142,6 +156,7 @@ public class GameController extends BaseTUIController {
             this.currentPlayer = s.currentPlayer();
             this.currentEra = s.currentEra();
             this.currentRound = s.currentRound();
+            appendLog("Round ended — Era " + currentEra + " Round " + currentRound);
             bumpAndNotify();
         }
         markDirty();
@@ -149,7 +164,11 @@ public class GameController extends BaseTUIController {
 
     @Override
     public void visit(EventResolvedMessage message) {
-        drawer.printEventNotice(message.cardId());
+        synchronized (lock) {
+            appendLog("Event #" + message.cardId() + " resolved");
+            bumpAndNotify();
+        }
+        markDirty();
     }
 
     @Override
@@ -195,7 +214,7 @@ public class GameController extends BaseTUIController {
     }
 
     // ------------------------------------------------------------------
-    // Render thread — coalesces bursts of messages into one redraw.
+    // Render thread
     // ------------------------------------------------------------------
 
     private void runRenderLoop() {
@@ -225,7 +244,7 @@ public class GameController extends BaseTUIController {
     }
 
     // ------------------------------------------------------------------
-    // Input loop (runs on TUI-input thread)
+    // Input loop
     // ------------------------------------------------------------------
 
     private void runInputLoop() {
@@ -281,12 +300,12 @@ public class GameController extends BaseTUIController {
             }
         }
         if (allowed.isEmpty()) {
-            drawer.printError("Nessuna tessera offerta disponibile.");
+            drawer.printError("No free offer tiles available.");
             return;
         }
 
-        drawer.printPrompt("Posiziona il tuo totem su una tessera offerta libera");
-        String letter = inputReader.readLetterFrom(allowed, "  Scegli la lettera");
+        drawer.printPrompt("Place your totem on a free offer tile");
+        String letter = inputReader.readLetterFrom(allowed, "  Pick letter");
         context.getServerAdapter().sendRequest(
                 new TotemMoveRequest(context.getLocalNickname(), letter));
     }
@@ -296,7 +315,7 @@ public class GameController extends BaseTUIController {
         synchronized (lock) {
             PlayerStatsDTO me = playerStats.get(context.getLocalNickname());
             if (me == null || board == null) {
-                drawer.printError("Stato del giocatore non disponibile.");
+                drawer.printError("Player state not available.");
                 return;
             }
             List<Integer> eventIds = board.eventCardIds() != null ? board.eventCardIds() : List.of();
@@ -314,12 +333,12 @@ public class GameController extends BaseTUIController {
         }
 
         if (allowed.isEmpty()) {
-            drawer.printError("Non hai carte pescabili al momento.");
+            drawer.printError("No pickable cards right now.");
             return;
         }
 
-        drawer.printPrompt("Scegli una carta da pescare dalla plancia");
-        int cardId = inputReader.readIntFromSet(allowed, "  ID carta");
+        drawer.printPrompt("Pick a card from the board");
+        int cardId = inputReader.readIntFromSet(allowed, "  Card ID");
         context.getServerAdapter().sendRequest(
                 new CardPickRequest(context.getLocalNickname(), cardId));
     }
@@ -345,6 +364,7 @@ public class GameController extends BaseTUIController {
         String phaseCopy;
         int eraCopy, roundCopy;
         List<PlayerStatsDTO> playersCopy;
+        List<String> logCopy;
         synchronized (lock) {
             boardCopy = this.board;
             totemsCopy = new ArrayList<>(this.totems);
@@ -353,6 +373,7 @@ public class GameController extends BaseTUIController {
             eraCopy = this.currentEra;
             roundCopy = this.currentRound;
             playersCopy = new ArrayList<>(this.playerStats.values());
+            logCopy = new ArrayList<>(this.recentLog);
         }
 
         drawer.clearScreen();
@@ -373,19 +394,29 @@ public class GameController extends BaseTUIController {
         if (mine != null) {
             drawer.printPlayerDashboard(mine, true, isCurrent(mine.nickname(), currentCopy));
         }
+
+        boolean opponentsHeaderPrinted = false;
         for (PlayerStatsDTO p : playersCopy) {
             if (p.nickname().equals(me)) continue;
+            if (!opponentsHeaderPrinted) {
+                drawer.printOpponentsHeader();
+                opponentsHeaderPrinted = true;
+            }
             drawer.printPlayerDashboard(p, false, isCurrent(p.nickname(), currentCopy));
         }
+        if (opponentsHeaderPrinted) System.out.println();
+
+        drawer.printRecentLog(logCopy);
+        drawer.printLegend();
     }
 
     private String phaseLabel(String phase) {
         if (phase == null) return "?";
-        if (phase.contains("TotemPlacement")) return "Posizionamento Totem";
-        if (phase.contains("CardPicking")) return "Pescaggio Carte";
-        if (phase.contains("RoundEnding")) return "Fine Round";
-        if (phase.contains("GameEnding")) return "Fine Partita";
-        if (phase.contains("PlayersFilling")) return "Attesa Giocatori";
+        if (phase.contains("TotemPlacement")) return "Totem Placement";
+        if (phase.contains("CardPicking"))    return "Card Picking";
+        if (phase.contains("RoundEnding"))    return "Round End";
+        if (phase.contains("GameEnding"))     return "Game End";
+        if (phase.contains("PlayersFilling")) return "Waiting for Players";
         return phase;
     }
 
@@ -437,5 +468,78 @@ public class GameController extends BaseTUIController {
 
     private void sleepBriefly(long ms) {
         try { Thread.sleep(ms); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
+    }
+
+    // ------------------------------------------------------------------
+    // Log + diffs (called under lock)
+    // ------------------------------------------------------------------
+
+    private void appendLog(String entry) {
+        recentLog.addLast(entry);
+        while (recentLog.size() > LOG_LIMIT) recentLog.removeFirst();
+    }
+
+    private String diffOfferPlacement(List<TotemPositionDTO> before, List<TotemPositionDTO> after) {
+        if (after == null) return null;
+        for (TotemPositionDTO neu : after) {
+            if (!"OFFER".equals(neu.locationType())) continue;
+            boolean wasThereBefore = false;
+            if (before != null) {
+                for (TotemPositionDTO old : before) {
+                    if (old.totemColor().equals(neu.totemColor())
+                            && "OFFER".equals(old.locationType())
+                            && old.locationId().equalsIgnoreCase(neu.locationId())) {
+                        wasThereBefore = true;
+                        break;
+                    }
+                }
+            }
+            if (!wasThereBefore) {
+                return neu.totemColor() + " placed totem on tile " + neu.locationId().toUpperCase();
+            }
+        }
+        return null;
+    }
+
+    private String diffPickedCard(PlayerStatsDTO before, PlayerStatsDTO after) {
+        if (before == null || after == null) return null;
+        Integer pickedId;
+        ClassKind kind = null;
+
+        pickedId = listGrowth(before.collectorCards(), after.collectorCards());
+        if (pickedId != null) kind = ClassKind.COLLECTOR;
+        if (pickedId == null) { pickedId = listGrowth(before.hunterCards(), after.hunterCards()); if (pickedId != null) kind = ClassKind.HUNTER; }
+        if (pickedId == null) { pickedId = listGrowth(before.builderCards(), after.builderCards()); if (pickedId != null) kind = ClassKind.BUILDER; }
+        if (pickedId == null) { pickedId = listGrowth(before.shamanCards(), after.shamanCards()); if (pickedId != null) kind = ClassKind.SHAMAN; }
+        if (pickedId == null) { pickedId = listGrowth(before.artistCards(), after.artistCards()); if (pickedId != null) kind = ClassKind.ARTIST; }
+        if (pickedId == null) { pickedId = listGrowth(before.inventorCards(), after.inventorCards()); if (pickedId != null) kind = ClassKind.INVENTOR; }
+        if (pickedId == null) { pickedId = listGrowth(before.ownedBuildingCards(), after.ownedBuildingCards()); if (pickedId != null) kind = ClassKind.BUILDING; }
+        if (pickedId == null) return null;
+
+        return after.nickname() + " picked " + kindLabel(kind) + " #" + pickedId;
+    }
+
+    private Integer listGrowth(List<Integer> before, List<Integer> after) {
+        if (before == null || after == null) return null;
+        if (after.size() != before.size() + 1) return null;
+        for (Integer id : after) {
+            if (!before.contains(id)) return id;
+        }
+        return null;
+    }
+
+    private String kindLabel(ClassKind kind) {
+        if (kind == null) return "card";
+        return switch (kind) {
+            case COLLECTOR -> "Collector";
+            case HUNTER -> "Hunter";
+            case BUILDER -> "Builder";
+            case SHAMAN -> "Shaman";
+            case ARTIST -> "Artist";
+            case INVENTOR -> "Inventor";
+            case BUILDING -> "Building";
+            case EVENT -> "Event";
+            default -> "card";
+        };
     }
 }

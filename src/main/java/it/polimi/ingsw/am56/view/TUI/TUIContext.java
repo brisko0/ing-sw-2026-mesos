@@ -1,8 +1,8 @@
 package it.polimi.ingsw.am56.view.TUI;
 
-import it.polimi.ingsw.am56.view.TUI.controllers.*;
 import it.polimi.ingsw.am56.core.ConnectionFactory;
 import it.polimi.ingsw.am56.core.ServerAdapter;
+import it.polimi.ingsw.am56.view.TUI.controllers.*;
 
 public class TUIContext {
     private final ConnectionFactory factory;
@@ -15,11 +15,13 @@ public class TUIContext {
 
     public TUIContext(ConnectionFactory factory) {
         this.factory = factory;
-        this.drawer = new TUIDrawer();
+        this.drawer = new TUIDrawer(new CardCatalog());
         this.inputReader = new TUIInputReader(this.drawer);
     }
 
     public void start() {
+        drawer.clearScreen();
+        drawer.printTitle();
         changeState(new NetworkSetupController(this));
     }
 

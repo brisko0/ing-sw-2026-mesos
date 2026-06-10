@@ -25,7 +25,7 @@ public class TUIInputReader {
             try {
                 return Integer.parseInt(input);
             } catch (NumberFormatException e) {
-                drawer.printError("Inserisci un numero valido.");
+                drawer.printError("Please enter a valid number.");
             }
         }
     }
@@ -36,7 +36,7 @@ public class TUIInputReader {
             if (value >= min && value <= max) {
                 return value;
             }
-            drawer.printError("Valore non valido. Inserisci un numero tra " + min + " e " + max + ".");
+            drawer.printError("Invalid value. Please enter a number between " + min + " and " + max + ".");
         }
     }
 
@@ -48,7 +48,7 @@ public class TUIInputReader {
         while (true) {
             String input = readString(prompt + " [" + hint + "]:").toUpperCase();
             if (normalized.contains(input)) return input;
-            drawer.printError("Scelta non valida. Valori ammessi: " + hint);
+            drawer.printError("Invalid choice. Allowed values: " + hint);
         }
     }
 
@@ -57,7 +57,7 @@ public class TUIInputReader {
         while (true) {
             int value = readInt(prompt + " [" + hint + "]:");
             if (allowed.contains(value)) return value;
-            drawer.printError("Scelta non valida. Valori ammessi: " + hint);
+            drawer.printError("Invalid choice. Allowed values: " + hint);
         }
     }
 
