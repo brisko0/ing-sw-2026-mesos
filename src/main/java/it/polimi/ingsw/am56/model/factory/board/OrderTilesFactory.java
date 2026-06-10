@@ -11,7 +11,22 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Loads the turn-order-tile configuration from the bundled {@code /json/order_tiles.json}
+ * resource and filters it for the current player count. Unlike {@link OfferTilesFactory},
+ * each {@link OrderTile} layout is keyed to a single exact player count, so the filter uses
+ * equality ({@code numPlayers == gameSize}) rather than a minimum threshold.
+ */
 public class OrderTilesFactory {
+
+    /**
+     * Reads {@code /json/order_tiles.json}, deserialises it into {@link OrderTile}s, and keeps
+     * only the tiles belonging to the layout for the given player count.
+     *
+     * @param gameSize number of players in the game
+     * @return the order tiles for the layout matching the given player count
+     * @throws RuntimeException if the resource is missing or cannot be parsed
+     */
     public static List<OrderTile> createOrderTiles(int gameSize) {
         List<OrderTile> filteredTiles = new ArrayList<>();
         Gson gson = new Gson();
