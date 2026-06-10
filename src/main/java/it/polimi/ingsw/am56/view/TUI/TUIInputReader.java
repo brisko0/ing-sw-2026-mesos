@@ -1,6 +1,8 @@
 package it.polimi.ingsw.am56.view.TUI;
 
 import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TUIInputReader {
     private final Scanner scanner;
@@ -35,6 +37,27 @@ public class TUIInputReader {
                 return value;
             }
             drawer.printError("Valore non valido. Inserisci un numero tra " + min + " e " + max + ".");
+        }
+    }
+
+    public String readLetterFrom(Set<String> allowed, String prompt) {
+        Set<String> normalized = allowed.stream()
+                .map(String::toUpperCase)
+                .collect(Collectors.toSet());
+        String hint = normalized.stream().sorted().collect(Collectors.joining(", "));
+        while (true) {
+            String input = readString(prompt + " [" + hint + "]:").toUpperCase();
+            if (normalized.contains(input)) return input;
+            drawer.printError("Scelta non valida. Valori ammessi: " + hint);
+        }
+    }
+
+    public int readIntFromSet(Set<Integer> allowed, String prompt) {
+        String hint = allowed.stream().sorted().map(String::valueOf).collect(Collectors.joining(", "));
+        while (true) {
+            int value = readInt(prompt + " [" + hint + "]:");
+            if (allowed.contains(value)) return value;
+            drawer.printError("Scelta non valida. Valori ammessi: " + hint);
         }
     }
 

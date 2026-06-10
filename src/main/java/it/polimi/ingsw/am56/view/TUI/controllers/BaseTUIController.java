@@ -1,8 +1,11 @@
 package it.polimi.ingsw.am56.view.TUI.controllers;
 
 import it.polimi.ingsw.am56.core.UpdateHandler;
-import it.polimi.ingsw.am56.network.message.update.*;
-import it.polimi.ingsw.am56.view.TUI.*;
+import it.polimi.ingsw.am56.network.message.update.MessageVisitor;
+import it.polimi.ingsw.am56.network.message.update.ServerMessage;
+import it.polimi.ingsw.am56.view.TUI.TUIContext;
+import it.polimi.ingsw.am56.view.TUI.TUIDrawer;
+import it.polimi.ingsw.am56.view.TUI.TUIInputReader;
 
 public abstract class BaseTUIController implements UpdateHandler, MessageVisitor {
     protected final TUIContext context;
@@ -20,29 +23,5 @@ public abstract class BaseTUIController implements UpdateHandler, MessageVisitor
     @Override
     public void handleUpdate(ServerMessage message) {
         message.accept(this);
-    }
-
-    @Override
-    public void visit(GameSnapshotMessage message) {
-    }
-
-    @Override
-    public void visit(BoardUpdatedMessage message) {
-    }
-
-    @Override
-    public void visit(CurrentPlayerUpdateMessage message) {
-    }
-
-    @Override
-    public void visit(PlayerStatsUpdateMessage message) {
-    }
-
-    @Override
-    public void visit(LobbyStateMessage message) {
-    }
-
-    @Override
-    public void visit(TemporaryDefaultMessage message) {
     }
 }
