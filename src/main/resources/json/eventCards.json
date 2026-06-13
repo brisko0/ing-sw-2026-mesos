@@ -4,6 +4,7 @@
     "cardId": 85,
     "era": 1,
     "minPlayers": 2,
+    "isFinal":  false,
     "minArtists": 1,
     "losePoints": 2,
     "winPointsPerArtist": 1
@@ -13,6 +14,7 @@
     "cardId": 86,
     "era": 2,
     "minPlayers": 2,
+    "isFinal":  false,
     "minArtists": 2,
     "losePoints": 2,
     "winPointsPerArtist": 2
@@ -22,6 +24,7 @@
     "cardId": 87,
     "era": 3,
     "minPlayers": 2,
+    "isFinal":  false,
     "minArtists": 3,
     "losePoints": 2,
     "winPointsPerArtist": 3
@@ -31,6 +34,7 @@
     "cardId": 88,
     "era": 1,
     "minPlayers": 2,
+    "isFinal":  false,
     "winPointsPerHunter": 1
   },
   {
@@ -38,6 +42,7 @@
     "cardId": 89,
     "era": 2,
     "minPlayers": 2,
+    "isFinal":  false,
     "winPointsPerHunter": 2
   },
   {
@@ -45,6 +50,7 @@
     "cardId": 90,
     "era": 3,
     "minPlayers": 2,
+    "isFinal":  false,
     "winPointsPerHunter": 3
   },
   {
@@ -52,6 +58,7 @@
     "cardId": 91,
     "era": 1,
     "minPlayers": 2,
+    "isFinal":  false,
     "winPoints": 5,
     "losePoints": 3
   },
@@ -60,6 +67,7 @@
     "cardId": 92,
     "era": 2,
     "minPlayers": 2,
+    "isFinal":  false,
     "winPoints": 10,
     "losePoints": 5
   },
@@ -68,6 +76,7 @@
     "cardId": 93,
     "era": 3,
     "minPlayers": 2,
+    "isFinal":  true,
     "winPoints": 15,
     "losePoints": 7
   },
@@ -76,6 +85,7 @@
     "cardId": 94,
     "era": 1,
     "minPlayers": 2,
+    "isFinal":  false,
     "losePointsPerChar": 1
   },
   {
@@ -83,6 +93,7 @@
     "cardId": 95,
     "era": 2,
     "minPlayers": 2,
+    "isFinal":  false,
     "losePointsPerChar": 2
   },
   {
@@ -90,6 +101,7 @@
     "cardId": 96,
     "era": 3,
     "minPlayers": 2,
+    "isFinal": true,
     "losePointsPerChar": 3
   }
 ]

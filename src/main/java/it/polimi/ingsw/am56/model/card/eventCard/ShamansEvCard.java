@@ -26,8 +26,8 @@ public class ShamansEvCard extends EventCard {
      * @param winPoints  victory points granted to the player(s) with the most shaman stars
      * @param losePoints victory points subtracted from the player(s) with the fewest shaman stars
      */
-    public ShamansEvCard(int cardId, int era, int minPlayers, int winPoints, int losePoints) {
-        super(cardId, era, minPlayers);
+    public ShamansEvCard(int cardId, int era, int minPlayers, boolean isFinal, int winPoints, int losePoints) {
+        super(cardId, era, minPlayers, isFinal);
         this.winPoints = winPoints;
         this.losePoints = losePoints;
     }

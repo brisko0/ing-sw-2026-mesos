@@ -24,8 +24,8 @@ public class SustenanceEvCard extends EventCard {
      * @param minPlayers                   minimum player count required for this card to be in the deck
      * @param losePointsPerCharSustenance  victory points lost per unit of food the player cannot pay
      */
-    public SustenanceEvCard(int cardId, int era, int minPlayers, int losePointsPerCharSustenance) {
-        super(cardId, era, minPlayers);
+    public SustenanceEvCard(int cardId, int era, int minPlayers, boolean isFinal, int losePointsPerCharSustenance) {
+        super(cardId, era, minPlayers, isFinal);
         this.losePointsPerChar = losePointsPerCharSustenance;
     }
 

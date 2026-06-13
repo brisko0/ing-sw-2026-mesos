@@ -18,6 +18,8 @@ public abstract class EventCard extends Card {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private final boolean isFinal;
+
     /**
      * Creates an event card.
      *
@@ -25,8 +27,9 @@ public abstract class EventCard extends Card {
      * @param era        era the card belongs to (1, 2 or 3)
      * @param minPlayers minimum player count required for this card to be in the deck
      */
-    public EventCard(int cardId, int era, int minPlayers) {
+    public EventCard(int cardId, int era, int minPlayers, boolean isFinal) {
         super(cardId, era, minPlayers);
+        this.isFinal = isFinal;
     }
 
     /**
@@ -36,6 +39,16 @@ public abstract class EventCard extends Card {
      * @return the event type
      */
     public abstract EvType getEventType();
+
+    /**
+     * Returns whether this event belongs to the final-event cards placed at the bottom
+     * of the era-3 character/event deck.
+     *
+     *  { true} for final events
+     */
+    public boolean isFinal() {
+        return isFinal;
+    }
 
     /**
      * Always returns {@link CardType#EVENT}.

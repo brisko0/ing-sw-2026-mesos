@@ -24,8 +24,8 @@ public class HuntingEvCard extends EventCard {
      * @param minPlayers         minimum player count required for this card to be in the deck
      * @param winPointsPerHunter victory points granted per hunter owned
      */
-    public HuntingEvCard(int cardId, int era, int minPlayers, int winPointsPerHunter) {
-        super(cardId, era, minPlayers);
+    public HuntingEvCard(int cardId, int era, int minPlayers, boolean isFinal, int winPointsPerHunter) {
+        super(cardId, era, minPlayers, isFinal);
         this.winPointsPerHunter = winPointsPerHunter;
     }
 

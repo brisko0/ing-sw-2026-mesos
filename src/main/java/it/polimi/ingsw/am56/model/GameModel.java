@@ -359,6 +359,9 @@ public class GameModel implements Serializable {
             Deck charEvDeck = characterDeckFactory.createDeck(era, gameSize);
             charEvDeck.getRemainingCards().addAll(eventCardFactory.createCards(era, gameSize));
             charEvDeck.shuffle();
+            if (era == 3) {
+                moveFinalEventsLast(charEvDeck);
+            }
             eraToCharEvdeck.put(era, charEvDeck);
             eraToBuildingsdeck.put(era, buildingDeckfactory.createDeck(era, gameSize));
         }
@@ -368,6 +371,17 @@ public class GameModel implements Serializable {
 
         saveGame();
         syncLobbyState();
+    }
+
+    private void moveFinalEventsLast(Deck deck) {
+        List<Card> finalEvents = deck.getRemainingCards().stream()
+                .filter(card -> card.getCardType().equals(CardType.EVENT) && eventCard.isFinal())
+                .toList();
+
+        deck.getRemainingCards().removeIf(card ->
+                card.getCardType().equals(CardType.EVENT) && eventCard.isFinal()
+        );
+        deck.getRemainingCards().addAll(finalEvents);
     }
 
     // =========================================================================

@@ -29,8 +29,8 @@ public class ArtistsEvCard extends EventCard {
      * @param losePoints         victory points subtracted from players below the threshold
      * @param winPointsPerArtist victory points granted per artist owned by players at or above the threshold
      */
-    public ArtistsEvCard(int cardId, int era, int numPlayers, int minArtists, int losePoints, int winPointsPerArtist) {
-        super(cardId, era, numPlayers);
+    public ArtistsEvCard(int cardId, int era, int numPlayers, boolean isFinal, int minArtists, int losePoints, int winPointsPerArtist) {
+        super(cardId, era, numPlayers, isFinal);
         this.minArtists = minArtists;
         this.losePoints = losePoints;
         this.winPointsPerArtist = winPointsPerArtist;
