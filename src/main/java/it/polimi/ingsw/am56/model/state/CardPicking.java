@@ -4,6 +4,7 @@ import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.card.Card;
+import it.polimi.ingsw.am56.model.card.CardType;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
 import java.io.Serial;
@@ -79,6 +80,10 @@ public class CardPicking extends GameState {
 
         if (!isUpper && !model.getBoard().getLowerRowCharEv().contains(c) && !model.getBoard().getLowerRowBuildings().contains(c)) {
             throw new InvalidActionException("La carta selezionata non è disponibile sulla board.");
+        }
+
+        if (c.getCardType() == CardType.EVENT) {
+            throw new InvalidActionException("Non è possibile pescare carte evento.");
         }
 
         OfferTile ot = model.getPlayerToOfferTile().get(p);
