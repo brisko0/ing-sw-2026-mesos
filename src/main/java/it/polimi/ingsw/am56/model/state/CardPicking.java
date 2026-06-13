@@ -8,14 +8,34 @@ import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
 import java.io.Serial;
 
+/**
+ * Card-picking phase of each round: players, iterated in offer-tile order, resolve their
+ * claimed {@link OfferTile} by drawing the allowed number of cards from the upper and lower
+ * rows. Picks are constrained by the offer tile's row quotas and, for {@code BuildingCard}s,
+ * by the player's available food (net of building sale discounts).
+ * <p>
+ * The state self-advances: {@link #onEntry()} and the tail of {@link #pickUpCard} both call
+ * {@code checkTurnFlow}, which moves on to the next player whenever the current one can no
+ * longer pick (row quotas exhausted or no affordable building), and transitions to
+ * {@link RoundEnding} once every offer tile has been resolved.
+ */
 public class CardPicking extends GameState {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Creates the card-picking state.
+     *
+     * @param model the game model this state operates on
+     */
     public CardPicking(GameModel model) {
         super(model);
     }
 
+    /**
+     * Drives the turn-flow check immediately on entry, so the state correctly skips players
+     * that cannot pick (or transitions to {@link RoundEnding} if no one can).
+     */
     @Override
     public void onEntry() {
         checkTurnFlow();
@@ -37,6 +57,17 @@ public class CardPicking extends GameState {
         }
     }
 
+    /**
+     * Validates and performs a card pick. Rejects the call when it is not the given player's
+     * turn, when the card is not currently on the board, when the player has used up the
+     * offer tile's quota for that row, or when the player cannot afford the card. After
+     * applying the pick, re-evaluates turn flow.
+     *
+     * @param p the player picking the card
+     * @param c the card being picked
+     * @throws InvalidActionException if the pick violates turn order, row quotas, board state,
+     *                                or affordability
+     */
     @Override
     public void pickUpCard(Player p, Card c) throws InvalidActionException {
 
@@ -71,6 +102,9 @@ public class CardPicking extends GameState {
         checkTurnFlow();
     }
 
+    /**
+     * @return {@link State#CARD_PICKING}
+     */
     @Override
     public State getState() {
         return State.CARD_PICKING;

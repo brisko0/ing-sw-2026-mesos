@@ -7,14 +7,36 @@ import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import java.io.Serial;
 import java.util.List;
 
+/**
+ * Initial state — the lobby. Accepts {@link #addPlayer(Player)} calls until the configured
+ * {@code gameSize} is reached, validating uniqueness of nickname and totem colour as players
+ * join. When the last seat is filled it runs the per-seat setup (initial food per turn order
+ * + binding each player to their starting order tile) and transitions to {@link TotemPlacement}.
+ * <p>
+ * All other state machine actions inherit the rejecting defaults from {@link GameState}.
+ */
 public class PlayersFilling extends GameState{
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Creates the lobby state.
+     *
+     * @param model the game model this state operates on
+     */
     public PlayersFilling(GameModel model) {
         super(model);
     }
 
+    /**
+     * Validates and registers a new player. The nickname (case-insensitive) and totem colour
+     * must not already be taken, and the lobby must not yet be full. When this join brings the
+     * lobby to {@code gameSize}, runs the per-seat setup and transitions the model to
+     * {@link TotemPlacement}.
+     *
+     * @param p the player attempting to join
+     * @throws InvalidActionException if the nickname or totem colour is taken, or the lobby is full
+     */
     @Override
     public void addPlayer(Player p) throws InvalidActionException {
         for (Player existing : model.getPlayers()) {
@@ -55,6 +77,9 @@ public class PlayersFilling extends GameState{
         }
     }
 
+    /**
+     * @return {@link State#PLAYERS_FILLING}
+     */
     @Override
     public State getState() {
         return State.PLAYERS_FILLING;
