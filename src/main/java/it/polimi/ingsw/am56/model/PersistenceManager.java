@@ -3,6 +3,17 @@ package it.polimi.ingsw.am56.model;
 import java.io.*;
 import java.nio.file.*;
 
+/**
+ * Static helper that persists the live {@link GameModel} to disk so the server can recover
+ * its state after a crash or restart. Saves go through a tmp-file + atomic-move pattern
+ * (falling back to a non-atomic replace where the filesystem does not support
+ * {@link StandardCopyOption#ATOMIC_MOVE}) so a half-written file cannot replace a good one.
+ * <p>
+ * The class is a utility — the private constructor prevents instantiation. Failures are
+ * reported on {@code stdout} / {@code stderr} rather than thrown, because saving and loading
+ * are best-effort: a failed save must not abort gameplay, and a corrupt load must not stop
+ * the server from offering a fresh game.
+ */
 public class PersistenceManager {
 
     private static final String SAVE_FILE = "mesos_save.dat";
@@ -10,6 +21,14 @@ public class PersistenceManager {
 
     private PersistenceManager() {}
 
+    /**
+     * Serialises the given model to {@value #SAVE_FILE}. Writes to a sibling {@code .tmp}
+     * file first and then atomically moves it over the destination; on a non-atomic
+     * filesystem, falls back to a {@link StandardCopyOption#REPLACE_EXISTING} move. Errors are
+     * logged and the tmp file is best-effort cleaned up — no exception escapes.
+     *
+     * @param model the model to snapshot
+     */
     public static void save(GameModel model) {
         Path tmp = SAVE_PATH.resolveSibling(SAVE_FILE + ".tmp");
         try {
@@ -32,6 +51,13 @@ public class PersistenceManager {
         }
     }
 
+    /**
+     * Reads the saved {@link GameModel} from {@value #SAVE_FILE}, if any. Returns {@code null}
+     * when no save file exists, or when the file is unreadable or corrupt — in both cases the
+     * caller is expected to start a fresh game.
+     *
+     * @return the deserialised model, or {@code null} if no usable save is available
+     */
     public static GameModel load() {
         if (!Files.exists(SAVE_PATH)) {
             System.out.println("[PERSISTENCE] No save file found at " + SAVE_PATH.toAbsolutePath());
@@ -50,6 +76,11 @@ public class PersistenceManager {
         }
     }
 
+    /**
+     * Removes the save file if it exists. Called by {@link GameModel#endGameActions()} so a
+     * cleanly finished game does not leave a stale save for the next server start. Errors are
+     * logged and swallowed.
+     */
     public static void deleteSave() {
         try {
             boolean deleted = Files.deleteIfExists(SAVE_PATH);
@@ -61,6 +92,11 @@ public class PersistenceManager {
         }
     }
 
+    /**
+     * Returns whether a save file is present on disk.
+     *
+     * @return {@code true} if {@value #SAVE_FILE} exists
+     */
     public static boolean hasSave() {
         return Files.exists(SAVE_PATH);
     }
