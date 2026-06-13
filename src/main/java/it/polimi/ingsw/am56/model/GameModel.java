@@ -444,7 +444,7 @@ public class GameModel implements Serializable {
     /**
      * Reports whether the current player can still make a useful pick. A row is usable when
      * the offer tile's quota for that row is not yet exhausted <em>and</em> the row contains
-     * at least one card the player can take — i.e. any character/event card, or a building
+     * at least one card the player can take — i.e. a character card, or a building
      * the player can afford after applying their {@code buildingSale} discount.
      *
      * @return {@code true} if at least one pick remains available
@@ -454,16 +454,18 @@ public class GameModel implements Serializable {
 
         boolean hasUpperSlot = currentPlayer.getPickedUpper() < ot.getUpperCards();
         boolean canPickUpper = hasUpperSlot && (
-                !board.getUpperRowCharEv().isEmpty() ||
+                board.getUpperRowCharEv().stream()
+                        .anyMatch(c -> c.getCardType() == CardType.CHARACTER) ||
                         board.getUpperRowBuildings().stream()
-                                .anyMatch(b -> currentPlayer.getStats().getFood() >= (b.getCost() - currentPlayer.getStats().getBuildingSale()))
+                                .anyMatch(b -> currentPlayer.getStats().getFood() >= Math.max(0, b.getCost() - currentPlayer.getStats().getBuildingSale()))
         );
 
         boolean hasLowerSlot = currentPlayer.getPickedLower() < ot.getLowerCards();
         boolean canPickLower = hasLowerSlot && (
-                !board.getLowerRowCharEv().isEmpty() ||
+                board.getLowerRowCharEv().stream()
+                        .anyMatch(c -> c.getCardType() == CardType.CHARACTER) ||
                         board.getLowerRowBuildings().stream()
-                                .anyMatch(b -> currentPlayer.getStats().getFood() >= (b.getCost() - currentPlayer.getStats().getBuildingSale()))
+                                .anyMatch(b -> currentPlayer.getStats().getFood() >= Math.max(0, b.getCost() - currentPlayer.getStats().getBuildingSale()))
         );
 
         return canPickUpper || canPickLower;
@@ -508,7 +510,7 @@ public class GameModel implements Serializable {
     /**
      * Closes out the current player's card-picking turn. Releases their offer tile, places
      * them on the first free order tile (which fixes their seat for the next round), applies
-     * the order-tile bonuses, lets the player's buildings react via
+     * the offer-tile food bonus and order-tile bonuses, lets the player's buildings react via
      * {@code BuildingCard.onOwnTurnEnding}, and resets the row pick counters. Fires
      * {@link GameEvent#TOTEM_RESET} and snapshots.
      */
@@ -520,6 +522,8 @@ public class GameModel implements Serializable {
                 .filter(OrderTile::isFree)
                 .findFirst()
                 .orElse(null);
+
+        currentPlayer.getStats().addFood(oldOffer.getFoodBonus());
 
         playerToOrderTile.put(currentPlayer, firstFreeOrder);
         firstFreeOrder.setIsFree(false);
