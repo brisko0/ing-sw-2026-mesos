@@ -23,6 +23,7 @@ import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
 /**
@@ -75,7 +76,7 @@ public class GameModel implements Serializable {
         this.currentEra = 1;
         this.currentRound = 1;
         this.currentPlayer = null;
-        this.observers = new ArrayList<>();
+        this.observers = new CopyOnWriteArrayList<>();
         this.state = new PlayersFilling(this);
     }
 
@@ -87,7 +88,7 @@ public class GameModel implements Serializable {
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         // Reinitialize the transient field that was not saved
-        this.observers = new ArrayList<>();
+        this.observers = new CopyOnWriteArrayList<>();
     }
 
     // =========================================================================
