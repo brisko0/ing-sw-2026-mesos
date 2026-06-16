@@ -40,7 +40,7 @@ public class ShamansEvCard extends EventCard {
      */
     @Override
     public void resolveEffect(GameModel gameModel) {
-        int minStars = 20;
+        int minStars = Integer.MAX_VALUE;
         int maxStars = 0;
         for(Player player : gameModel.getPlayers()){
             int playerStars = player.getStats().getShamanStars();
