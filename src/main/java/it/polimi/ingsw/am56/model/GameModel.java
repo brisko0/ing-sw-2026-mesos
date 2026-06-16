@@ -609,8 +609,8 @@ public class GameModel implements Serializable {
                 .toList();
 
         for (EventCard e : events) {
-            e.resolveEffect(this);
             e.resolveBuildingsEffects(this);
+            e.resolveEffect(this);
             notifyObservers(GameEvent.EVENT_RESOLVED);
         }
     }
