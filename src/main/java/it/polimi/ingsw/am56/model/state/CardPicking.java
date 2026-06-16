@@ -49,7 +49,11 @@ public class CardPicking extends GameState {
             model.resetTotemToOrder();
 
             if(model.getPlayerToOfferTile().isEmpty()) {
-                model.setState(new ExtraUpperCardPicking(model));
+                if (model.startExtraUpperCardPickingIfNeeded()) {
+                    model.setState(new ExtraUpperCardPicking(model));
+                } else {
+                    model.setState(new RoundEnding(model));
+                }
                 return;
             }
 

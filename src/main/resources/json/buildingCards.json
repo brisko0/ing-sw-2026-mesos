@@ -178,8 +178,7 @@
     "era": 3,
     "minPlayers": 0,
     "cost":  9,
-    "points": 0,
-    "upperCardBonus": 1
+    "points": 0
   },
   {
     "classType": "AddPointsEndGame",

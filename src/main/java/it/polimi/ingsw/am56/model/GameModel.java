@@ -526,6 +526,51 @@ public class GameModel implements Serializable {
         notifyObservers(GameEvent.CARD_PICKED);
     }
 
+    private boolean canPickUpperCard(Player player) {
+        return board.getUpperRowCharEv().stream()
+                .anyMatch(card -> card.getCardType() == CardType.CHARACTER)
+                || board.getUpperRowBuildings().stream()
+                .anyMatch(building -> player.getStats().getFood() >= Math.max(0, building.getCost() - player.getStats().getBuildingSale()));
+    }
+
+    /**
+     * Selects the owner of the building that grants one extra upper-row pick, if they can use it.
+     *
+     * @return {@code true} if the extra-pick phase must be opened
+     */
+    public boolean startExtraUpperCardPickingIfNeeded() {
+        for (Player player : players) {
+            boolean hasBonus = player.getStats().getBuildingCards().stream()
+                    .anyMatch(BuildingCard::grantsExtraUpperCardAfterActions);
+
+            if (hasBonus && canPickUpperCard(player)) {
+                currentPlayer = player;
+                saveGame();
+                notifyObservers(GameEvent.TURN_CHANGED);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Performs a validated extra pick from the upper row without consuming offer-tile pick
+     * counters. Called only by the post-picking state.
+     *
+     * @param p the player picking the card
+     * @param c the upper-row card being picked
+     * @throws InvalidActionException if the card refuses to be added to the player
+     */
+    public void executeExtraUpperCardPick(Player p, Card c) throws InvalidActionException {
+        c.addCardToPlayer(p);
+        board.removeCard(c);
+        c.resolveEffect(this);
+        c.resolveBuildingsEffects(this);
+
+        saveGame();
+        notifyObservers(GameEvent.CARD_PICKED);
+    }
+
     /**
      * Closes out the current player's card-picking turn. Releases their offer tile, places
      * them on the first free order tile (which fixes their seat for the next round), applies
