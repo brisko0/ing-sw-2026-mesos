@@ -15,7 +15,7 @@ import java.io.Serial;
  * zero) and grants {@code points} victory points at the end of the game. Concrete subclasses
  * extend the base behavior by overriding one or more of the lifecycle hooks
  * ({@link #onCardPicked}, {@link #onEventResolving}, {@link #onOwnTurnEnding},
- * {@link #onGameEnding}) and/or {@link #resolveEffect(GameModel)} to apply their
+ * {@link #onFinishedPicking}, {@link #onGameEnding}) and/or {@link #resolveEffect(GameModel)} to apply their
  * rule-specific bonuses.
  */
 public abstract class BuildingCard extends Card {
@@ -77,6 +77,18 @@ public abstract class BuildingCard extends Card {
      * @param gameModel current game model
      */
     public void onOwnTurnEnding(GameModel gameModel) {}
+
+    /**
+     * Hook invoked after all players have finished the normal card-picking phase. The default
+     * returns zero, meaning this building does not grant any extra upper-row picks.
+     *
+     * @param gameModel current game model
+     * @param player    the owner of this building card
+     * @return the number of extra upper-row cards the owner may pick
+     */
+    public int onFinishedPicking(GameModel gameModel, Player player) {
+        return 0;
+    }
 
     /**
      * Hook invoked when the game ends. The base implementation grants the building's base
