@@ -375,12 +375,17 @@ public class GameModel implements Serializable {
 
     private void moveFinalEventsLast(Deck deck) {
         List<Card> finalEvents = deck.getRemainingCards().stream()
-                .filter(card -> card.getCardType().equals(CardType.EVENT) && eventCard.isFinal())
+                .filter(card -> card.getCardType() == CardType.EVENT)
+                .map(card -> (EventCard) card)
+                .filter(EventCard::isFinal)
+                .map(eventCard -> (Card) eventCard)
                 .toList();
 
         deck.getRemainingCards().removeIf(card ->
-                card.getCardType().equals(CardType.EVENT) && eventCard.isFinal()
+                card.getCardType() == CardType.EVENT
+                        && ((EventCard) card).isFinal()
         );
+
         deck.getRemainingCards().addAll(finalEvents);
     }
 
