@@ -8,7 +8,12 @@ import java.io.Serial;
 /**
  * Shaman event: compares the shaman-star totals of all players. Player(s) tied at the
  * highest total gain {@code winPoints}; player(s) tied at the lowest total lose
- * {@code losePoints}. When max equals min (all tied), every player both gains and loses.
+ * {@code losePoints}.
+ * <p>
+ * When all players are tied (max == min), every player both gains {@code winPoints} and
+ * loses {@code losePoints} in the same resolution — this is intentional and required by
+ * the rules: "nel raro caso di un pareggio tra tutti i giocatori, tutti prima guadagnano
+ * PP e poi perdono PP."
  */
 public class ShamansEvCard extends EventCard {
     @Serial
