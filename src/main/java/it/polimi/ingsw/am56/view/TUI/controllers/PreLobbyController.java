@@ -15,7 +15,7 @@ import java.util.List;
 public class PreLobbyController extends BaseTUIController {
 
     private static final List<String> ALL_COLORS =
-            Arrays.asList("RED", "BLUE", "GREEN", "YELLOW", "PURPLE");
+            Arrays.asList("BLACK", "CYAN", "RED", "WHITE", "YELLOW");
 
     private boolean waitingForServer = true;
     private boolean gameExists = false;
@@ -109,6 +109,10 @@ public class PreLobbyController extends BaseTUIController {
         }
     }
 
+    /**
+     * Render the available palette with each color word in its own ANSI shade;
+     * colors already taken are shown dimmed.
+     */
     private void printColorPalette() {
         StringBuilder line = new StringBuilder("  Available totem colors:  ");
         boolean first = true;
