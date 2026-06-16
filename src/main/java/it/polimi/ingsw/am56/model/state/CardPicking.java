@@ -98,7 +98,8 @@ public class CardPicking extends GameState {
             }
         }
 
-        if(model.getCurrentPlayer().getStats().getFood() < (c.getCost() - model.getCurrentPlayer().getStats().getBuildingSale())) {
+        if(model.getCurrentPlayer().getStats().getFood() <
+                Math.max(0, (c.getCost() - model.getCurrentPlayer().getStats().getBuildingSale()))) {
             throw new InvalidActionException("non hai il cibo necessario per permetterti la carta building");
         }
 
