@@ -650,7 +650,8 @@ public class GameModel implements Serializable {
         List<EventCard> events = stream
                 .filter(c -> c.getCardType() == CardType.EVENT)
                 .map(c -> (EventCard) c)
-                .sorted(Comparator.comparing(e -> e.getEventType() == EvType.SUSTENANCE))
+                .sorted(Comparator.comparing((EventCard e) -> e.getEventType() == EvType.SUSTENANCE)
+                        .thenComparing(EventCard::getEra))
                 .toList();
 
         for (EventCard e : events) {
