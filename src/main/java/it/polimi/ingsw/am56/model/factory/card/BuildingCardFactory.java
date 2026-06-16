@@ -39,6 +39,7 @@ public class BuildingCardFactory implements CardFactory<BuildingCard> {
             entry("ArtistEventFoodBonus", ArtistEventFoodBonus.class),
             entry("PointsPerSet", PointsPerSet.class),
             entry("PointsPerCharType", PointsPerCharType.class),
+            entry("ExtraUpperCardAfterActions", ExtraUpperCardAfterActions.class),
             entry("AddPointsEndGame", AddPointsEndGame.class)
     );
 
