@@ -52,12 +52,23 @@ public class EndGameService implements GameObserver {
         String today = LocalDate.now().toString();
 
         List<EndGameDTO> result = new ArrayList<>();
-        int rank = 1;
-        for (Player p : sorted) {
-            boolean isWinner = p.getStats().getPoints() == highestScore
-                    && p.getStats().getFood() == winnerFood;
-            result.add(new EndGameDTO(rank++, p.getNickname(),
-                    p.getStats().getPoints(), p.getStats().getFood(), isWinner, today));
+        int rank = 0;
+        int previousScore = Integer.MIN_VALUE;
+        int previousFood = Integer.MIN_VALUE;
+
+        for (int i = 0; i < sorted.size(); i++) {
+            Player p = sorted.get(i);
+            int playerScore = p.getStats().getPoints();
+            int playerFood = p.getStats().getFood();
+
+            if (playerScore != previousScore || playerFood != previousFood) {
+                rank = i + 1;
+                previousScore = playerScore;
+                previousFood = playerFood;
+            }
+
+            boolean isWinner = playerScore == highestScore && playerFood == winnerFood;
+            result.add(new EndGameDTO(rank, p.getNickname(), playerScore, playerFood, isWinner, today));
         }
         return result;
     }
