@@ -18,7 +18,7 @@ import java.io.Serial;
  * The state self-advances: {@link #onEntry()} and the tail of {@link #pickUpCard} both call
  * {@code checkTurnFlow}, which moves on to the next player whenever the current one can no
  * longer pick (row quotas exhausted or no affordable building), and transitions to
- * {@link RoundEnding} once every offer tile has been resolved.
+ * {@link ExtraUpperCardPicking} once every offer tile has been resolved.
  */
 public class CardPicking extends GameState {
     @Serial
@@ -49,7 +49,7 @@ public class CardPicking extends GameState {
             model.resetTotemToOrder();
 
             if(model.getPlayerToOfferTile().isEmpty()) {
-                model.setState(new RoundEnding(model));
+                model.setState(new ExtraUpperCardPicking(model));
                 return;
             }
 
