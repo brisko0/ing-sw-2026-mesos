@@ -5,6 +5,7 @@ import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 
 import java.io.Serial;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -65,6 +66,7 @@ public class PlayersFilling extends GameState{
     }
 
     private void setUpPlayers(GameModel model){
+        Collections.shuffle(model.getPlayers());
         List<Player> players = model.getPlayers();
         for (int i = 0; i < players.size(); i++) {
             switch(i) {
