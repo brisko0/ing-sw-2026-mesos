@@ -627,7 +627,7 @@ public class GameModel implements Serializable {
         for (Player p : players) {
             p.getStats().addPoints(p.getStats().getBuilderPoints());
             p.getStats().addPoints(p.getStats().getCharacterTypeNum(CharacterType.INVENTOR) * p.getStats().getInventions().size());
-            p.getStats().addPoints(10 * p.getStats().getCharacterTypeNum(CharacterType.ARTIST) / 2);
+            p.getStats().addPoints(10 * (p.getStats().getCharacterTypeNum(CharacterType.ARTIST) / 2));
 
             for (BuildingCard buildingCard : p.getStats().getBuildingCards()) {
                 buildingCard.onGameEnding(this, p);
