@@ -31,10 +31,12 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 public class ViewGameController implements UpdateHandler, MessageVisitor {
 
@@ -298,6 +300,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
                 } else {
                     this.currentTotems = newPositions;
                     refreshTotems();
+                    applyGlowsBasedOnState();
                 }
             });
         });
@@ -444,8 +447,17 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
 
         if (localPlayerNickname.equals(currentPlayerInfo.nickname())) {
             if (currentPhase.contains("TotemPlacement")) {
-                for (StackPane offerStack : offerTileSlots.values()) {
-                    for (Node node : offerStack.getChildren()) {
+                Set<String> occupiedOfferTiles = new HashSet<>();
+                if (currentTotems != null) {
+                    for (TotemPositionDTO totem : currentTotems) {
+                        if ("OFFER".equals(totem.locationType())) {
+                            occupiedOfferTiles.add(totem.locationId().toUpperCase());
+                        }
+                    }
+                }
+                for (Map.Entry<String, StackPane> entry : offerTileSlots.entrySet()) {
+                    if (occupiedOfferTiles.contains(entry.getKey())) continue;
+                    for (Node node : entry.getValue().getChildren()) {
                         if ("offer_tile".equals(node.getUserData())) addPulsingGlow(node);
                     }
                 }
@@ -996,7 +1008,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         StackPane endSlot = findSlot(to.locationType(), to.locationId());
 
         if (startSlot == null || endSlot == null) {
-            this.currentTotems = finalState; refreshTotems(); return;
+            this.currentTotems = finalState; refreshTotems(); applyGlowsBasedOnState(); return;
         }
 
         ImageView flyer = createTotemImage(to.totemColor());
@@ -1032,6 +1044,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             rootPane.getChildren().remove(flyer);
             this.currentTotems = finalState;
             refreshTotems();
+            applyGlowsBasedOnState();
         });
 
         transition.play();
