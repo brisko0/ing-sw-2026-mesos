@@ -6,8 +6,10 @@ import java.io.Serial;
 
 /**
  * Terminal state. Runs the model's end-of-game actions on entry — final scoring from
- * buildings and characters, winner determination — and then stays here; all player actions
- * inherit the rejecting defaults from {@link GameState} so no further moves are accepted.
+ * buildings and characters — and then stays here; all player actions inherit the rejecting
+ * defaults from {@link GameState} so no further moves are accepted. The final ranking and
+ * winner (tie-break points → food, with shared victory) are exposed separately by
+ * {@link it.polimi.ingsw.am56.model.GameModel#computeRanking()}, queried once scoring is done.
  */
 public class GameEnding extends GameState {
     @Serial
@@ -31,7 +33,8 @@ public class GameEnding extends GameState {
     }
 
     /**
-     * Delegates final scoring and winner determination to the model.
+     * Delegates final scoring to the model. The ranking/winner is computed on demand via
+     * {@link it.polimi.ingsw.am56.model.GameModel#computeRanking()} after this runs.
      */
     public void endGameActions() {
         model.endGameActions();

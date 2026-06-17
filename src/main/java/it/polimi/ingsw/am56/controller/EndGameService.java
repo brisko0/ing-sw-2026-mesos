@@ -3,14 +3,11 @@ package it.polimi.ingsw.am56.controller;
 import it.polimi.ingsw.am56.database.LeaderboardDAO;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.GameObserver;
-import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.state.GameEvent;
 import it.polimi.ingsw.am56.network.message.classesDTO.EndGameDTO;
 import it.polimi.ingsw.am56.network.message.update.GameEndedMessage;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class EndGameService implements GameObserver {
@@ -41,35 +38,15 @@ public class EndGameService implements GameObserver {
     }
 
     private List<EndGameDTO> computeMatchRanking() {
-        List<Player> sorted = new ArrayList<>(model.getPlayers());
-        sorted.sort(Comparator
-                .comparingInt((Player p) -> p.getStats().getPoints()).reversed()
-                .thenComparing(Comparator
-                        .comparingInt((Player p) -> p.getStats().getFood()).reversed()));
-
-        int highestScore = sorted.isEmpty() ? 0 : sorted.getFirst().getStats().getPoints();
-        int winnerFood   = sorted.isEmpty() ? 0 : sorted.getFirst().getStats().getFood();
         String today = LocalDate.now().toString();
-
-        List<EndGameDTO> result = new ArrayList<>();
-        int rank = 0;
-        int previousScore = Integer.MIN_VALUE;
-        int previousFood = Integer.MIN_VALUE;
-
-        for (int i = 0; i < sorted.size(); i++) {
-            Player p = sorted.get(i);
-            int playerScore = p.getStats().getPoints();
-            int playerFood = p.getStats().getFood();
-
-            if (playerScore != previousScore || playerFood != previousFood) {
-                rank = i + 1;
-                previousScore = playerScore;
-                previousFood = playerFood;
-            }
-
-            boolean isWinner = playerScore == highestScore && playerFood == winnerFood;
-            result.add(new EndGameDTO(rank, p.getNickname(), playerScore, playerFood, isWinner, today));
-        }
-        return result;
+        return model.computeRanking().stream()
+                .map(r -> new EndGameDTO(
+                        r.rank(),
+                        r.player().getNickname(),
+                        r.player().getStats().getPoints(),
+                        r.player().getStats().getFood(),
+                        r.isWinner(),
+                        today))
+                .toList();
     }
 }

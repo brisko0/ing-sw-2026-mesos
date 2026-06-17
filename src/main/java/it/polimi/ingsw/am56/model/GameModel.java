@@ -697,4 +697,50 @@ public class GameModel implements Serializable {
 
         notifyObservers(GameEvent.GAME_ENDED);
     }
+
+    /**
+     * Computes the final ranking using the rulebook tie-break: players are ordered by victory
+     * points descending, then by food descending. Players tied at the top score <em>and</em>
+     * the top food count share the win (shared victory). Ranks are 1-based and shared by
+     * players with identical {@code (points, food)}; the next distinct pair resumes at its
+     * positional index.
+     * <p>
+     * Must be called after {@link #endGameActions()} has finalised scoring (i.e. on the
+     * {@link GameEvent#GAME_ENDED} notification). Returns domain-level {@link RankingEntry}
+     * objects; mapping them to any transport/DTO form is the caller's responsibility, keeping
+     * the model independent of the network and persistence layers.
+     *
+     * @return the players in final ranking order, each wrapped with its rank and winner flag
+     */
+    public List<RankingEntry> computeRanking() {
+        List<Player> sorted = new ArrayList<>(players);
+        sorted.sort(Comparator
+                .comparingInt((Player p) -> p.getStats().getPoints()).reversed()
+                .thenComparing(Comparator
+                        .comparingInt((Player p) -> p.getStats().getFood()).reversed()));
+
+        int highestScore = sorted.isEmpty() ? 0 : sorted.getFirst().getStats().getPoints();
+        int winnerFood = sorted.isEmpty() ? 0 : sorted.getFirst().getStats().getFood();
+
+        List<RankingEntry> ranking = new ArrayList<>();
+        int rank = 0;
+        int previousScore = Integer.MIN_VALUE;
+        int previousFood = Integer.MIN_VALUE;
+
+        for (int i = 0; i < sorted.size(); i++) {
+            Player p = sorted.get(i);
+            int playerScore = p.getStats().getPoints();
+            int playerFood = p.getStats().getFood();
+
+            if (playerScore != previousScore || playerFood != previousFood) {
+                rank = i + 1;
+                previousScore = playerScore;
+                previousFood = playerFood;
+            }
+
+            boolean isWinner = playerScore == highestScore && playerFood == winnerFood;
+            ranking.add(new RankingEntry(rank, p, isWinner));
+        }
+        return ranking;
+    }
 }
