@@ -57,9 +57,9 @@ public class PlayerVirtualView implements GameObserver {
         Runnable handler = eventHandlers.get(event);
         if (handler != null) {
             handler.run();
-        } else {
-            networkConnection.sendMessage(new TemporaryDefaultMessage());
         }
+        // Gli eventi senza handler dedicato (es. ERA_CHANGED) non producono un messaggio:
+        // l'informazione viaggia già dentro altri update (es. lo snapshot di ROUND_ENDED).
     }
 
     // =========================================================================
