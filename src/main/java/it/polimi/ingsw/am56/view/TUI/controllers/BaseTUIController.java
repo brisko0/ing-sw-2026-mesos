@@ -1,6 +1,7 @@
 package it.polimi.ingsw.am56.view.TUI.controllers;
 
 import it.polimi.ingsw.am56.core.UpdateHandler;
+import it.polimi.ingsw.am56.network.message.update.ErrorMessage;
 import it.polimi.ingsw.am56.network.message.update.MessageVisitor;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 import it.polimi.ingsw.am56.view.TUI.TUIContext;
@@ -23,6 +24,16 @@ public abstract class BaseTUIController implements UpdateHandler, MessageVisitor
     @Override
     public void handleUpdate(ServerMessage message) {
         message.accept(this);
+    }
+
+    @Override
+    public void handleError(String message) {
+        drawer.printError(message);
+    }
+
+    @Override
+    public void visit(ErrorMessage message) {
+        handleError(message.details());
     }
 
     @Override

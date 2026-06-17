@@ -102,9 +102,11 @@ public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi, Se
 
     @Override
     public void reportError(String details) throws RemoteException {
-        // da aggiungere un metodo handleError(String msg) nell'UpdateHandler
-        // per mostrare popup di errore nella GUI
-        System.err.println("[CLIENT] Errore dal server: " + details);
+        if (updateHandler != null) {
+            updateHandler.handleError(details);
+        } else {
+            System.err.println("[CLIENT] Errore dal server: " + details);
+        }
     }
 
     @Override

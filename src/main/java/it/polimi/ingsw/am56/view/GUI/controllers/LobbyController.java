@@ -4,6 +4,7 @@ import it.polimi.ingsw.am56.core.ServerAdapter;
 import it.polimi.ingsw.am56.core.UpdateHandler;
 import it.polimi.ingsw.am56.network.message.classesDTO.PlayerDTO;
 import it.polimi.ingsw.am56.network.message.request.LobbyStateRequest;
+import it.polimi.ingsw.am56.network.message.update.ErrorMessage;
 import it.polimi.ingsw.am56.network.message.update.GameAbortedMessage;
 import it.polimi.ingsw.am56.network.message.update.LobbyStateMessage;
 import it.polimi.ingsw.am56.network.message.update.MessageVisitor;
@@ -51,6 +52,16 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
     @Override
     public void handleUpdate(ServerMessage message) {
         message.accept(this);
+    }
+
+    @Override
+    public void handleError(String message) {
+        GuiErrorToast.show(rootPane, message);
+    }
+
+    @Override
+    public void visit(ErrorMessage message) {
+        handleError(message.details());
     }
 
     @Override

@@ -14,6 +14,7 @@ public interface MessageVisitor {
     default void visit(EventResolvedMessage message) {}
     default void visit(GameEndedMessage message) {}
     default void visit(GameAbortedMessage message) {}
+    default void visit(ErrorMessage message) {}
 
     default void visit(TemporaryDefaultMessage message) {}
 }

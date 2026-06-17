@@ -52,6 +52,16 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
         message.accept(this);
     }
 
+    @Override
+    public void handleError(String message) {
+        GuiErrorToast.show(rootPane, message);
+    }
+
+    @Override
+    public void visit(ErrorMessage message) {
+        handleError(message.details());
+    }
+
     // -------------------------------------------------------------------------
     // Server message handlers
     // -------------------------------------------------------------------------

@@ -5,6 +5,8 @@ import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 public interface UpdateHandler {
 
     void handleUpdate(ServerMessage message);
+    
+    default void handleError(String message) {}
 
     default void handleDisconnect() {}
 

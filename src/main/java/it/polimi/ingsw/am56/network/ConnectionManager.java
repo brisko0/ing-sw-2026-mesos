@@ -58,6 +58,13 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
     }
 
     @Override
+    public void handleError(String message) {
+        if (activeHandler != null) {
+            activeHandler.handleError(message);
+        }
+    }
+
+    @Override
     public void handleDisconnect() {
         if (reconnecting) return;
         reconnecting = true;

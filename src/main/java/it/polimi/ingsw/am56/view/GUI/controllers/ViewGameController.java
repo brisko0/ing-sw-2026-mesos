@@ -116,6 +116,16 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         message.accept(this);
     }
 
+    @Override
+    public void handleError(String message) {
+        GuiErrorToast.show(rootPane, message);
+    }
+
+    @Override
+    public void visit(ErrorMessage message) {
+        handleError(message.details());
+    }
+
     // ==========================================
     // SISTEMA DI AZIONI DIFFERITE
     // ==========================================

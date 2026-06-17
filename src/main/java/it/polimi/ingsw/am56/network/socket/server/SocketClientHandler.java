@@ -2,6 +2,7 @@ package it.polimi.ingsw.am56.network.socket.server;
 
 import it.polimi.ingsw.am56.controller.GameController;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
+import it.polimi.ingsw.am56.network.message.update.ErrorMessage;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 import it.polimi.ingsw.am56.network.message.request.ClientRequest;
 import it.polimi.ingsw.am56.network.ClientConnection;
@@ -62,6 +63,7 @@ public class SocketClientHandler implements Runnable, ClientConnection {
     @Override
     public void sendError(String errorDetails) {
         System.err.println("[SOCKET SERVER] Inviato errore al client: " + errorDetails);
+        sendMessage(new ErrorMessage(errorDetails));
     }
 
     @Override
