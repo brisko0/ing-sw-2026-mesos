@@ -110,16 +110,16 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
             try {
                 int size = Integer.parseInt(sizeStr);
                 if (size < 2 || size > 5) {
-                    System.out.println("[LOBBY] La partita deve essere da 2 a 5 giocatori.");
+                    handleError("La partita deve essere da 2 a 5 giocatori.");
                     return;
                 }
                 this.localPlayerNickname = nickname;
                 serverAdapter.sendRequest(new CreateGameRequest(nickname, selectedColor, size));
             } catch (NumberFormatException e) {
-                System.err.println("[LOBBY] La dimensione deve essere un numero.");
+                handleError("La dimensione deve essere un numero.");
             }
         } else {
-            System.out.println("[LOBBY] Compilare tutti i campi e scegliere un colore.");
+            handleError("Compila tutti i campi e scegli un colore.");
         }
     }
 
@@ -134,7 +134,7 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
                 System.out.println("[LOBBY] Invio ReconnectRequest per: " + nickname);
                 serverAdapter.sendRequest(new ReconnectRequest(nickname));
             } else {
-                System.out.println("[LOBBY] Inserire il nickname originale per riconnettersi.");
+                handleError("Inserisci il nickname originale per riconnetterti.");
             }
         } else {
             // Normal join during lobby phase.
@@ -142,7 +142,7 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
                 this.localPlayerNickname = nickname;
                 serverAdapter.sendRequest(new AddPlayerRequest(nickname, selectedColor));
             } else {
-                System.out.println("[LOBBY] Inserire nickname e scegliere un colore.");
+                handleError("Inserisci il nickname e scegli un colore.");
             }
         }
     }
