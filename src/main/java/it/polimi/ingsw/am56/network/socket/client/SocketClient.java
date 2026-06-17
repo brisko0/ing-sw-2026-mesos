@@ -60,6 +60,10 @@ public class SocketClient implements ServerAdapter {
                 }
             } catch (IOException | ClassNotFoundException e) {
                 System.err.println("[SOCKET] Connessione persa: " + e.getMessage());
+                // Chiude il socket (e a cascata gli stream in/out) per non lasciarlo appeso.
+                try {
+                    socket.close();
+                } catch (IOException ignored) {}
                 if (updateHandler != null) {
                     updateHandler.handleDisconnect();
                 }
