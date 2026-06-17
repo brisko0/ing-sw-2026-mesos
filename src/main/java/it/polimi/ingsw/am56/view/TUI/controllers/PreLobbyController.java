@@ -57,6 +57,17 @@ public class PreLobbyController extends BaseTUIController {
         context.changeState(new LobbyController(context, message));
     }
 
+    @Override
+    public void handleDisconnect() {
+        drawer.printReconnecting();
+    }
+
+    @Override
+    public void handleReconnected() {
+        drawer.printReconnected();
+        context.changeState(new PreLobbyController(context));
+    }
+
     private void handleCreateGame() {
         drawer.printMenuHeader("CREATE GAME — No active game, start a new one");
 
