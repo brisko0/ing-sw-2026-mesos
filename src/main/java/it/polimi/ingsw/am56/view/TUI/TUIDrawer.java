@@ -12,6 +12,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Terminal renderer for Mesos. Uses 256-color ANSI (\033[38;5;Nm) + Unicode
+ * box-drawing/icons. Targets Windows Terminal, PowerShell 7+, iTerm2, modern
+ * Linux. Legacy cmd.exe is not supported.
+ *
+ * <p>Adjacent-SGR rule: some Windows consoles drop the first of two adjacent
+ * escape sequences ({@code "\033[31m\033[1m"} can render as {@code "[31m"}).
+ * The convention here is one of:
+ *   <ol>
+ *     <li>Combine attributes into a single SGR ({@code "\033[1;31m"}).</li>
+ *     <li>Wrap a single visual chunk in one {@link #ansi(String, String)} call;
+ *         insert at least one printable character between two such calls.</li>
+ *   </ol>
+ * Width math uses {@link #stripAnsi(String)} which only counts visible chars.
+ */
 public class TUIDrawer {
 
     // ------------------------------------------------------------------
@@ -23,6 +38,7 @@ public class TUIDrawer {
     private static final String DIM = "\033[2m";
     private static final String ITALIC = "\033[3m";
 
+    // Combined color+bold SGRs — single sequence (safer).
     private static final String BOLD_RED = "\033[1;31m";
     private static final String BOLD_GREEN = "\033[1;32m";
     private static final String BOLD_YELLOW = "\033[1;33m";
@@ -32,6 +48,9 @@ public class TUIDrawer {
     private static final String BOLD_WHITE = "\033[1;37m";
     private static final String BOLD_BLACK = "\033[1;30m";
 
+    // 256-color palette. Every constant is a single SGR escape so callers can
+    // pass it directly to {@link #ansi(String, String)} without producing two
+    // adjacent SGR sequences in the byte stream.
     private static final String PARCHMENT = "\033[38;5;180m";
     private static final String PARCHMENT_DIM = "\033[38;5;137m";
     private static final String CLAY = "\033[38;5;130m";
@@ -40,6 +59,7 @@ public class TUIDrawer {
     private static final String STONE = "\033[38;5;244m";
     private static final String SILVER = "\033[38;5;250m";
 
+    // Pre-combined attribute+color SGRs (bold/dim/italic + foreground in one escape).
     private static final String B_PARCHMENT = "\033[1;38;5;180m";
     private static final String B_GOLD = "\033[1;38;5;220m";
     private static final String B_CLAY = "\033[1;38;5;130m";
@@ -49,6 +69,7 @@ public class TUIDrawer {
     private static final String D_STONE = "\033[2;38;5;244m";
     private static final String I_INK = "\033[3;38;5;94m";
 
+    // Per-class colors.
     private static final String COL_COLLECTOR = "\033[38;5;108m";
     private static final String COL_HUNTER = "\033[38;5;167m";
     private static final String COL_BUILDER = "\033[38;5;173m";
@@ -58,6 +79,7 @@ public class TUIDrawer {
     private static final String COL_BUILDING = "\033[38;5;220m";
     private static final String COL_EVENT = "\033[38;5;207m";
 
+    // Box-drawing.
     private static final char H = '─';
     private static final char V = '│';
     private static final char TL = '┌';
@@ -67,6 +89,7 @@ public class TUIDrawer {
 
     private static final int WIDTH = 80;
 
+    /** Mini-card width (must match the literal strings in {@link #renderMiniCard}). */
     private static final int CARD_W = 7;
 
     private final CardCatalog catalog;
@@ -85,6 +108,7 @@ public class TUIDrawer {
     }
 
     public void printTitle() {
+        // 47×6 block-letter MESOS, top 3 rows parchment, bottom 3 rows clay.
         String[] block = {
                 " ███╗   ███╗ ███████╗ ███████╗  ██████╗  ███████╗",
                 " ████╗ ████║ ██╔════╝ ██╔════╝ ██╔═══██╗ ██╔════╝",
@@ -204,6 +228,7 @@ public class TUIDrawer {
     }
 
     private void printCardRow(String label, List<Integer> ids, List<Integer> eventIds) {
+        // Label takes the same 20-char column for every row so the cards line up vertically.
         String labelChunk = "  " + ansi(padRightPlain(label, 20), B_PARCHMENT);
 
         if (ids == null || ids.isEmpty()) {
@@ -236,19 +261,26 @@ public class TUIDrawer {
         System.out.println(emptyLabelChunk + bot);
     }
 
+    /**
+     * 3-line, 7-char-wide mini card. Each line is a single SGR-wrapped chunk —
+     * no adjacent SGR sequences within a card. The era stripe shares the class
+     * tint (no DIM nested SGR) to keep this guarantee.
+     */
     private String[] renderMiniCard(int id, boolean isEvent) {
         ClassKind kind = isEvent ? ClassKind.EVENT : catalog.kindOf(id);
         int era = catalog.eraOf(id);
         String tint = colorFor(kind);
-        String midSgr = isEvent ? B_EVENT : tint;
+        String midSgr = isEvent ? B_EVENT : tint;   // events get bold; one SGR per line
         String icon = iconFor(kind);
 
+        // Mid interior: icon (1 visible char) + " " + id (3-char right-aligned) = 5 chars.
         String idStr;
         if (id < 0 || id > 999) idStr = "???";
         else idStr = String.format("%3d", id);
 
         String eraStr = (era >= 1 && era <= 9) ? ("E" + era) : "E?";
 
+        // Each line is one SGR escape + 7-char content + RESET — stripAnsi gives back 7.
         String top = tint   + "┌─────┐" + RESET;
         String mid = midSgr + "│" + icon + " " + idStr + "│" + RESET;
         String bot = tint   + "└──" + eraStr + "─┘" + RESET;
@@ -334,6 +366,10 @@ public class TUIDrawer {
                 + "   " + summary);
     }
 
+    /**
+     * Single-line "icon Label  ids" cell, padded out to {@code width} so multiple
+     * cells line up horizontally in the dashboard.
+     */
     private String categoryCell(String label, ClassKind kind, List<Integer> ids, int width) {
         String tint = colorFor(kind);
         String icon = iconFor(kind);
@@ -465,6 +501,12 @@ public class TUIDrawer {
     public void printAborted() {
         System.out.println();
         System.out.println(" " + ansi("✖ Game aborted: a player disconnected.", BOLD_RED));
+        System.out.println();
+    }
+
+    public void printServerDown() {
+        System.out.println();
+        System.out.println(" " + ansi("✖ Server connection lost. Exiting.", BOLD_RED));
         System.out.println();
     }
 
@@ -645,6 +687,11 @@ public class TUIDrawer {
     // String / ANSI helpers
     // ------------------------------------------------------------------
 
+    /**
+     * Wrap {@code body} in {@code sgr}…{@code RESET}. No trailing space — callers
+     * must put a plain character (typically a space) between consecutive {@code ansi(…)}
+     * results so the byte stream never has two adjacent SGR escapes.
+     */
     private String ansi(String body, String sgr) {
         if (sgr == null || sgr.isEmpty()) return body;
         return sgr + body + RESET;
@@ -673,6 +720,10 @@ public class TUIDrawer {
         return pad <= 0 ? s : s + " ".repeat(pad);
     }
 
+    /**
+     * Strip ANSI CSI sequences (including the leading ESC byte) so width math
+     * counts visible characters only.
+     */
     private String stripAnsi(String s) {
         return s.replaceAll("\\u001B\\[[;\\d]*[A-Za-z]", "");
     }

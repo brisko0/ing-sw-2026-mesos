@@ -24,4 +24,10 @@ public abstract class BaseTUIController implements UpdateHandler, MessageVisitor
     public void handleUpdate(ServerMessage message) {
         message.accept(this);
     }
+
+    @Override
+    public void handleDisconnect() {
+        drawer.printServerDown();
+        System.exit(1);
+    }
 }
