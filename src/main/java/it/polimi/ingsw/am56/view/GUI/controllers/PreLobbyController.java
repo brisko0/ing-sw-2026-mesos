@@ -7,6 +7,7 @@ import it.polimi.ingsw.am56.network.message.request.CreateGameRequest;
 import it.polimi.ingsw.am56.network.message.request.LobbyStateRequest;
 import it.polimi.ingsw.am56.network.message.request.ReconnectRequest;
 import it.polimi.ingsw.am56.network.message.update.*;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,6 +18,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 import java.io.IOException;
 
@@ -37,6 +39,7 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
     @FXML private TextField joinNicknameField;
 
     @FXML private VBox reconnectingOverlay;
+    @FXML private VBox gameAbortedOverlay;
 
     public void setServerAdapter(ServerAdapter serverAdapter) {
         this.serverAdapter = serverAdapter;
@@ -186,6 +189,16 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
     // -------------------------------------------------------------------------
     // persistenza
     // -------------------------------------------------------------------------
+
+    @Override
+    public void visit(GameAbortedMessage message) {
+        Platform.runLater(() -> {
+            gameAbortedOverlay.setVisible(true);
+            PauseTransition delay = new PauseTransition(Duration.seconds(3));
+            delay.setOnFinished(e -> Platform.exit());
+            delay.play();
+        });
+    }
 
     @Override
     public void handleDisconnect() {

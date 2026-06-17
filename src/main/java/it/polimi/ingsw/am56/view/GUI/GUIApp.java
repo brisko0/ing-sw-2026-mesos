@@ -40,4 +40,9 @@ public class GUIApp extends Application {
         primaryStage.setOnCloseRequest(e -> System.exit(0));
         primaryStage.show();
     }
+
+    @Override
+    public void stop() {
+        System.exit(0);
+    }
 }

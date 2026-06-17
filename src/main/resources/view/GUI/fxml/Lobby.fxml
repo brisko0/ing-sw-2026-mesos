@@ -61,4 +61,17 @@
                style="-fx-font-size: 16px; -fx-text-fill: #cccccc;"/>
     </VBox>
 
+    <VBox fx:id="gameAbortedOverlay"
+          visible="false"
+          alignment="CENTER"
+          spacing="20"
+          style="-fx-background-color: rgba(0,0,0,0.75);">
+        <Label text="Game aborted"
+               style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+        <Label text="A player disconnected."
+               style="-fx-font-size: 16px; -fx-text-fill: #cccccc;"/>
+        <Label text="Closing..."
+               style="-fx-font-size: 14px; -fx-text-fill: #aaaaaa;"/>
+    </VBox>
+
 </StackPane>

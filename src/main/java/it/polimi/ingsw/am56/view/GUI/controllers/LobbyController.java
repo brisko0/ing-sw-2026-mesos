@@ -4,6 +4,7 @@ import it.polimi.ingsw.am56.core.ServerAdapter;
 import it.polimi.ingsw.am56.core.UpdateHandler;
 import it.polimi.ingsw.am56.network.message.classesDTO.PlayerDTO;
 import it.polimi.ingsw.am56.network.message.request.LobbyStateRequest;
+import it.polimi.ingsw.am56.network.message.update.GameAbortedMessage;
 import it.polimi.ingsw.am56.network.message.update.LobbyStateMessage;
 import it.polimi.ingsw.am56.network.message.update.MessageVisitor;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
@@ -20,6 +21,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
 import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 
@@ -35,6 +37,7 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
     @FXML private Label statusLabel;
 
     @FXML private VBox reconnectingOverlay;
+    @FXML private VBox gameAbortedOverlay;
 
     public void setLocalPlayerNickname(String nickname) {
         this.localPlayerNickname = nickname;
@@ -140,6 +143,16 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
     // -------------------------------------------------------------------------
     // persistenza
     // -------------------------------------------------------------------------
+
+    @Override
+    public void visit(GameAbortedMessage message) {
+        Platform.runLater(() -> {
+            gameAbortedOverlay.setVisible(true);
+            PauseTransition delay = new PauseTransition(Duration.seconds(3));
+            delay.setOnFinished(e -> Platform.exit());
+            delay.play();
+        });
+    }
 
     @Override
     public void handleDisconnect() {
