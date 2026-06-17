@@ -43,7 +43,7 @@
             <rowConstraints>
                 <RowConstraints percentHeight="35"/> <RowConstraints percentHeight="9"/>  <RowConstraints percentHeight="2"/>  <RowConstraints percentHeight="9"/>  <RowConstraints percentHeight="15"/> <RowConstraints percentHeight="10"/> <RowConstraints percentHeight="20"/> </rowConstraints>
 
-            <TextField fx:id="gameSizeField" promptText="NUMERO GIOCATORI (2-4)" styleClass="mesos-input"
+            <TextField fx:id="gameSizeField" promptText="NUMERO GIOCATORI (2-5)" styleClass="mesos-input"
                        GridPane.columnIndex="1" GridPane.rowIndex="1" maxHeight="Infinity" maxWidth="Infinity"/>
 
             <TextField fx:id="createNicknameField" promptText="NICKNAME" styleClass="mesos-input"
