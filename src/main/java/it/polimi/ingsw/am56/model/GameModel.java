@@ -503,6 +503,17 @@ public class GameModel implements Serializable {
     }
 
     /**
+     * Delegates an extra-pick skip request to the active {@link GameState}. Only legal in
+     * {@link it.polimi.ingsw.am56.model.state.ExtraUpperCardPicking}; rejected elsewhere.
+     *
+     * @param p the player declining the optional extra upper-row pick
+     * @throws InvalidActionException if skipping is not legal in the current phase
+     */
+    public void skipExtraUpperCardPick(Player p) throws InvalidActionException {
+        state.skipExtraUpperCardPick(p);
+    }
+
+    /**
      * Performs a validated card pick: hands the card to the player, increments the row pick
      * counter, removes the card from the board, then resolves its primary effect and any
      * building reactions. Fires {@link GameEvent#CARD_PICKED} and snapshots.

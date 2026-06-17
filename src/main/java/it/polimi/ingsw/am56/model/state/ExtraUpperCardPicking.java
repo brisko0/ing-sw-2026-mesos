@@ -58,6 +58,23 @@ public class ExtraUpperCardPicking extends GameState {
     }
 
     /**
+     * Declines the optional extra upper-row pick: validates that it is the given player's turn
+     * and then advances straight to {@link RoundEnding} without drawing any card. The extra
+     * pick is optional by the rules (the building reads "you <em>may</em> take 1 card"), so a
+     * player who does not want it must be able to skip.
+     *
+     * @param p the player declining the extra pick
+     * @throws InvalidActionException if it is not {@code p}'s turn
+     */
+    @Override
+    public void skipExtraUpperCardPick(Player p) throws InvalidActionException {
+        if (!p.equals(model.getCurrentPlayer())) {
+            throw new InvalidActionException("Non è il tuo turno! Deve agire il player " + model.getCurrentPlayer().getNickname());
+        }
+        model.setState(new RoundEnding(model));
+    }
+
+    /**
      * @return {@link State#EXTRA_UPPER_CARD_PICKING}
      */
     @Override

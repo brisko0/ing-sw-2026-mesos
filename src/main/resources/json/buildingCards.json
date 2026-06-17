@@ -173,20 +173,20 @@
     "characterType": "INVENTOR"
   },
   {
-    "classType": "ExtraUpperCardAfterActions",
-    "cardId": 116,
-    "era": 3,
-    "minPlayers": 0,
-    "cost":  9,
-    "points": 0
-  },
-  {
     "classType": "AddPointsEndGame",
-    "cardId": 117,
+    "cardId": 116,
     "era": 3,
     "minPlayers": 0,
     "cost":  10,
     "points": 0,
     "bonusPoints": 25
+  },
+  {
+    "classType": "ExtraUpperCardAfterActions",
+    "cardId": 117,
+    "era": 3,
+    "minPlayers": 0,
+    "cost":  9,
+    "points": 0
   }
 ]

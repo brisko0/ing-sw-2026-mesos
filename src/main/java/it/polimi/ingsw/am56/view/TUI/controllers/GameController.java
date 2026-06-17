@@ -8,6 +8,7 @@ import it.polimi.ingsw.am56.network.message.classesDTO.PlayerStatsDTO;
 import it.polimi.ingsw.am56.network.message.classesDTO.TotemPositionDTO;
 import it.polimi.ingsw.am56.network.message.request.CardPickRequest;
 import it.polimi.ingsw.am56.network.message.request.ReconnectRequest;
+import it.polimi.ingsw.am56.network.message.request.SkipExtraPickRequest;
 import it.polimi.ingsw.am56.network.message.request.TotemMoveRequest;
 import it.polimi.ingsw.am56.network.message.update.BoardUpdatedMessage;
 import it.polimi.ingsw.am56.network.message.update.CurrentPlayerUpdateMessage;
@@ -30,15 +31,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class GameController extends BaseTUIController {
 
+    /** Coalesce all messages from a server "transaction" into a single render. */
     private static final long RENDER_DEBOUNCE_MS = 80;
 
+    /** Maximum number of recent-events entries shown in the in-game log. */
     private static final int LOG_LIMIT = 5;
 
     private final Object lock = new Object();
 
+    // Local snapshot of game state, mutated only under lock.
     private BoardDTO board;
     private final Map<String, PlayerStatsDTO> playerStats = new LinkedHashMap<>();
     private List<TotemPositionDTO> totems = new ArrayList<>();
@@ -48,8 +53,10 @@ public class GameController extends BaseTUIController {
     private int currentRound;
     private long stateVersion = 0;
 
+    /** Rolling deque of player-facing log lines (oldest at head). */
     private final Deque<String> recentLog = new ArrayDeque<>();
 
+    // Render coalescer.
     private final Object renderLock = new Object();
     private boolean dirty = false;
 
@@ -168,6 +175,8 @@ public class GameController extends BaseTUIController {
             appendLog("Event #" + message.cardId() + " resolved");
             bumpAndNotify();
         }
+        // Print the inline flash on the next render rather than now, so it isn't
+        // wiped by the imminent clearScreen() from the coalesced redraw.
         markDirty();
     }
 
@@ -257,6 +266,7 @@ public class GameController extends BaseTUIController {
                     if (gameOver) return;
                 }
 
+                // Settle: server transactions emit several messages in a row.
                 Thread.sleep(RENDER_DEBOUNCE_MS + 50);
 
                 long versionAtPrompt;
@@ -311,8 +321,10 @@ public class GameController extends BaseTUIController {
     }
 
     private void promptCardPick() {
+        boolean extraPick;
         Set<Integer> allowed = new HashSet<>();
         synchronized (lock) {
+            extraPick = currentPhase != null && currentPhase.contains("ExtraUpperCardPicking");
             PlayerStatsDTO me = playerStats.get(context.getLocalNickname());
             if (me == null || board == null) {
                 drawer.printError("Player state not available.");
@@ -332,6 +344,12 @@ public class GameController extends BaseTUIController {
             }
         }
 
+        // Bonus pick granted by a building: taking a card is optional, so always offer "skip".
+        if (extraPick) {
+            promptExtraPick(allowed);
+            return;
+        }
+
         if (allowed.isEmpty()) {
             drawer.printError("No pickable cards right now.");
             return;
@@ -341,6 +359,36 @@ public class GameController extends BaseTUIController {
         int cardId = inputReader.readIntFromSet(allowed, "  Card ID");
         context.getServerAdapter().sendRequest(
                 new CardPickRequest(context.getLocalNickname(), cardId));
+    }
+
+    private void promptExtraPick(Set<Integer> allowed) {
+        if (allowed.isEmpty()) {
+            drawer.printPrompt("Bonus pick: no affordable upper-row card — skipping.");
+            context.getServerAdapter().sendRequest(
+                    new SkipExtraPickRequest(context.getLocalNickname()));
+            return;
+        }
+        String hint = allowed.stream().sorted().map(String::valueOf).collect(Collectors.joining(", "));
+        drawer.printPrompt("Bonus pick: take 1 card from the UPPER row, or skip");
+        while (true) {
+            String input = inputReader.readString("  Card ID [" + hint + "] or 'S' to skip:");
+            if (input.equalsIgnoreCase("S")) {
+                context.getServerAdapter().sendRequest(
+                        new SkipExtraPickRequest(context.getLocalNickname()));
+                return;
+            }
+            try {
+                int cardId = Integer.parseInt(input);
+                if (allowed.contains(cardId)) {
+                    context.getServerAdapter().sendRequest(
+                            new CardPickRequest(context.getLocalNickname(), cardId));
+                    return;
+                }
+            } catch (NumberFormatException ignored) {
+                // fall through to the error hint below
+            }
+            drawer.printError("Enter one of [" + hint + "] or 'S' to skip.");
+        }
     }
 
     private void addPickable(Set<Integer> out, List<Integer> ids,
@@ -395,6 +443,7 @@ public class GameController extends BaseTUIController {
             drawer.printPlayerDashboard(mine, true, isCurrent(mine.nickname(), currentCopy));
         }
 
+        // Opponents are rendered as a single-line summary under a small header.
         boolean opponentsHeaderPrinted = false;
         for (PlayerStatsDTO p : playersCopy) {
             if (p.nickname().equals(me)) continue;
@@ -412,8 +461,9 @@ public class GameController extends BaseTUIController {
 
     private String phaseLabel(String phase) {
         if (phase == null) return "?";
-        if (phase.contains("TotemPlacement")) return "Totem Placement";
-        if (phase.contains("CardPicking"))    return "Card Picking";
+        if (phase.contains("TotemPlacement"))         return "Totem Placement";
+        if (phase.contains("ExtraUpperCardPicking"))  return "Bonus Pick";
+        if (phase.contains("CardPicking"))            return "Card Picking";
         if (phase.contains("RoundEnding"))    return "Round End";
         if (phase.contains("GameEnding"))     return "Game End";
         if (phase.contains("PlayersFilling")) return "Waiting for Players";
@@ -479,6 +529,11 @@ public class GameController extends BaseTUIController {
         while (recentLog.size() > LOG_LIMIT) recentLog.removeFirst();
     }
 
+    /**
+     * Returns the new OFFER occupancy line if exactly one totem changed location
+     * to a new OFFER tile compared to {@code before}. Move-back-to-order or
+     * board-wide resets return null.
+     */
     private String diffOfferPlacement(List<TotemPositionDTO> before, List<TotemPositionDTO> after) {
         if (after == null) return null;
         for (TotemPositionDTO neu : after) {
@@ -501,6 +556,11 @@ public class GameController extends BaseTUIController {
         return null;
     }
 
+    /**
+     * Returns a "{NICK} picked {KIND} #{id}" line if exactly one of the player's
+     * card-list fields grew compared to {@code before}. If {@code before} is null
+     * (first sighting of this player), returns null — no pick to attribute.
+     */
     private String diffPickedCard(PlayerStatsDTO before, PlayerStatsDTO after) {
         if (before == null || after == null) return null;
         Integer pickedId;
@@ -519,6 +579,7 @@ public class GameController extends BaseTUIController {
         return after.nickname() + " picked " + kindLabel(kind) + " #" + pickedId;
     }
 
+    /** Returns the new id if {@code after} has exactly one more entry than {@code before}, else null. */
     private Integer listGrowth(List<Integer> before, List<Integer> after) {
         if (before == null || after == null) return null;
         if (after.size() != before.size() + 1) return null;

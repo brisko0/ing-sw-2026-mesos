@@ -127,4 +127,16 @@ public class GameController {
             System.out.println("[CONTROLLER] carta pescata per " + nickname + ", carta con id " + cardId);
         }
     }
+
+    public void skipExtraPick(String nickname) throws InvalidActionException {
+        synchronized (model) {
+            Player player = model.getPlayers().stream()
+                    .filter(p -> p.getNickname().equals(nickname))
+                    .findFirst()
+                    .orElseThrow(() -> new InvalidActionException("Giocatore non trovato"));
+
+            model.skipExtraUpperCardPick(player);
+            System.out.println("[CONTROLLER] " + nickname + " ha rinunciato alla pesca extra.");
+        }
+    }
 }

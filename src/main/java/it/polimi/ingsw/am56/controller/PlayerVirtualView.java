@@ -232,6 +232,9 @@ public class PlayerVirtualView implements GameObserver {
         if (ot != null) {
             canPickUpper = p.getPickedUpper() < ot.getUpperCards();
             canPickLower = p.getPickedLower() < ot.getLowerCards();
+        } else if (model.getCurrentState().getState() == State.EXTRA_UPPER_CARD_PICKING
+                && p.equals(model.getCurrentPlayer())) {
+            canPickUpper = true;
         }
 
         List<Integer> affordableBuildings = new ArrayList<>();

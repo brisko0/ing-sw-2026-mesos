@@ -79,6 +79,18 @@ public abstract class GameState implements Serializable {
     }
 
     /**
+     * Extra-pick action: the given player <em>declines</em> the optional extra upper-row pick
+     * granted by their building, ending the round without taking a card. The default
+     * implementation rejects the call; {@link ExtraUpperCardPicking} overrides it.
+     *
+     * @param p the player declining the extra pick
+     * @throws InvalidActionException if there is no optional extra pick to skip in the current phase
+     */
+    public void skipExtraUpperCardPick(Player p) throws InvalidActionException {
+        throw new InvalidActionException("There is no optional pick to skip right now.");
+    }
+
+    /**
      * Hook fired by {@link GameModel#setState} immediately after this state is installed.
      * The base implementation is a no-op; states such as {@link RoundEnding},
      * {@link GameEnding} and {@link CardPicking} override it to perform their automatic

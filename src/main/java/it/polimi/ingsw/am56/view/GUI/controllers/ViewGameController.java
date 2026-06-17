@@ -6,6 +6,7 @@ import it.polimi.ingsw.am56.network.message.classesDTO.*;
 import it.polimi.ingsw.am56.network.message.request.GameSyncRequest;
 import it.polimi.ingsw.am56.network.message.request.CardPickRequest;
 import it.polimi.ingsw.am56.network.message.request.ReconnectRequest;
+import it.polimi.ingsw.am56.network.message.request.SkipExtraPickRequest;
 import it.polimi.ingsw.am56.network.message.request.TotemMoveRequest;
 import it.polimi.ingsw.am56.network.message.update.*;
 import javafx.animation.*;
@@ -13,6 +14,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
@@ -387,7 +389,44 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         }
     }
 
+    private Button skipExtraPickButton;
+
+    /**
+     * Shows a "skip" button only while the local player is the current player during the
+     * optional extra upper-row pick phase, letting them decline the bonus card and end the
+     * round. The button is created lazily and parked in {@link #gameInfoBox}.
+     */
+    private void updateSkipExtraPickButton() {
+        boolean show = currentPlayerInfo != null && currentPhase != null && localPlayerNickname != null
+                && localPlayerNickname.equals(currentPlayerInfo.nickname())
+                && currentPhase.contains("ExtraUpperCardPicking");
+
+        if (skipExtraPickButton == null) {
+            if (!show) return;
+            skipExtraPickButton = new Button("Salta pesca bonus");
+            skipExtraPickButton.getStyleClass().add("skip-bonus-button");
+            skipExtraPickButton.setMaxWidth(Double.MAX_VALUE);
+            skipExtraPickButton.setOnAction(e -> {
+                if (serverAdapter != null && localPlayerNickname != null) {
+                    serverAdapter.sendRequest(new SkipExtraPickRequest(localPlayerNickname));
+                    skipExtraPickButton.setDisable(true);
+                }
+            });
+            if (gameInfoBox != null) {
+                VBox.setMargin(skipExtraPickButton, new javafx.geometry.Insets(8, 0, 0, 0));
+                gameInfoBox.getChildren().add(skipExtraPickButton);
+            }
+        }
+
+        skipExtraPickButton.setVisible(show);
+        skipExtraPickButton.setManaged(show);
+        if (show) {
+            skipExtraPickButton.setDisable(false);
+        }
+    }
+
     private void applyGlowsBasedOnState() {
+        updateSkipExtraPickButton();
         clearAllGlows();
 
         if (isAnimatingBoard) return;
@@ -400,6 +439,10 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
                         if ("offer_tile".equals(node.getUserData())) addPulsingGlow(node);
                     }
                 }
+            }
+            else if (currentPhase.contains("ExtraUpperCardPicking")) {
+                glowCardsInContainer(upperTribeBox, false);
+                glowCardsInContainer(upperBuildingsBox, true);
             }
             else if (currentPhase.contains("CardPicking")) {
                 if (localCanPickUpper) {
