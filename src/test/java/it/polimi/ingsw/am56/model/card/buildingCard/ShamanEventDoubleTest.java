@@ -21,8 +21,8 @@ class ShamanEventDoubleTest {
         gameModel.getPlayers().add(new Player("a", "a"));
         gameModel.getPlayers().add(new Player("a", "a"));
         shamanEventDouble = new ShamanEventDouble(1, 1, 1, 1, 1);
-        shamansEvCard = new ShamansEvCard(1, 1, 1, 5, 0);
-        artistsEvCard = new ArtistsEvCard(1, 1, 1, 1, 1, 1);
+        shamansEvCard = new ShamansEvCard(1, 1, 1, false, 5, 0);
+        artistsEvCard = new ArtistsEvCard(1, 1, 1, false, 1, 1, 1);
     }
 
     @Test

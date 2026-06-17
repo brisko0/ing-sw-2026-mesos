@@ -1,5 +1,6 @@
 package it.polimi.ingsw.am56.model;
 
+import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.card.buildingCard.AddPointsEndGame;
 import it.polimi.ingsw.am56.model.card.buildingCard.BuildingCard;
 import it.polimi.ingsw.am56.model.card.buildingCard.ShamanEventDouble;
@@ -294,7 +295,7 @@ class GameModelTest {
         gameModel.getBoard().getLowerRowCharEv().clear();
         gameModel.getBoard().getUpperRowCharEv().clear();
 
-        ShamansEvCard shamansEvCard = new ShamansEvCard(1, 1, 1, 5, 3);
+        ShamansEvCard shamansEvCard = new ShamansEvCard(1, 1, 1, false, 5, 3);
         ShamanNoLoss shamanNoLoss = new ShamanNoLoss(1, 1, 1, 1, 1);
         ShamanEventDouble shamanEventDouble = new ShamanEventDouble(1, 1, 1, 1, 1);
 

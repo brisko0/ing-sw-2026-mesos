@@ -21,7 +21,7 @@ class HuntingEvCardTest {
         for(int i = 0; i < 2; i++) {
             gameModel.getPlayers().add(new Player("a", "a"));
         }
-        huntingEvCard = new HuntingEvCard(1, 1, 1, 2);
+        huntingEvCard = new HuntingEvCard(1, 1, 1, false, 2);
         hunterCharCard = new HunterCharCard(1, 1, 1, true);
         hunterCharCard2 = new HunterCharCard(1, 1, 1, false);
     }

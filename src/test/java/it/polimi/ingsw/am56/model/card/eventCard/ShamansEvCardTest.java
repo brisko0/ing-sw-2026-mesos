@@ -18,7 +18,7 @@ class ShamansEvCardTest {
         gameModel.getPlayers().add(new Player("a", "a"));
         gameModel.getPlayers().add(new Player("b", "b"));
         gameModel.getPlayers().add(new Player("c", "c"));
-        shamansEvCard = new ShamansEvCard(1, 1, 1, 10, 5);
+        shamansEvCard = new ShamansEvCard(1, 1, 1, false, 10, 5);
     }
 
     @Test

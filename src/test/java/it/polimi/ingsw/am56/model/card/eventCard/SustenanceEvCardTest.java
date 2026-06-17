@@ -29,7 +29,7 @@ class SustenanceEvCardTest {
         for (int i = 0; i < 3; i++) {
             gameModel.getPlayers().add(new Player("a", "a"));
         }
-        sustenanceEvCard = new SustenanceEvCard(1, 1, 1, 2);
+        sustenanceEvCard = new SustenanceEvCard(1, 1, 1, false, 2);
         artistCharCard = new ArtistCharCard(1, 1, 1);
         hunterCharCard = new HunterCharCard(1, 1, 1, true);
         shamanCharCard = new ShamanCharCard(1, 1, 1, 2);

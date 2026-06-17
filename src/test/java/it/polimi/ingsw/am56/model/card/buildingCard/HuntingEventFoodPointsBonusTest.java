@@ -28,8 +28,8 @@ class HuntingEventFoodPointsBonusTest {
         }
         gameModel.setCurrentPlayer(gameModel.getPlayers().getFirst());
         huntingEventFoodPointsBonus = new HuntingEventFoodPointsBonus(1, 1, 1, 1, 1);
-        huntingEvCard = new HuntingEvCard(1, 1, 1, 2);
-        artistEvCard = new ArtistsEvCard(1, 1, 1, 2, 1, 1);
+        huntingEvCard = new HuntingEvCard(1, 1, 1, false, 2);
+        artistEvCard = new ArtistsEvCard(1, 1, 1, false, 2, 1, 1);
         inventorCharCard = new InventorCharCard(1, 1, 1, "PANE");
         hunterCharCard = new HunterCharCard(1, 1, 1, true);
         hunterCharCard2 = new HunterCharCard(1, 1, 1, false);

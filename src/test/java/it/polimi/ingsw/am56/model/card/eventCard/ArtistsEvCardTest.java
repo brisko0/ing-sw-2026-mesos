@@ -23,7 +23,7 @@ class ArtistsEvCardTest {
         gameModel.getPlayers().add(new Player("a", "a"));
         gameModel.getPlayers().add(new Player("b", "b"));
 
-        artistsEvCard = new ArtistsEvCard(1, 1, 1, 2, 10, 2);
+        artistsEvCard = new ArtistsEvCard(1, 1, 1, false, 2, 10, 2);
         artistCharCard = new ArtistCharCard(1, 1, 1);
     }
 

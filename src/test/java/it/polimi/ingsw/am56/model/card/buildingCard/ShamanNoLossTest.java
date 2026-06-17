@@ -21,8 +21,8 @@ class ShamanNoLossTest {
         gameModel.getPlayers().add(new Player("a", "a"));
         gameModel.getPlayers().add(new Player("a", "a"));
         shamanNoLoss = new ShamanNoLoss(1, 1, 1, 1, 1);
-        shamansEvCard = new ShamansEvCard(1, 1, 1, 0, 5);
-        artistsEvCard = new ArtistsEvCard(1, 1, 1, 1, 1, 1);
+        shamansEvCard = new ShamansEvCard(1, 1, 1, false, 0, 5);
+        artistsEvCard = new ArtistsEvCard(1, 1, 1, false, 1, 1, 1);
     }
 
     @Test
