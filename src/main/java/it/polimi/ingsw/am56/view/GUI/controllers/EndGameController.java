@@ -5,12 +5,14 @@ import it.polimi.ingsw.am56.network.message.update.GameEndedMessage;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import java.util.List;
 
@@ -24,12 +26,21 @@ public class EndGameController {
     @FXML private Label matchGameSizeLabel;
     @FXML private Label globalGameSizeLabel;
 
+    @FXML private Button exitButton;
+
     private String localPlayerNickname;
 
     @FXML
     public void initialize() {
         rootPane.widthProperty().addListener((obs, oldVal, newVal) -> scaleUI());
         rootPane.heightProperty().addListener((obs, oldVal, newVal) -> scaleUI());
+    }
+
+    @FXML
+    private void handleExit() {
+        Stage stage = (Stage) rootPane.getScene().getWindow();
+        stage.close();
+        Platform.exit();
     }
 
     private void scaleUI() {

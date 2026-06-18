@@ -107,3 +107,26 @@
     -fx-padding: 0 0 15 0; /* Spazio inferiore per separarlo dalla classifica */
     -fx-letter-spacing: 1px;
 }
+
+/* ==================================================== */
+/* PULSANTE ESCI                                        */
+/* ==================================================== */
+.exit-button {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-color: #b33900;
+    -fx-background-radius: 8;
+    -fx-padding: 10 26 10 26;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 8, 0, 0, 3);
+}
+
+.exit-button:hover {
+    -fx-background-color: #d24400;
+}
+
+.exit-button:pressed {
+    -fx-background-color: #8f2d00;
+}
