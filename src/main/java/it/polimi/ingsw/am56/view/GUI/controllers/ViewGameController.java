@@ -3,6 +3,7 @@ package it.polimi.ingsw.am56.view.GUI.controllers;
 import it.polimi.ingsw.am56.core.ServerAdapter;
 import it.polimi.ingsw.am56.core.UpdateHandler;
 import it.polimi.ingsw.am56.model.state.State;
+import it.polimi.ingsw.am56.view.GUI.CardInfoCatalog;
 import it.polimi.ingsw.am56.network.message.classesDTO.*;
 import it.polimi.ingsw.am56.network.message.request.GameSyncRequest;
 import it.polimi.ingsw.am56.network.message.request.CardPickRequest;
@@ -80,6 +81,9 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     private CurrentPlayerDTO currentPlayerInfo = null;
     private State currentPhase = null;
     private int currentEraNum = 1;
+
+    /** Lookup of card/tile descriptions used for hover tooltips. */
+    private final CardInfoCatalog cardInfo = new CardInfoCatalog();
 
     private boolean localCanPickUpper = false;
     private boolean localCanPickLower = false;
@@ -572,6 +576,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
                 shadow.setRadius(8); shadow.setOffsetY(3); shadow.setColor(Color.rgb(0,0,0,0.8));
                 deckSlot.setEffect(shadow);
 
+                applyHoverEffect(deckSlot, cardInfo.describeDeck(this.currentEraNum));
                 centerTilesBox.getChildren().add(deckSlot);
             }
         } catch (Exception ignored) {}
@@ -600,6 +605,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             }
 
             orderStack.getChildren().add(coordinateLayer);
+            applyHoverEffect(orderStack, cardInfo.describeOrderTile());
             HBox orderWrapper = new HBox(orderStack);
             orderWrapper.getStyleClass().add("card-row-background");
             orderWrapper.setAlignment(Pos.CENTER);
@@ -622,7 +628,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
                     offerStack.setAlignment(Pos.CENTER);
 
                     offerStack.setOnMouseClicked(event -> handleOfferTileClick(letter));
-                    applyHoverEffect(offerStack, "Tessera Offerta " + letter);
+                    applyHoverEffect(offerStack, cardInfo.describeOfferTile(letter));
 
                     offerTileSlots.put(letter.toUpperCase(), offerStack);
                     offerTilesWrapper.getChildren().add(offerStack);
@@ -1290,7 +1296,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             defaultShadow.setRadius(8); defaultShadow.setOffsetY(3); defaultShadow.setColor(Color.rgb(0,0,0,0.8));
             cardView.setEffect(defaultShadow);
 
-            applyHoverEffect(cardView, "Carta ID: " + cardId);
+            applyHoverEffect(cardView, cardInfo.describeCard(cardId));
 
             StackPane cardSlot = new StackPane(cardView);
             cardSlot.setAlignment(Pos.CENTER);
