@@ -2,6 +2,7 @@ package it.polimi.ingsw.am56.view.GUI.controllers;
 
 import it.polimi.ingsw.am56.core.ServerAdapter;
 import it.polimi.ingsw.am56.core.UpdateHandler;
+import it.polimi.ingsw.am56.model.state.State;
 import it.polimi.ingsw.am56.network.message.classesDTO.*;
 import it.polimi.ingsw.am56.network.message.request.GameSyncRequest;
 import it.polimi.ingsw.am56.network.message.request.CardPickRequest;
@@ -77,7 +78,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     private List<Integer> currentEventCardIds = new ArrayList<>();
 
     private CurrentPlayerDTO currentPlayerInfo = null;
-    private String currentPhase = null;
+    private State currentPhase = null;
     private int currentEraNum = 1;
 
     private boolean localCanPickUpper = false;
@@ -412,7 +413,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     private void updateSkipExtraPickButton() {
         boolean show = currentPlayerInfo != null && currentPhase != null && localPlayerNickname != null
                 && localPlayerNickname.equals(currentPlayerInfo.nickname())
-                && currentPhase.contains("ExtraUpperCardPicking");
+                && currentPhase == State.EXTRA_UPPER_CARD_PICKING;
 
         if (skipExtraPickButton == null) {
             if (!show) return;
@@ -446,7 +447,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         if (currentPlayerInfo == null || localPlayerNickname == null || currentPhase == null) return;
 
         if (localPlayerNickname.equals(currentPlayerInfo.nickname())) {
-            if (currentPhase.contains("TotemPlacement")) {
+            if (currentPhase == State.TOTEM_PLACEMENT) {
                 Set<String> occupiedOfferTiles = new HashSet<>();
                 if (currentTotems != null) {
                     for (TotemPositionDTO totem : currentTotems) {
@@ -462,11 +463,11 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
                     }
                 }
             }
-            else if (currentPhase.contains("ExtraUpperCardPicking")) {
+            else if (currentPhase == State.EXTRA_UPPER_CARD_PICKING) {
                 glowCardsInContainer(upperTribeBox, false);
                 glowCardsInContainer(upperBuildingsBox, true);
             }
-            else if (currentPhase.contains("CardPicking")) {
+            else if (currentPhase == State.CARD_PICKING) {
                 if (localCanPickUpper) {
                     glowCardsInContainer(upperTribeBox, false);
                     glowCardsInContainer(upperBuildingsBox, true);
@@ -634,7 +635,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
 
     private void handleOfferTileClick(String letter) {
         if (currentPlayerInfo != null && currentPhase != null && localPlayerNickname != null) {
-            if (localPlayerNickname.equals(currentPlayerInfo.nickname()) && currentPhase.contains("TotemPlacement")) {
+            if (localPlayerNickname.equals(currentPlayerInfo.nickname()) && currentPhase == State.TOTEM_PLACEMENT) {
                 serverAdapter.sendRequest(new TotemMoveRequest(localPlayerNickname, letter));
                 applyGlowsBasedOnState();
             }
@@ -707,7 +708,8 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
 
     private void handleCardClick(int cardId, Node clickedCard) {
         if (currentPlayerInfo != null && currentPhase != null && localPlayerNickname != null) {
-            if (localPlayerNickname.equals(currentPlayerInfo.nickname()) && currentPhase.contains("CardPicking")) {
+            if (localPlayerNickname.equals(currentPlayerInfo.nickname())
+                    && (currentPhase == State.CARD_PICKING || currentPhase == State.EXTRA_UPPER_CARD_PICKING)) {
                 pendingCardAnimations.put(cardId, clickedCard.localToScene(clickedCard.getBoundsInLocal()));
                 serverAdapter.sendRequest(new CardPickRequest(localPlayerNickname, cardId));
                 clickedCard.setDisable(true);

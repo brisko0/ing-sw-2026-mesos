@@ -93,7 +93,7 @@ public class PlayerVirtualView implements GameObserver {
 
         Player current = model.getCurrentPlayer();
         CurrentPlayerDTO currentDTO = new CurrentPlayerDTO(current.getNickname(), current.getTotemColor());
-        GameStateDTO gameStateDTO = new GameStateDTO(model.getCurrentState().toString());
+        GameStateDTO gameStateDTO = new GameStateDTO(model.getCurrentState().getState());
 
         GameSnapshotDTO snapshot = new GameSnapshotDTO(boardDTO, statsDTO, totemsDTO, currentDTO, gameStateDTO,
                 model.getCurrentEra(), model.getCurrentRound());
@@ -115,7 +115,7 @@ public class PlayerVirtualView implements GameObserver {
 
     private void handleStateChanged() {
         networkConnection.sendMessage(new GameStateUpdateMessage(
-                new GameStateDTO(model.getCurrentState().toString())
+                new GameStateDTO(model.getCurrentState().getState())
         ));
     }
 

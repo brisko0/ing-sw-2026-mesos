@@ -1,5 +1,6 @@
 package it.polimi.ingsw.am56.view.TUI.controllers;
 
+import it.polimi.ingsw.am56.model.state.State;
 import it.polimi.ingsw.am56.network.message.classesDTO.BoardDTO;
 import it.polimi.ingsw.am56.network.message.classesDTO.CurrentPlayerDTO;
 import it.polimi.ingsw.am56.network.message.classesDTO.EndRoundSnapshotDTO;
@@ -48,7 +49,7 @@ public class GameController extends BaseTUIController {
     private final Map<String, PlayerStatsDTO> playerStats = new LinkedHashMap<>();
     private List<TotemPositionDTO> totems = new ArrayList<>();
     private CurrentPlayerDTO currentPlayer;
-    private String currentPhase;
+    private State currentPhase;
     private int currentEra;
     private int currentRound;
     private long stateVersion = 0;
@@ -270,7 +271,7 @@ public class GameController extends BaseTUIController {
                 Thread.sleep(RENDER_DEBOUNCE_MS + 50);
 
                 long versionAtPrompt;
-                String phaseAtPrompt;
+                State phaseAtPrompt;
                 synchronized (lock) {
                     if (!isLocalTurn() || !isActionablePhase()) {
                         continue;
@@ -279,9 +280,9 @@ public class GameController extends BaseTUIController {
                     phaseAtPrompt = currentPhase;
                 }
 
-                if (phaseAtPrompt.contains("TotemPlacement")) {
+                if (phaseAtPrompt == State.TOTEM_PLACEMENT) {
                     promptTotemMove();
-                } else if (phaseAtPrompt.contains("CardPicking")) {
+                } else if (phaseAtPrompt == State.CARD_PICKING || phaseAtPrompt == State.EXTRA_UPPER_CARD_PICKING) {
                     promptCardPick();
                 }
 
@@ -324,7 +325,7 @@ public class GameController extends BaseTUIController {
         boolean extraPick;
         Set<Integer> allowed = new HashSet<>();
         synchronized (lock) {
-            extraPick = currentPhase != null && currentPhase.contains("ExtraUpperCardPicking");
+            extraPick = currentPhase == State.EXTRA_UPPER_CARD_PICKING;
             PlayerStatsDTO me = playerStats.get(context.getLocalNickname());
             if (me == null || board == null) {
                 drawer.printError("Player state not available.");
@@ -409,7 +410,7 @@ public class GameController extends BaseTUIController {
         BoardDTO boardCopy;
         List<TotemPositionDTO> totemsCopy;
         CurrentPlayerDTO currentCopy;
-        String phaseCopy;
+        State phaseCopy;
         int eraCopy, roundCopy;
         List<PlayerStatsDTO> playersCopy;
         List<String> logCopy;
@@ -459,15 +460,16 @@ public class GameController extends BaseTUIController {
         drawer.printLegend();
     }
 
-    private String phaseLabel(String phase) {
+    private String phaseLabel(State phase) {
         if (phase == null) return "?";
-        if (phase.contains("TotemPlacement"))         return "Totem Placement";
-        if (phase.contains("ExtraUpperCardPicking"))  return "Bonus Pick";
-        if (phase.contains("CardPicking"))            return "Card Picking";
-        if (phase.contains("RoundEnding"))    return "Round End";
-        if (phase.contains("GameEnding"))     return "Game End";
-        if (phase.contains("PlayersFilling")) return "Waiting for Players";
-        return phase;
+        return switch (phase) {
+            case TOTEM_PLACEMENT          -> "Totem Placement";
+            case EXTRA_UPPER_CARD_PICKING -> "Bonus Pick";
+            case CARD_PICKING             -> "Card Picking";
+            case ROUND_ENDING             -> "Round End";
+            case GAME_ENDING              -> "Game End";
+            case PLAYERS_FILLING          -> "Waiting for Players";
+        };
     }
 
     // ------------------------------------------------------------------
@@ -494,8 +496,9 @@ public class GameController extends BaseTUIController {
     }
 
     private boolean isActionablePhase() {
-        return currentPhase != null
-                && (currentPhase.contains("TotemPlacement") || currentPhase.contains("CardPicking"));
+        return currentPhase == State.TOTEM_PLACEMENT
+                || currentPhase == State.CARD_PICKING
+                || currentPhase == State.EXTRA_UPPER_CARD_PICKING;
     }
 
     private boolean isCurrent(String nickname, CurrentPlayerDTO current) {
