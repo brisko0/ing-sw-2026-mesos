@@ -718,8 +718,6 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
                     && (currentPhase == State.CARD_PICKING || currentPhase == State.EXTRA_UPPER_CARD_PICKING)) {
                 pendingCardAnimations.put(cardId, clickedCard.localToScene(clickedCard.getBoundsInLocal()));
                 serverAdapter.sendRequest(new CardPickRequest(localPlayerNickname, cardId));
-                clickedCard.setDisable(true);
-                clickedCard.setEffect(null);
             }
         }
     }
