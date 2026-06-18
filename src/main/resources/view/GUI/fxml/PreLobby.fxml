@@ -118,8 +118,8 @@
                style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white;"/>
         <Label text="Un giocatore si è disconnesso."
                style="-fx-font-size: 16px; -fx-text-fill: #cccccc;"/>
-        <Label text="Chiusura in corso..."
-               style="-fx-font-size: 14px; -fx-text-fill: #aaaaaa;"/>
+        <Button text="Chiudi" onAction="#handleAbortClose"
+                style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: #b33900; -fx-background-radius: 8; -fx-padding: 10 26 10 26; -fx-cursor: hand;"/>
     </VBox>
 
 </StackPane>

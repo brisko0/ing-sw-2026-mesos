@@ -10,6 +10,7 @@ import it.polimi.ingsw.am56.network.message.update.LobbyStateMessage;
 import it.polimi.ingsw.am56.network.message.update.MessageVisitor;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 import javafx.application.Platform;
+import javafx.stage.Stage;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -39,6 +40,8 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
 
     @FXML private VBox reconnectingOverlay;
     @FXML private VBox gameAbortedOverlay;
+
+    private volatile boolean gameAborted = false;
 
     public void setLocalPlayerNickname(String nickname) {
         this.localPlayerNickname = nickname;
@@ -158,15 +161,22 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
     @Override
     public void visit(GameAbortedMessage message) {
         Platform.runLater(() -> {
+            gameAborted = true;
+            reconnectingOverlay.setVisible(false);
             gameAbortedOverlay.setVisible(true);
-            PauseTransition delay = new PauseTransition(Duration.seconds(3));
-            delay.setOnFinished(e -> Platform.exit());
-            delay.play();
         });
+    }
+
+    @FXML
+    private void handleAbortClose() {
+        Stage stage = (Stage) gameAbortedOverlay.getScene().getWindow();
+        stage.close();
+        Platform.exit();
     }
 
     @Override
     public void handleDisconnect() {
+        if (gameAborted) return;
         Platform.runLater(() -> reconnectingOverlay.setVisible(true));
     }
 

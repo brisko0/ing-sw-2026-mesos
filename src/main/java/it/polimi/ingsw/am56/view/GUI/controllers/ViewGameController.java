@@ -69,6 +69,8 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     @FXML private VBox reconnectingOverlay;
     @FXML private VBox gameAbortedOverlay;
 
+    private volatile boolean gameAborted = false;
+
     private FadeTransition tooltipFade;
 
     private final Map<String, VBox> playerDashboards = new HashMap<>();
@@ -368,11 +370,20 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     @Override
     public void visit(GameAbortedMessage message) {
         Platform.runLater(() -> {
+            gameAborted = true;
+            reconnectingOverlay.setVisible(false);
             gameAbortedOverlay.setVisible(true);
-            PauseTransition delay = new PauseTransition(Duration.seconds(3));
-            delay.setOnFinished(e -> Platform.exit());
-            delay.play();
         });
+    }
+
+    /**
+     * Closes the game window from the "Game aborted" overlay.
+     */
+    @FXML
+    private void handleAbortClose() {
+        Stage stage = (Stage) gameAbortedOverlay.getScene().getWindow();
+        stage.close();
+        Platform.exit();
     }
 
     // ==========================================
@@ -1476,6 +1487,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
 
     @Override
     public void handleDisconnect() {
+        if (gameAborted) return;
         Platform.runLater(() -> reconnectingOverlay.setVisible(true));
     }
 
