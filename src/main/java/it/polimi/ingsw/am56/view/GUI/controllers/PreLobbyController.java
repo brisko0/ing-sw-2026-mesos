@@ -113,7 +113,19 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
                 joinBox.setDisable(true);
                 joinBox.setOpacity(0.5);
             }
+            updateAvailableTotems(message.takenColors());
         });
+    }
+
+    private void updateAvailableTotems(java.util.List<String> takenColors) {
+        for (HBox box : java.util.List.of(createTotemBox, joinTotemBox)) {
+            for (Node totem : box.getChildren()) {
+                String color = (String) totem.getUserData();
+                boolean taken = color != null && takenColors != null && takenColors.contains(color);
+                totem.setVisible(!taken);
+                totem.setManaged(!taken);
+            }
+        }
     }
 
     @Override
