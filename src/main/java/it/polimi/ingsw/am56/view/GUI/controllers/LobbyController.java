@@ -47,6 +47,9 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
     /** Set once a GameAbortedMessage arrives, so the server-lost overlay is not shown on top of it. */
     private volatile boolean gameAborted = false;
 
+    /** The start countdown; kept so it can be stopped if the game is aborted before it elapses. */
+    private Timeline countdownTimeline;
+
     @FXML
     public void initialize() {
         // Lock the lobby frame to the BoxLobby.png aspect ratio (2400x1340) and fill it with the
@@ -140,7 +143,7 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
         final int[] secondsLeft = {5};
         statusLabel.setText("La partita inizierà tra " + secondsLeft[0] + "...");
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+        countdownTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             secondsLeft[0]--;
             if (secondsLeft[0] > 0) {
                 statusLabel.setText("La partita inizierà tra " + secondsLeft[0] + "...");
@@ -149,11 +152,14 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
             }
         }));
 
-        timeline.setCycleCount(5);
-        timeline.play();
+        countdownTimeline.setCycleCount(5);
+        countdownTimeline.play();
     }
 
     private void goToGame() {
+        // If the game was aborted (e.g. a player closed their GUI during the countdown), do not
+        // switch to the empty board: stay on the lobby with the "Partita annullata" overlay.
+        if (gameAborted) return;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GUI/fxml/ViewGame.fxml"));
             Parent gameRoot = loader.load();
@@ -179,6 +185,7 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
     public void visit(GameAbortedMessage message) {
         Platform.runLater(() -> {
             gameAborted = true;
+            if (countdownTimeline != null) countdownTimeline.stop();
             reconnectingOverlay.setVisible(false);
             gameAbortedOverlay.setVisible(true);
         });
