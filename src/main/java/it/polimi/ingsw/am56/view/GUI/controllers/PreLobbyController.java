@@ -130,7 +130,20 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
 
     @Override
     public void visit(LobbyStateMessage message) {
-        Platform.runLater(() -> goToLobby(message));
+        boolean localJoined = localPlayerNickname != null
+                && message.players().stream().anyMatch(p -> p.nickname().equals(localPlayerNickname));
+
+        Platform.runLater(() -> {
+            if (localJoined) {
+                goToLobby(message);
+                return;
+            }
+            createBox.setDisable(true);
+            createBox.setOpacity(0.5);
+            joinBox.setDisable(false);
+            joinBox.setOpacity(1.0);
+            updateAvailableTotems(message.players().stream().map(p -> p.color()).toList());
+        });
     }
 
     @Override
