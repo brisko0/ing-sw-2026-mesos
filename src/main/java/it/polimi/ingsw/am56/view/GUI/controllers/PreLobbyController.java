@@ -9,14 +9,17 @@ import it.polimi.ingsw.am56.network.message.request.ReconnectRequest;
 import it.polimi.ingsw.am56.network.message.update.*;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.stage.Stage;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.TextField;
+import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -39,10 +42,33 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
     @FXML private TextField gameSizeField;
     @FXML private TextField joinNicknameField;
 
+    @FXML private HBox createTotemBox;
+    @FXML private HBox joinTotemBox;
+
     @FXML private VBox reconnectingOverlay;
     @FXML private VBox gameAbortedOverlay;
 
+    /** Set once a GameAbortedMessage arrives, so the server-lost overlay is not shown on top of it. */
     private volatile boolean gameAborted = false;
+
+    @FXML
+    public void initialize() {
+        bindTotemSizes(createTotemBox);
+        bindTotemSizes(joinTotemBox);
+    }
+
+    /**
+     * Keeps the totem-choice images at their natural 70px on normal/large windows, but lets them
+     * shrink with the window height once it gets small — so they no longer overflow their row and
+     * misalign the panel artwork. The reference is the root pane (sized by the window, not by its
+     * content) to avoid a circular binding with the content-sized panels.
+     */
+    private void bindTotemSizes(HBox totemBox) {
+        for (Node totem : totemBox.getChildren()) {
+            ((ImageView) totem).fitHeightProperty()
+                    .bind(Bindings.min(70.0, rootPane.heightProperty().multiply(0.12)));
+        }
+    }
 
     public void setServerAdapter(ServerAdapter serverAdapter) {
         this.serverAdapter = serverAdapter;
@@ -212,6 +238,10 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
         });
     }
 
+    /**
+     * Closes the window from the "Partita annullata" overlay, exactly as the window's close
+     * button would.
+     */
     @FXML
     private void handleAbortClose() {
         Stage stage = (Stage) gameAbortedOverlay.getScene().getWindow();

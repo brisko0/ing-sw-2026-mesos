@@ -49,7 +49,7 @@
             <TextField fx:id="createNicknameField" promptText="NICKNAME" styleClass="mesos-input"
                        GridPane.columnIndex="1" GridPane.rowIndex="3" maxHeight="Infinity" maxWidth="Infinity"/>
 
-            <HBox spacing="25" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <HBox fx:id="createTotemBox" spacing="25" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="4">
                 <ImageView fitHeight="70" preserveRatio="true" styleClass="totem-choice" onMouseClicked="#selectColor" userData="BLACK">
                     <Image url="@../images/totem2D/black_2D.png"/></ImageView>
                 <ImageView fitHeight="70" preserveRatio="true" styleClass="totem-choice" onMouseClicked="#selectColor" userData="CYAN">
@@ -80,7 +80,7 @@
                        GridPane.columnIndex="1" GridPane.rowIndex="2"
                        maxHeight="Infinity" maxWidth="Infinity"/>
 
-            <HBox spacing="25" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <HBox fx:id="joinTotemBox" spacing="25" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="4">
                 <ImageView fitHeight="70" preserveRatio="true" styleClass="totem-choice" onMouseClicked="#selectColor" userData="BLACK">
                     <Image url="@../images/totem2D/black_2D.png"/></ImageView>
                 <ImageView fitHeight="70" preserveRatio="true" styleClass="totem-choice" onMouseClicked="#selectColor" userData="CYAN">
