@@ -69,6 +69,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     @FXML private VBox reconnectingOverlay;
     @FXML private VBox gameAbortedOverlay;
 
+    /** Set once a GameAbortedMessage arrives, so the server-lost overlay is not shown on top of it. */
     private volatile boolean gameAborted = false;
 
     private FadeTransition tooltipFade;
@@ -397,7 +398,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         String nick = currentPlayerInfo.nickname();
         String color = currentPlayerInfo.color();
 
-        currentPlayerLabel.setText(nick.toUpperCase());
+        currentPlayerLabel.setText(nick);
         currentPlayerLabel.setStyle("-fx-text-fill: " + color + ";");
         gameInfoBox.setStyle("-fx-border-color: " + color + ";");
 
@@ -789,7 +790,7 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
 
         HBox headerBox = (HBox) dashboard.getChildren().get(0);
         Label nameLabel = (Label) headerBox.getChildren().get(0);
-        nameLabel.setText(stats.nickname().toUpperCase());
+        nameLabel.setText(stats.nickname());
         nameLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: " + stats.color() + ";");
 
         HBox topStatsBox = (HBox) headerBox.getChildren().get(2);

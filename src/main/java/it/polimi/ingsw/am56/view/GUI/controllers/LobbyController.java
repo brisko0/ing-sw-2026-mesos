@@ -112,7 +112,7 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
         row.setSpacing(20);
         row.setPrefHeight(60);
 
-        Label nameLabel = new Label(index + ". " + nickname.toUpperCase());
+        Label nameLabel = new Label(index + ". " + nickname);
         nameLabel.getStyleClass().add("player-text");
 
         Region spacer = new Region();

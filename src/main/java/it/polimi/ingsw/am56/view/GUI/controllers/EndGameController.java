@@ -36,6 +36,11 @@ public class EndGameController {
         rootPane.heightProperty().addListener((obs, oldVal, newVal) -> scaleUI());
     }
 
+    /**
+     * Closes the game window, exactly as clicking the window's close button would. Firing the
+     * window's close request lets any {@code onCloseRequest} handler run; with the default
+     * implicit-exit behaviour this also shuts the application down once the last window is gone.
+     */
     @FXML
     private void handleExit() {
         Stage stage = (Stage) rootPane.getScene().getWindow();
@@ -131,7 +136,7 @@ public class EndGameController {
         if (entry.isWinner() && !isGlobal) {
             displayName += " 👑";
         }
-        Label nameLbl = new Label(displayName.toUpperCase());
+        Label nameLbl = new Label(displayName);
         nameLbl.getStyleClass().add("name-label");
 
         Region spacer = new Region();
