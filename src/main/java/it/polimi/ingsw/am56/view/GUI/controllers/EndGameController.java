@@ -61,7 +61,7 @@ public class EndGameController {
         Platform.runLater(() -> {
             scaleUI();
 
-            String sizeText = "Game Size: " + message.gameSize();
+            String sizeText = "Partita da " + message.gameSize() + " giocatori";
             matchGameSizeLabel.setText(sizeText);
             globalGameSizeLabel.setText(sizeText);
 
@@ -140,7 +140,7 @@ public class EndGameController {
         VBox rightStats = new VBox(-2);
         rightStats.setAlignment(Pos.CENTER_RIGHT);
 
-        Label scoreLbl = new Label(entry.score() + " PT");
+        Label scoreLbl = new Label(entry.score() + " PP");
         scoreLbl.getStyleClass().add("score-label");
 
         String subInfoText = isGlobal ? entry.date() : "Cibo: " + entry.food();

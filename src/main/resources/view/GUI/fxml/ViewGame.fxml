@@ -66,7 +66,7 @@
                 </HBox>
 
                 <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10 0 0 0;">
-                    <Label text="TURN OF:" styleClass="info-title"/>
+                    <Label text="TURNO DI:" styleClass="info-title"/>
                     <Label fx:id="currentPlayerLabel" styleClass="info-value-player"/>
                 </HBox>
             </VBox>
@@ -104,9 +104,9 @@
           alignment="CENTER"
           spacing="20"
           style="-fx-background-color: rgba(0,0,0,0.75);">
-        <Label text="Game aborted"
+        <Label text="Partita annullata"
                style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white;"/>
-        <Label text="A player disconnected."
+        <Label text="Un giocatore si è disconnesso."
                style="-fx-font-size: 16px; -fx-text-fill: #cccccc;"/>
         <Button text="Chiudi" onAction="#handleAbortClose"
                 style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: #b33900; -fx-background-radius: 8; -fx-padding: 10 26 10 26; -fx-cursor: hand;"/>
