@@ -10,6 +10,7 @@ import it.polimi.ingsw.am56.network.message.update.LobbyStateMessage;
 import it.polimi.ingsw.am56.network.message.update.MessageVisitor;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.stage.Stage;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,6 +18,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -35,13 +37,28 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
     private String localPlayerNickname;
 
     @FXML private StackPane rootPane;
+    @FXML private GridPane lobbyBox;
     @FXML private VBox playerListContainer;
     @FXML private Label statusLabel;
 
     @FXML private VBox reconnectingOverlay;
     @FXML private VBox gameAbortedOverlay;
 
+    /** Set once a GameAbortedMessage arrives, so the server-lost overlay is not shown on top of it. */
     private volatile boolean gameAborted = false;
+
+    @FXML
+    public void initialize() {
+        // Lock the lobby frame to the BoxLobby.png aspect ratio (2400x1340) and fill it with the
+        // artwork (100% 100% in CSS): this way the player list and the status/countdown label,
+        // which are positioned by percentages inside the frame, stay aligned with the artwork at
+        // any window size instead of drifting into the empty letterbox area.
+        final double ratio = 2400.0 / 1340.0;
+        lobbyBox.maxWidthProperty().bind(
+                Bindings.min(rootPane.widthProperty().multiply(0.60),
+                        rootPane.heightProperty().multiply(0.70).multiply(ratio)));
+        lobbyBox.maxHeightProperty().bind(lobbyBox.maxWidthProperty().divide(ratio));
+    }
 
     public void setLocalPlayerNickname(String nickname) {
         this.localPlayerNickname = nickname;
@@ -167,6 +184,9 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
         });
     }
 
+    /**
+     * Closes the window from the "Game aborted" overlay.
+     */
     @FXML
     private void handleAbortClose() {
         Stage stage = (Stage) gameAbortedOverlay.getScene().getWindow();
