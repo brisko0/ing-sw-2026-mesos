@@ -4,6 +4,7 @@ import it.polimi.ingsw.am56.model.state.State;
 import it.polimi.ingsw.am56.network.message.classesDTO.BoardDTO;
 import it.polimi.ingsw.am56.network.message.classesDTO.CurrentPlayerDTO;
 import it.polimi.ingsw.am56.network.message.classesDTO.EndRoundSnapshotDTO;
+import it.polimi.ingsw.am56.network.message.classesDTO.EventOutcomeDTO;
 import it.polimi.ingsw.am56.network.message.classesDTO.GameSnapshotDTO;
 import it.polimi.ingsw.am56.network.message.classesDTO.PlayerStatsDTO;
 import it.polimi.ingsw.am56.network.message.classesDTO.TotemPositionDTO;
@@ -173,12 +174,43 @@ public class GameController extends BaseTUIController {
     @Override
     public void visit(EventResolvedMessage message) {
         synchronized (lock) {
-            appendLog("Event #" + message.cardId() + " resolved");
+            appendLog(formatEventLog(message));
             bumpAndNotify();
         }
         // Print the inline flash on the next render rather than now, so it isn't
         // wiped by the imminent clearScreen() from the coalesced redraw.
         markDirty();
+    }
+
+    /**
+     * Builds the events-log line for a resolved event, e.g.
+     * {@code "Event #94: mario: -2F · luigi: +3P"}. Players whose Food and Points
+     * are both unchanged are omitted; if nobody changed, falls back to "resolved".
+     */
+    private String formatEventLog(EventResolvedMessage message) {
+        StringBuilder parts = new StringBuilder();
+        if (message.outcomes() != null) {
+            for (EventOutcomeDTO o : message.outcomes()) {
+                String delta = formatDelta(o.foodDelta(), o.pointsDelta());
+                if (delta.isEmpty()) continue;
+                if (parts.length() > 0) parts.append(" · ");
+                parts.append(o.nickname()).append(": ").append(delta);
+            }
+        }
+        return parts.length() > 0
+                ? "Event #" + message.cardId() + ": " + parts
+                : "Event #" + message.cardId() + " resolved";
+    }
+
+    /** Formats a Food/Points delta as e.g. {@code "+1F +2P"}, {@code "-2F"}, or {@code ""} if both zero. */
+    private String formatDelta(int food, int points) {
+        StringBuilder s = new StringBuilder();
+        if (food != 0) s.append(food > 0 ? "+" : "").append(food).append("F");
+        if (points != 0) {
+            if (s.length() > 0) s.append(" ");
+            s.append(points > 0 ? "+" : "").append(points).append("P");
+        }
+        return s.toString();
     }
 
     @Override

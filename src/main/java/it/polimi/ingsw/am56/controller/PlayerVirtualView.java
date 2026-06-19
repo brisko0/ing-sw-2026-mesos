@@ -25,9 +25,6 @@ public class PlayerVirtualView implements GameObserver {
     // IL DISPATCHER: Associa ogni evento alla sua funzione di gestione
     private final Map<GameEvent, Runnable> eventHandlers = new EnumMap<>(GameEvent.class);
 
-    // Contatore per tracciare a che punto siamo nella risoluzione sequenziale degli eventi
-    private int eventResolutionIndex = 0;
-
     private final EndGameService endGameService;
 
     public PlayerVirtualView(GameModel model, ClientConnection networkConnection, EndGameService endGameService) {
@@ -135,8 +132,6 @@ public class PlayerVirtualView implements GameObserver {
                 model.getCurrentEra(), model.getCurrentRound());
 
         networkConnection.sendMessage(new EndRoundUpdateMessage(endSnap));
-
-        eventResolutionIndex = 0;
     }
 
     private void handleTotemReset() {
@@ -145,15 +140,15 @@ public class PlayerVirtualView implements GameObserver {
     }
 
     private void handleEventResolved() {
-        List<Card> lowerEvents = model.getBoard().getLowerRowCharEv().stream()
-                .filter(c -> c.getCardType() == CardType.EVENT)
-                .toList();
-
-        if (eventResolutionIndex < lowerEvents.size()) {
-            int cardId = lowerEvents.get(eventResolutionIndex).getCardId();
-            networkConnection.sendMessage(new EventResolvedMessage(cardId));
-            eventResolutionIndex++;
+        Map<String, int[]> deltas = model.getLastEventDeltas();
+        List<EventOutcomeDTO> outcomes = new ArrayList<>();
+        for (Player p : model.getPlayers()) {
+            int[] d = deltas.get(p.getNickname());
+            if (d != null) {
+                outcomes.add(new EventOutcomeDTO(p.getNickname(), p.getTotemColor(), d[0], d[1]));
+            }
         }
+        networkConnection.sendMessage(new EventResolvedMessage(model.getLastResolvedEventId(), outcomes));
     }
 
     private void handleGameEnded() {

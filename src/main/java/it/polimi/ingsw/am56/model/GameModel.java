@@ -61,6 +61,11 @@ public class GameModel implements Serializable {
     // Transient: never serialized, re-registered by the server after load
     private transient List<GameObserver> observers;
 
+    // Transient: details of the most recently resolved Event, read by the views on the
+    // EVENT_RESOLVED notification. lastEventDeltas maps nickname -> {foodDelta, pointsDelta}.
+    private transient int lastResolvedEventId;
+    private transient Map<String, int[]> lastEventDeltas;
+
     /**
      * Creates an empty model in the lobby phase. The board and decks are populated later by
      * {@link #initializeGame(int)} once the player count is known.
@@ -667,10 +672,40 @@ public class GameModel implements Serializable {
                 .toList();
 
         for (EventCard e : events) {
+            Map<String, int[]> before = snapshotFoodPoints();
             e.resolveBuildingsEffects(this);
             e.resolveEffect(this);
+
+            lastResolvedEventId = e.getCardId();
+            lastEventDeltas = new HashMap<>();
+            for (Player p : players) {
+                int[] prev = before.get(p.getNickname());
+                lastEventDeltas.put(p.getNickname(), new int[]{
+                        p.getStats().getFood() - prev[0],
+                        p.getStats().getPoints() - prev[1]
+                });
+            }
             notifyObservers(GameEvent.EVENT_RESOLVED);
         }
+    }
+
+    /** Snapshots each player's current {food, points}, keyed by nickname. */
+    private Map<String, int[]> snapshotFoodPoints() {
+        Map<String, int[]> snap = new HashMap<>();
+        for (Player p : players) {
+            snap.put(p.getNickname(), new int[]{p.getStats().getFood(), p.getStats().getPoints()});
+        }
+        return snap;
+    }
+
+    /** @return the card id of the most recently resolved Event (valid during EVENT_RESOLVED). */
+    public int getLastResolvedEventId() {
+        return lastResolvedEventId;
+    }
+
+    /** @return nickname -> {foodDelta, pointsDelta} for the most recently resolved Event. */
+    public Map<String, int[]> getLastEventDeltas() {
+        return lastEventDeltas != null ? lastEventDeltas : Map.of();
     }
 
     /**
