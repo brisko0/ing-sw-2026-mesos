@@ -87,6 +87,9 @@ public class TUIDrawer {
     private static final char BL = '└';
     private static final char BR = '┘';
 
+    /** In-card marker for a Hunter that provides Food. */
+    private static final String FOOD = "◆";
+
     private static final int WIDTH = 80;
 
     /** Mini-card width (must match the literal strings in {@link #renderMiniCard}). */
@@ -225,6 +228,53 @@ public class TUIDrawer {
         printCardRow("Tribe (bottom)",     board.lowerCharEvIds(),    eventIds);
         printCardRow("Buildings (bottom)", board.lowerBuildingsIds(), eventIds);
         System.out.println();
+
+        printBoardCardLegend(board, eventIds);
+    }
+
+    /**
+     * Lists only the cards whose effect genuinely needs words — Edifici and Eventi.
+     * Personaggi are intentionally omitted: their box already shows type (icon) and key
+     * stat (see {@link #cardTag}), so a text description would only add clutter.
+     */
+    private void printBoardCardLegend(BoardDTO board, List<Integer> eventIds) {
+        List<Integer> buildings = new ArrayList<>();
+        if (board.upperBuildingsIds() != null) buildings.addAll(board.upperBuildingsIds());
+        if (board.lowerBuildingsIds() != null) buildings.addAll(board.lowerBuildingsIds());
+        List<Integer> events = eventIds != null ? eventIds : List.of();
+        if (buildings.isEmpty() && events.isEmpty()) return;
+
+        String header = "─ Card effects ";
+        System.out.println("  " + ansi(header + repeat('─', Math.max(0, WIDTH - 4 - header.length())),
+                PARCHMENT_DIM));
+        legendGroup("Buildings", buildings, eventIds);
+        legendGroup("Events", events, eventIds);
+        System.out.println();
+    }
+
+    private void legendGroup(String label, List<Integer> ids, List<Integer> eventIds) {
+        if (ids == null || ids.isEmpty()) return;
+        System.out.println("  " + ansi(label, D_STONE));
+        for (Integer id : ids) {
+            boolean isEvent = eventIds != null && eventIds.contains(id);
+            System.out.println("    " + cardDetailLine(id, isEvent));
+        }
+    }
+
+    /** One-line "#id icon Ex  effect" entry, width-capped to {@link #WIDTH}. */
+    private String cardDetailLine(int id, boolean isEvent) {
+        ClassKind kind = isEvent ? ClassKind.EVENT : catalog.kindOf(id);
+        int era = catalog.eraOf(id);
+        String tint = colorFor(kind);
+        String icon = iconFor(kind);
+        String idStr = (id < 0 || id > 999) ? "???" : String.format("%3d", id);
+        String eraStr = (era >= 1 && era <= 9) ? ("E" + era) : "E?";
+
+        String left = ansi("#" + idStr, STONE) + " " + ansi(icon, tint) + " " + ansi(eraStr, D_STONE);
+        int used = stripAnsi(left).length() + 4; // +4: indent + spacer
+        String effShown = truncatePlain(catalog.effectOf(id), Math.max(0, WIDTH - 4 - used));
+        String right = effShown.isEmpty() ? "" : "  " + ansi(effShown, D_INK);
+        return left + right;
     }
 
     private void printCardRow(String label, List<Integer> ids, List<Integer> eventIds) {
@@ -240,31 +290,36 @@ public class TUIDrawer {
 
         StringBuilder top = new StringBuilder();
         StringBuilder mid = new StringBuilder();
+        StringBuilder info = new StringBuilder();
         StringBuilder bot = new StringBuilder();
         boolean first = true;
         for (Integer id : ids) {
             if (!first) {
                 top.append("  ");
                 mid.append("  ");
+                info.append("  ");
                 bot.append("  ");
             }
             boolean isEvent = eventIds != null && eventIds.contains(id);
             String[] card = renderMiniCard(id, isEvent);
             top.append(card[0]);
             mid.append(card[1]);
-            bot.append(card[2]);
+            info.append(card[2]);
+            bot.append(card[3]);
             first = false;
         }
 
         System.out.println(labelChunk + top);
         System.out.println(emptyLabelChunk + mid);
+        System.out.println(emptyLabelChunk + info);
         System.out.println(emptyLabelChunk + bot);
     }
 
     /**
-     * 3-line, 7-char-wide mini card. Each line is a single SGR-wrapped chunk —
-     * no adjacent SGR sequences within a card. The era stripe shares the class
-     * tint (no DIM nested SGR) to keep this guarantee.
+     * 4-line, 7-char-wide mini card. Each line is a single SGR-wrapped chunk — no
+     * adjacent SGR sequences within a card. Besides type icon + id + era, the third
+     * line carries the card's key stat (see {@link #cardTag}) so a Personaggio is
+     * fully readable from its box, without a text description.
      */
     private String[] renderMiniCard(int id, boolean isEvent) {
         ClassKind kind = isEvent ? ClassKind.EVENT : catalog.kindOf(id);
@@ -279,13 +334,37 @@ public class TUIDrawer {
         else idStr = String.format("%3d", id);
 
         String eraStr = (era >= 1 && era <= 9) ? ("E" + era) : "E?";
+        String tag = cardTag(id, kind);   // exactly 5 visible chars
 
         // Each line is one SGR escape + 7-char content + RESET — stripAnsi gives back 7.
-        String top = tint   + "┌─────┐" + RESET;
-        String mid = midSgr + "│" + icon + " " + idStr + "│" + RESET;
-        String bot = tint   + "└──" + eraStr + "─┘" + RESET;
+        String top  = tint   + "┌─────┐" + RESET;
+        String mid  = midSgr + "│" + icon + " " + idStr + "│" + RESET;
+        String info = tint   + "│" + tag + "│" + RESET;
+        String bot  = tint   + "└──" + eraStr + "─┘" + RESET;
 
-        return new String[] { top, mid, bot };
+        return new String[] { top, mid, info, bot };
+    }
+
+    /**
+     * The single stat printed on a card's third line, padded to exactly 5 chars.
+     * The type icon disambiguates the meaning:
+     * Building {@code cost/points}, Shaman {@code ★stars}, Builder {@code -Nc} Food
+     * discount, Inventor {@code #N} invention (1-10), Hunter {@link #FOOD} if it
+     * provides Food. Collectors and Artists need no extra stat.
+     */
+    private String cardTag(int id, ClassKind kind) {
+        String raw = switch (kind) {
+            case BUILDING -> {
+                int c = catalog.costOf(id), p = catalog.pointsOf(id);
+                yield (c >= 0 && p >= 0) ? (c + "/" + p) : "";
+            }
+            case SHAMAN   -> { int s = catalog.shamanStarsOf(id);  yield s >= 0 ? "★" + s : ""; }
+            case BUILDER  -> { int d = catalog.builderSaleOf(id);  yield d >= 0 ? "-" + d + "c" : ""; }
+            case INVENTOR -> { int i = catalog.inventionIndexOf(id); yield i >= 1 ? "#" + i : ""; }
+            case HUNTER   -> catalog.providesFood(id) ? FOOD : "";
+            default       -> "";
+        };
+        return centerPlain(raw, 5);
     }
 
     // ------------------------------------------------------------------
@@ -412,6 +491,12 @@ public class TUIDrawer {
                 + "  " + ansi("⚙", COL_INVENTOR) + " Inventor"
                 + "  " + ansi("⌂", COL_BUILDING) + " Building"
                 + "  " + ansi("✦", COL_EVENT) + " Event");
+        System.out.println("  " + ansi("IN CARD", D_INK)
+                + "  " + ansi("★n", BOLD) + " shaman stars"
+                + "  " + ansi("-nc", BOLD) + " food discount"
+                + "  " + ansi("#n", BOLD) + " invention type"
+                + "  " + ansi(FOOD, BOLD) + " gives food"
+                + "  " + ansi("cost/pts", BOLD) + " building");
     }
 
     public void printEventNotice(int eventCardId) {
@@ -535,8 +620,21 @@ public class TUIDrawer {
             } else {
                 sb.append(label);
             }
+            String action = offerActionLabel(letter);
+            if (!action.isEmpty()) sb.append(" ").append(ansi(action, D_STONE));
         }
         return sb.toString();
+    }
+
+    /** Compact action of an offer tile, e.g. {@code "▲2 ▼1"} or {@code "+3F"} (empty if unknown). */
+    private String offerActionLabel(String letter) {
+        int[] a = catalog.offerTileAction(letter);
+        if (a == null) return "";
+        StringBuilder s = new StringBuilder();
+        if (a[1] > 0) s.append("▲").append(a[1]);
+        if (a[2] > 0) { if (s.length() > 0) s.append(" "); s.append("▼").append(a[2]); }
+        if (a[0] > 0) { if (s.length() > 0) s.append(" "); s.append("+").append(a[0]).append("F"); }
+        return s.toString();
     }
 
     private String formatOrderTiles(int orderTileCount, List<TotemPositionDTO> totems) {
@@ -566,8 +664,20 @@ public class TUIDrawer {
             } else {
                 sb.append(label);
             }
+            String effect = orderEffectLabel(total, i);
+            if (!effect.isEmpty()) sb.append(" ").append(ansi(effect, D_STONE));
         }
         return sb.toString();
+    }
+
+    /** Compact food/points effect of an order slot, e.g. {@code "+2F"} or {@code "-1F -2P"}. */
+    private String orderEffectLabel(int numPlayers, int slot) {
+        int[] e = catalog.orderTileEffect(numPlayers, slot);
+        if (e == null) return "";
+        StringBuilder s = new StringBuilder();
+        if (e[0] != 0) s.append(e[0] > 0 ? "+" : "").append(e[0]).append("F");
+        if (e[1] != 0) { if (s.length() > 0) s.append(" "); s.append(e[1] > 0 ? "+" : "").append(e[1]).append("P"); }
+        return s.toString();
     }
 
     private String totemColorAtOffer(String letter, List<TotemPositionDTO> totems) {
@@ -718,6 +828,23 @@ public class TUIDrawer {
     private String padRightPlain(String s, int width) {
         int pad = width - s.length();
         return pad <= 0 ? s : s + " ".repeat(pad);
+    }
+
+    /** Center a plain (ANSI-free) string in {@code width} chars, truncating if it is longer. */
+    private String centerPlain(String s, int width) {
+        if (s == null) s = "";
+        if (s.length() >= width) return s.length() > width ? s.substring(0, width) : s;
+        int left = (width - s.length()) / 2;
+        int right = width - s.length() - left;
+        return " ".repeat(left) + s + " ".repeat(right);
+    }
+
+    /** Truncate a plain (ANSI-free) string to {@code max} visible chars, adding an ellipsis. */
+    private String truncatePlain(String s, int max) {
+        if (s == null) return "";
+        if (s.length() <= max) return s;
+        if (max <= 1) return "";
+        return s.substring(0, max - 1) + "…";
     }
 
     /**
