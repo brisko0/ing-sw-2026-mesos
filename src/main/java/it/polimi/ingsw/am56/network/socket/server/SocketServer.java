@@ -9,12 +9,30 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * Socket side of the server. It listens on a {@link ServerSocket} and accepts client connections,
+ * sharing the same {@link GameModel}, {@link GameController} and {@link EndGameService} as the RMI
+ * server so socket and RMI clients play in one game.
+ * <p>
+ * For each accepted connection it starts a {@link SocketClientHandler} (the server-side connection,
+ * run on its own thread to read requests) and registers a {@link PlayerVirtualView} as a model
+ * observer, so that client receives updates.
+ */
 public class SocketServer {
     private final ServerSocket serverSocket;
     private final GameController controller;
     private final GameModel model;
     private final EndGameService endGameService;
 
+    /**
+     * Creates the socket server and opens its listening socket on the given port.
+     *
+     * @param port           the port to listen on
+     * @param model          the shared game model
+     * @param controller     the shared game controller that executes requests
+     * @param endGameService the shared end-game service
+     * @throws IOException if the server socket cannot be opened
+     */
     public SocketServer(int port, GameModel model, GameController controller, EndGameService endGameService) throws IOException {
         this.serverSocket = new ServerSocket(port);
         this.model = model;
@@ -22,6 +40,11 @@ public class SocketServer {
         this.endGameService = endGameService;
     }
 
+    /**
+     * Accept loop: blocks waiting for clients and, for each one, starts its {@link SocketClientHandler}
+     * thread and attaches a {@link PlayerVirtualView} observer. Per-connection errors are logged and
+     * do not stop the loop.
+     */
     public void start() {
         System.out.println("[SOCKET SERVER] In ascolto sulla porta " + serverSocket.getLocalPort());
 
