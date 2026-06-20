@@ -15,6 +15,17 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * RMI side of the server: an exported {@link VirtualServerRmi} that clients look up in the registry to
+ * join the game, send requests and ping the server. It shares the same {@link GameModel},
+ * {@link GameController} and {@link EndGameService} as the socket server, so RMI and socket clients
+ * play in one game.
+ * <p>
+ * For each joining client it creates an {@link RmiClientHandler} (the server-side connection) and a
+ * {@link PlayerVirtualView} registered as a model observer, so the client receives updates. Requests
+ * are executed on a cached thread pool; any {@link InvalidActionException} is reported back to the
+ * originating client.
+ */
 public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
     private final GameModel model;
     private final GameController controller;
@@ -23,6 +34,15 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
 
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
+    /**
+     * Creates and exports the RMI server.
+     *
+     * @param port           the registry port the server will bind on when started
+     * @param model          the shared game model
+     * @param controller     the shared game controller that executes requests
+     * @param endGameService the shared end-game service
+     * @throws RemoteException if the object cannot be exported
+     */
     public RmiServer(int port, GameModel model, GameController controller, EndGameService endGameService) throws RemoteException {
         super();
         this.port = port;
@@ -31,6 +51,10 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
         this.endGameService = endGameService;
     }
 
+    /**
+     * Creates the RMI registry on the configured port and binds this server under the name
+     * {@code "MesosServer"}. Startup errors are logged rather than thrown.
+     */
     public void start() {
         try {
             Registry registry = LocateRegistry.createRegistry(port);
@@ -41,6 +65,13 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
         }
     }
 
+    /**
+     * Registers a new RMI client: starts a {@link RmiClientHandler} for it and attaches a
+     * {@link PlayerVirtualView} as a model observer so the client receives game updates.
+     *
+     * @param clientStub the joining client's remote view stub
+     * @throws RemoteException if the remote call fails
+     */
     @Override
     public void addClient(VirtualViewRmi clientStub) throws RemoteException {
         RmiClientHandler rmiConnection = new RmiClientHandler(clientStub, controller);
@@ -50,6 +81,14 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
         model.addObserver(virtualView);
     }
 
+    /**
+     * Executes a client request asynchronously on the controller. If it fails with an
+     * {@link InvalidActionException}, the error is reported back to the originating client.
+     *
+     * @param request    the request to execute
+     * @param clientStub the originating client's stub, used to report errors back
+     * @throws RemoteException if the remote call fails
+     */
     @Override
     public void sendRequest(ClientRequest request, VirtualViewRmi clientStub) throws RemoteException {
         executor.submit(() -> {
@@ -65,6 +104,11 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
         });
     }
 
+    /**
+     * No-op remote method clients ping to verify the server is still alive.
+     *
+     * @throws RemoteException if the remote call fails
+     */
     @Override
     public void ping() throws RemoteException {
         // no-op: solo per verificare che il server sia vivo
