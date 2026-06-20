@@ -4,12 +4,27 @@ import it.polimi.ingsw.am56.core.ServerAdapter;
 import it.polimi.ingsw.am56.network.ConnectionManager;
 import it.polimi.ingsw.am56.view.TUI.*;
 
+/**
+ * First TUI screen: it asks the user for the connection settings (RMI or socket, server IP and port),
+ * opens the connection through the factory and wraps it in a {@link ConnectionManager} for automatic
+ * reconnection, then registers it on the context. On success it advances to the pre-lobby screen; on
+ * failure it reports the error and retries from the start.
+ */
 public class NetworkSetupController extends BaseTUIController {
 
+    /**
+     * Creates the network-setup screen bound to the shared context.
+     *
+     * @param context the shared TUI context
+     */
     public NetworkSetupController(TUIContext context) {
         super(context);
     }
 
+    /**
+     * Prompts for connection mode, IP and port, establishes the (reconnection-wrapped) connection and,
+     * on success, moves to the pre-lobby screen; on failure it shows the error and retries.
+     */
     @Override
     public void onEnter() {
         drawer.printMenuHeader("CONNECT TO SERVER");
@@ -48,6 +63,14 @@ public class NetworkSetupController extends BaseTUIController {
         }
     }
 
+    /**
+     * Reads a port number from the user, falling back to the default if the input is empty or not a
+     * valid number.
+     *
+     * @param label       a label naming the transport (used in the prompt)
+     * @param defaultPort the port to use when no valid value is entered
+     * @return the chosen port, or {@code defaultPort}
+     */
     private int readPort(String label, int defaultPort) {
         String input = inputReader.readString("  " + label + " port (press Enter for default " + defaultPort + "):");
         if (input.isEmpty()) return defaultPort;
