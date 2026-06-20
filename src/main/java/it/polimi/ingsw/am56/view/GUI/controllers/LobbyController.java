@@ -31,6 +31,16 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 
+/**
+ * Controller for the lobby screen, shown while players gather before a game starts. It lists the
+ * players that have joined, and once the lobby is full runs a short countdown before switching to
+ * the game screen.
+ * <p>
+ * As an {@link UpdateHandler} it receives server pushes and, as a {@link MessageVisitor},
+ * dispatches each {@link ServerMessage} to the matching {@code visit} overload — here it reacts to
+ * lobby-state updates, errors, and game-aborted notifications. It also shows reconnecting / game-
+ * aborted overlays when the connection drops or the game can no longer continue.
+ */
 public class LobbyController implements UpdateHandler, MessageVisitor {
 
     private ServerAdapter serverAdapter;
@@ -50,6 +60,11 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
     /** The start countdown; kept so it can be stopped if the game is aborted before it elapses. */
     private Timeline countdownTimeline;
 
+    /**
+     * Binds the lobby frame's size to keep it at the lobby artwork's aspect ratio within the
+     * window, so the percentage-positioned player list and status label stay aligned with the
+     * artwork at any window size. Invoked automatically by JavaFX after the FXML is loaded.
+     */
     @FXML
     public void initialize() {
         // Lock the lobby frame to the BoxLobby.png aspect ratio (2400x1340) and fill it with the
@@ -63,30 +78,65 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
         lobbyBox.maxHeightProperty().bind(lobbyBox.maxWidthProperty().divide(ratio));
     }
 
+    /**
+     * Sets the nickname of the player running this client; used when handing control over to the
+     * game screen.
+     *
+     * @param nickname the local player's nickname
+     */
     public void setLocalPlayerNickname(String nickname) {
         this.localPlayerNickname = nickname;
     }
 
+    /**
+     * Sets the server adapter and registers this controller as its update handler, so server
+     * pushes are routed here.
+     *
+     * @param serverAdapter the adapter wrapping the server connection
+     */
     public void setServerAdapter(ServerAdapter serverAdapter) {
         this.serverAdapter = serverAdapter;
         this.serverAdapter.setUpdateHandler(this);
     }
 
+    /**
+     * Entry point for server pushes: dispatches the message to the matching {@code visit} overload
+     * via the Visitor pattern.
+     *
+     * @param message the message received from the server
+     */
     @Override
     public void handleUpdate(ServerMessage message) {
         message.accept(this);
     }
 
+    /**
+     * Shows a transient error toast over the lobby.
+     *
+     * @param message the human-readable error description
+     */
     @Override
     public void handleError(String message) {
         GuiErrorToast.show(rootPane, message);
     }
 
+    /**
+     * Handles an {@link ErrorMessage} by showing its detail as an error toast.
+     *
+     * @param message the error message from the server
+     */
     @Override
     public void visit(ErrorMessage message) {
         handleError(message.details());
     }
 
+    /**
+     * Rebuilds the player list from the lobby update. When the lobby reaches the target game size
+     * it starts the start-of-game countdown; otherwise it shows how many players are still
+     * missing. Runs on the JavaFX thread.
+     *
+     * @param message the lobby state (current players and target size)
+     */
     @Override
     public void visit(LobbyStateMessage message) {
         Platform.runLater(() -> {
@@ -108,6 +158,14 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
         });
     }
 
+    /**
+     * Appends one row to the player list showing the player's position, nickname and totem image.
+     * If the totem image cannot be loaded the row is still added without it.
+     *
+     * @param index    the 1-based position shown next to the nickname
+     * @param nickname the player's nickname
+     * @param color    the player's totem colour (selects the totem image)
+     */
     private void addPlayerRow(int index, String nickname, String color) {
         HBox row = new HBox();
         row.getStyleClass().add("player-row");
@@ -139,6 +197,11 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
         playerListContainer.getChildren().add(row);
     }
 
+    /**
+     * Starts the 5-second countdown shown when the lobby is full, updating the status label each
+     * second and switching to the game screen when it reaches zero. The timeline is kept so it can
+     * be stopped if the game is aborted before it elapses.
+     */
     private void startCountdown() {
         final int[] secondsLeft = {5};
         statusLabel.setText("La partita inizierà tra " + secondsLeft[0] + "...");
@@ -156,6 +219,11 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
         countdownTimeline.play();
     }
 
+    /**
+     * Switches to the in-game screen, reusing the current window: loads {@code ViewGame.fxml},
+     * passes the local nickname and server adapter to its controller, and swaps the scene root.
+     * Does nothing if the game was aborted during the countdown, so the empty board is never shown.
+     */
     private void goToGame() {
         // If the game was aborted (e.g. a player closed their GUI during the countdown), do not
         // switch to the empty board: stay on the lobby with the "Partita annullata" overlay.
@@ -181,6 +249,12 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
     // persistenza
     // -------------------------------------------------------------------------
 
+    /**
+     * Handles a game-aborted notification: marks the game as aborted, stops any running countdown,
+     * hides the reconnecting overlay and shows the game-aborted overlay. Runs on the JavaFX thread.
+     *
+     * @param message the game-aborted message
+     */
     @Override
     public void visit(GameAbortedMessage message) {
         Platform.runLater(() -> {
@@ -201,12 +275,20 @@ public class LobbyController implements UpdateHandler, MessageVisitor {
         Platform.exit();
     }
 
+    /**
+     * Shows the reconnecting overlay when the connection to the server drops, unless the game has
+     * already been aborted.
+     */
     @Override
     public void handleDisconnect() {
         if (gameAborted) return;
         Platform.runLater(() -> reconnectingOverlay.setVisible(true));
     }
 
+    /**
+     * Hides the reconnecting overlay once the connection is restored and asks the server for the
+     * current lobby state to refresh the view.
+     */
     @Override
     public void handleReconnected() {
         Platform.runLater(() -> {

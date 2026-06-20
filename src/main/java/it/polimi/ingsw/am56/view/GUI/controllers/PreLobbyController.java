@@ -26,6 +26,17 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 
+/**
+ * Controller for the pre-lobby screen, where the player either creates a new game, joins an
+ * existing one, or reconnects to a game already in progress. It offers a "create" and a "join"
+ * panel, a totem-colour picker, and enables only the relevant panel based on the server's
+ * pre-lobby state.
+ * <p>
+ * As an {@link UpdateHandler}/{@link MessageVisitor} it reacts to server pushes: the pre-lobby
+ * state (which panel to enable, which colours are taken), lobby updates (advancing to the lobby
+ * once the local player has joined), a full game snapshot (jumping straight into the game on
+ * reconnect), errors and game-aborted notifications.
+ */
 public class PreLobbyController implements UpdateHandler, MessageVisitor {
 
     private ServerAdapter serverAdapter;
@@ -51,6 +62,10 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
     /** Set once a GameAbortedMessage arrives, so the server-lost overlay is not shown on top of it. */
     private volatile boolean gameAborted = false;
 
+    /**
+     * Binds the totem-choice images of both panels so they scale down on small windows. Invoked
+     * automatically by JavaFX after the FXML is loaded.
+     */
     @FXML
     public void initialize() {
         bindTotemSizes(createTotemBox);
@@ -70,22 +85,43 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
         }
     }
 
+    /**
+     * Sets the server adapter, registers this controller as its update handler, and immediately
+     * asks the server for the current lobby state so the right panel can be enabled.
+     *
+     * @param serverAdapter the adapter wrapping the server connection
+     */
     public void setServerAdapter(ServerAdapter serverAdapter) {
         this.serverAdapter = serverAdapter;
         this.serverAdapter.setUpdateHandler(this);
         this.serverAdapter.sendRequest(new LobbyStateRequest());
     }
 
+    /**
+     * Entry point for server pushes: dispatches the message to the matching {@code visit} overload.
+     *
+     * @param message the message received from the server
+     */
     @Override
     public void handleUpdate(ServerMessage message) {
         message.accept(this);
     }
 
+    /**
+     * Shows a transient error toast over the pre-lobby.
+     *
+     * @param message the human-readable error description
+     */
     @Override
     public void handleError(String message) {
         GuiErrorToast.show(rootPane, message);
     }
 
+    /**
+     * Handles an {@link ErrorMessage} by showing its detail as an error toast.
+     *
+     * @param message the error message from the server
+     */
     @Override
     public void visit(ErrorMessage message) {
         handleError(message.details());
@@ -95,6 +131,15 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
     // Server message handlers
     // -------------------------------------------------------------------------
 
+    /**
+     * Configures the screen from the pre-lobby state: if a game already exists only the join panel
+     * is enabled (used for both joining the lobby and reconnecting), otherwise only the create
+     * panel is enabled. Also remembers whether the game is already in progress (which switches
+     * join into reconnect mode) and hides the totem colours already taken. Runs on the JavaFX
+     * thread.
+     *
+     * @param message the pre-lobby state from the server
+     */
     @Override
     public void visit(PreLobbyStateMessage message) {
         this.gameInProgress = message.isGameInProgress();
@@ -117,6 +162,12 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
         });
     }
 
+    /**
+     * Hides (and unmanages) the totem images whose colour is already taken across both the create
+     * and join panels, leaving only the colours still available for selection.
+     *
+     * @param takenColors the colours already chosen by other players (may be {@code null})
+     */
     private void updateAvailableTotems(java.util.List<String> takenColors) {
         for (HBox box : java.util.List.of(createTotemBox, joinTotemBox)) {
             for (Node totem : box.getChildren()) {
@@ -128,6 +179,13 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
         }
     }
 
+    /**
+     * Handles a lobby update: if the local player now appears among the joined players, advances
+     * to the lobby screen; otherwise keeps the join panel enabled and refreshes the available
+     * totem colours. Runs on the JavaFX thread.
+     *
+     * @param message the lobby state (current players and target size)
+     */
     @Override
     public void visit(LobbyStateMessage message) {
         boolean localJoined = localPlayerNickname != null
@@ -146,6 +204,12 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
         });
     }
 
+    /**
+     * Handles a full game snapshot received in the pre-lobby, which happens on reconnect: jumps
+     * straight to the in-game screen. Runs on the JavaFX thread.
+     *
+     * @param message the game snapshot message
+     */
     @Override
     public void visit(GameSnapshotMessage message) {
         Platform.runLater(() -> goToGameDirectly());
@@ -155,6 +219,11 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
     // Button handlers
     // -------------------------------------------------------------------------
 
+    /**
+     * Handles the "create game" button: validates the nickname, the game size (2–5) and the
+     * chosen colour, then sends a {@link CreateGameRequest}. Invalid input is reported via an
+     * error toast and no request is sent.
+     */
     @FXML
     private void handleCreateGame() {
         String nickname = createNicknameField.getText().trim();
@@ -177,6 +246,12 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
         }
     }
 
+    /**
+     * Handles the "join" button. If the game is already in progress this acts as a reconnect,
+     * sending a {@link ReconnectRequest} with just the (original) nickname; otherwise it is a
+     * normal lobby join, sending an {@link AddPlayerRequest} with nickname and chosen colour.
+     * Missing input is reported via an error toast.
+     */
     @FXML
     private void handleJoinGame() {
         String nickname = joinNicknameField.getText().trim();
@@ -201,6 +276,12 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
         }
     }
 
+    /**
+     * Handles clicking a totem image: highlights the clicked totem (clearing the previous
+     * selection's highlight) and records its colour as the selected one.
+     *
+     * @param event the mouse event whose source is the clicked totem image
+     */
     @FXML
     private void selectColor(MouseEvent event) {
         ImageView clickedTotem = (ImageView) event.getSource();
@@ -217,6 +298,13 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
     // Scene transitions
     // -------------------------------------------------------------------------
 
+    /**
+     * Switches to the lobby screen, reusing the current window: loads {@code Lobby.fxml}, wires the
+     * server adapter and local nickname into its controller, replays the current lobby state into
+     * it, and swaps the scene root.
+     *
+     * @param message the lobby state to forward to the lobby controller
+     */
     private void goToLobby(LobbyStateMessage message) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GUI/fxml/Lobby.fxml"));
@@ -233,6 +321,10 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
         }
     }
 
+    /**
+     * Switches straight to the in-game screen (used on reconnect): loads {@code ViewGame.fxml},
+     * wires the local nickname and server adapter into its controller, and swaps the scene root.
+     */
     private void goToGameDirectly() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GUI/fxml/ViewGame.fxml"));
@@ -254,6 +346,12 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
     // persistenza
     // -------------------------------------------------------------------------
 
+    /**
+     * Handles a game-aborted notification: marks the game as aborted, hides the reconnecting
+     * overlay and shows the game-aborted overlay. Runs on the JavaFX thread.
+     *
+     * @param message the game-aborted message
+     */
     @Override
     public void visit(GameAbortedMessage message) {
         Platform.runLater(() -> {
@@ -274,12 +372,20 @@ public class PreLobbyController implements UpdateHandler, MessageVisitor {
         Platform.exit();
     }
 
+    /**
+     * Shows the reconnecting overlay when the connection to the server drops, unless the game has
+     * already been aborted.
+     */
     @Override
     public void handleDisconnect() {
         if (gameAborted) return;
         Platform.runLater(() -> reconnectingOverlay.setVisible(true));
     }
 
+    /**
+     * Hides the reconnecting overlay once the connection is restored and asks the server for the
+     * current lobby state to refresh the view.
+     */
     @Override
     public void handleReconnected() {
         Platform.runLater(() -> {
