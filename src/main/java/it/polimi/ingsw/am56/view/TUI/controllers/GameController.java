@@ -35,6 +35,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * In-game TUI screen. It keeps a local copy of the game state (board, per-player stats, totems, current
+ * player, phase, era and round) that it updates from the server-push messages it visits, and renders it
+ * to the terminal. It also reads the local player's moves and sends the corresponding requests.
+ * <p>
+ * Concurrency is split across two daemon threads guarded by two monitors. The render thread waits on
+ * {@code renderLock} and, when state is marked {@code dirty}, coalesces the burst of messages from a
+ * single server "transaction" into one redraw (debounced by {@link #RENDER_DEBOUNCE_MS}). The input
+ * thread waits on {@code lock} until it is the local player's turn in an actionable phase, prompts for
+ * the move, sends it and then waits for the state version to advance before prompting again. Incoming
+ * messages mutate the local state under {@code lock}, bump the state version, wake both threads and
+ * mark the screen dirty.
+ * <p>
+ * As a side effect of rendering, it derives a short player-facing event log by diffing successive
+ * stats/totem snapshots (e.g. "X picked Builder #12", "RED placed totem on tile A").
+ */
 public class GameController extends BaseTUIController {
 
     /** Coalesce all messages from a server "transaction" into a single render. */
@@ -66,11 +82,20 @@ public class GameController extends BaseTUIController {
     private Thread inputThread;
     private Thread renderThread;
 
+    /**
+     * Creates the in-game screen, initializing the local state from the initial snapshot.
+     *
+     * @param context         the shared TUI context
+     * @param initialSnapshot the snapshot to start from
+     */
     public GameController(TUIContext context, GameSnapshotMessage initialSnapshot) {
         super(context);
         applySnapshot(initialSnapshot.snapshot());
     }
 
+    /**
+     * Starts the daemon render and input threads and triggers the first render.
+     */
     @Override
     public void onEnter() {
         renderThread = new Thread(this::runRenderLoop, "TUI-render");
@@ -88,6 +113,11 @@ public class GameController extends BaseTUIController {
     // Server-push handlers
     // ------------------------------------------------------------------
 
+    /**
+     * Replaces the whole local state with a fresh snapshot.
+     *
+     * @param message the game snapshot
+     */
     @Override
     public void visit(GameSnapshotMessage message) {
         synchronized (lock) {
@@ -97,6 +127,11 @@ public class GameController extends BaseTUIController {
         markDirty();
     }
 
+    /**
+     * Updates the local board from a board update.
+     *
+     * @param message the board update
+     */
     @Override
     public void visit(BoardUpdatedMessage message) {
         synchronized (lock) {
@@ -106,6 +141,11 @@ public class GameController extends BaseTUIController {
         markDirty();
     }
 
+    /**
+     * Updates one player's stats, logging the picked card if the new stats reveal one was taken.
+     *
+     * @param message the player stats update
+     */
     @Override
     public void visit(PlayerStatsUpdateMessage message) {
         synchronized (lock) {
@@ -119,6 +159,11 @@ public class GameController extends BaseTUIController {
         markDirty();
     }
 
+    /**
+     * Updates the totem positions, logging a new offer-tile placement if one is detected.
+     *
+     * @param message the totems-state update
+     */
     @Override
     public void visit(TotemsStateMessage message) {
         synchronized (lock) {
@@ -133,6 +178,11 @@ public class GameController extends BaseTUIController {
         markDirty();
     }
 
+    /**
+     * Updates the current player.
+     *
+     * @param message the current-player update
+     */
     @Override
     public void visit(CurrentPlayerUpdateMessage message) {
         synchronized (lock) {
@@ -142,6 +192,11 @@ public class GameController extends BaseTUIController {
         markDirty();
     }
 
+    /**
+     * Updates the current game phase.
+     *
+     * @param message the game-state update
+     */
     @Override
     public void visit(GameStateUpdateMessage message) {
         synchronized (lock) {
@@ -153,6 +208,12 @@ public class GameController extends BaseTUIController {
         markDirty();
     }
 
+    /**
+     * Applies an end-of-round snapshot (board, all stats, current player, era and round) and logs the
+     * round end.
+     *
+     * @param message the end-round update
+     */
     @Override
     public void visit(EndRoundUpdateMessage message) {
         synchronized (lock) {
@@ -171,6 +232,11 @@ public class GameController extends BaseTUIController {
         markDirty();
     }
 
+    /**
+     * Logs the outcome of a resolved event card.
+     *
+     * @param message the event-resolved update
+     */
     @Override
     public void visit(EventResolvedMessage message) {
         synchronized (lock) {
@@ -213,6 +279,11 @@ public class GameController extends BaseTUIController {
         return s.toString();
     }
 
+    /**
+     * Ends the game: stops the render/input loops, shows the final results and exits the client.
+     *
+     * @param message the game-ended message carrying the final results
+     */
     @Override
     public void visit(GameEndedMessage message) {
         synchronized (lock) {
@@ -229,6 +300,12 @@ public class GameController extends BaseTUIController {
         System.exit(0);
     }
 
+    /**
+     * Aborts the game (e.g. a player disconnected): stops the loops, shows the aborted notice and exits
+     * the client.
+     *
+     * @param message the game-aborted message
+     */
     @Override
     public void visit(GameAbortedMessage message) {
         synchronized (lock) {
@@ -244,11 +321,18 @@ public class GameController extends BaseTUIController {
         System.exit(0);
     }
 
+    /**
+     * On disconnection, shows the reconnecting indicator (overriding the default exit behaviour).
+     */
     @Override
     public void handleDisconnect() {
         drawer.printReconnecting();
     }
 
+    /**
+     * On reconnection, shows the reconnected indicator and sends a reconnect request to resync with the
+     * game in progress.
+     */
     @Override
     public void handleReconnected() {
         drawer.printReconnected();
@@ -259,6 +343,10 @@ public class GameController extends BaseTUIController {
     // Render thread
     // ------------------------------------------------------------------
 
+    /**
+     * Render loop: waits until the state is marked dirty, then debounces briefly to coalesce a burst of
+     * messages into a single {@link #renderAll()}, repeating until the game is over.
+     */
     private void runRenderLoop() {
         try {
             while (!gameOver) {
@@ -278,6 +366,9 @@ public class GameController extends BaseTUIController {
         }
     }
 
+    /**
+     * Marks the state as dirty and wakes the render loop so it redraws.
+     */
     private void markDirty() {
         synchronized (renderLock) {
             dirty = true;
@@ -289,6 +380,11 @@ public class GameController extends BaseTUIController {
     // Input loop
     // ------------------------------------------------------------------
 
+    /**
+     * Input loop: waits until it is the local player's turn in an actionable phase, lets the state
+     * settle, prompts for the appropriate move (totem placement or card pick) and then waits for the
+     * state version to advance before looping again.
+     */
     private void runInputLoop() {
         try {
             while (!gameOver) {
@@ -329,6 +425,10 @@ public class GameController extends BaseTUIController {
         }
     }
 
+    /**
+     * Prompts the local player to place their totem on a free offer tile and sends the move request;
+     * does nothing if no free tile is available.
+     */
     private void promptTotemMove() {
         Set<String> allowed = new HashSet<>();
         List<String> offerLetters;
@@ -353,6 +453,12 @@ public class GameController extends BaseTUIController {
                 new TotemMoveRequest(context.getLocalNickname(), letter));
     }
 
+    /**
+     * Computes which board cards the local player may currently pick (respecting upper/lower
+     * permissions, excluding event cards and unaffordable buildings) and prompts for the choice,
+     * sending a card-pick request. Delegates to {@link #promptExtraPick(Set)} during the bonus-pick
+     * phase, where taking a card is optional.
+     */
     private void promptCardPick() {
         boolean extraPick;
         Set<Integer> allowed = new HashSet<>();
@@ -394,6 +500,12 @@ public class GameController extends BaseTUIController {
                 new CardPickRequest(context.getLocalNickname(), cardId));
     }
 
+    /**
+     * Handles the optional bonus upper-row pick: auto-skips when nothing is affordable, otherwise lets
+     * the player take one of the allowed cards or skip, sending the matching request.
+     *
+     * @param allowed the ids of the cards that may be picked in this bonus pick
+     */
     private void promptExtraPick(Set<Integer> allowed) {
         if (allowed.isEmpty()) {
             drawer.printPrompt("Bonus pick: no affordable upper-row card — skipping.");
@@ -424,6 +536,15 @@ public class GameController extends BaseTUIController {
         }
     }
 
+    /**
+     * Adds to {@code out} the pickable ids from {@code ids}, skipping event cards and, when an
+     * affordability filter is given, ids not contained in it.
+     *
+     * @param out              the accumulating set of pickable ids
+     * @param ids              the candidate card ids (a board row)
+     * @param eventIds         the ids of event cards to exclude
+     * @param affordableFilter ids the player can afford, or {@code null} to skip the affordability check
+     */
     private void addPickable(Set<Integer> out, List<Integer> ids,
                              List<Integer> eventIds, List<Integer> affordableFilter) {
         if (ids == null) return;
@@ -438,6 +559,11 @@ public class GameController extends BaseTUIController {
     // Render
     // ------------------------------------------------------------------
 
+    /**
+     * Renders the full in-game screen from a consistent copy of the local state: header (era, round,
+     * current player, phase), board with totems, the local player's dashboard, the opponents' summaries,
+     * the recent-events log and the legend.
+     */
     private void renderAll() {
         BoardDTO boardCopy;
         List<TotemPositionDTO> totemsCopy;
@@ -492,6 +618,12 @@ public class GameController extends BaseTUIController {
         drawer.printLegend();
     }
 
+    /**
+     * Maps a game phase to a human-readable label for the header.
+     *
+     * @param phase the current phase, may be {@code null}
+     * @return the display label
+     */
     private String phaseLabel(State phase) {
         if (phase == null) return "?";
         return switch (phase) {
@@ -508,6 +640,11 @@ public class GameController extends BaseTUIController {
     // Helpers
     // ------------------------------------------------------------------
 
+    /**
+     * Overwrites the entire local state from a game snapshot.
+     *
+     * @param snap the snapshot to apply
+     */
     private void applySnapshot(GameSnapshotDTO snap) {
         this.board = snap.board();
         playerStats.clear();
@@ -521,22 +658,39 @@ public class GameController extends BaseTUIController {
         this.currentRound = snap.currentRound();
     }
 
+    /**
+     * @return {@code true} if it is the local player's turn
+     */
     private boolean isLocalTurn() {
         return currentPlayer != null
                 && context.getLocalNickname() != null
                 && context.getLocalNickname().equals(currentPlayer.nickname());
     }
 
+    /**
+     * @return {@code true} if the current phase requires an action from the player (totem placement or
+     *         card picking)
+     */
     private boolean isActionablePhase() {
         return currentPhase == State.TOTEM_PLACEMENT
                 || currentPhase == State.CARD_PICKING
                 || currentPhase == State.EXTRA_UPPER_CARD_PICKING;
     }
 
+    /**
+     * @param nickname the nickname to test
+     * @param current  the current-player descriptor
+     * @return {@code true} if {@code nickname} is the current player
+     */
     private boolean isCurrent(String nickname, CurrentPlayerDTO current) {
         return current != null && nickname.equals(current.nickname());
     }
 
+    /**
+     * @param letter     the offer-tile letter to test
+     * @param totemsSnap the totem positions to check against
+     * @return {@code true} if a totem already occupies that offer tile
+     */
     private boolean isLetterOccupied(String letter, List<TotemPositionDTO> totemsSnap) {
         for (TotemPositionDTO t : totemsSnap) {
             if ("OFFER".equals(t.locationType()) && letter.equalsIgnoreCase(t.locationId())) {
@@ -546,11 +700,20 @@ public class GameController extends BaseTUIController {
         return false;
     }
 
+    /**
+     * Advances the state version and wakes any thread waiting on {@code lock} (notably the input loop).
+     * Must be called while holding {@code lock}.
+     */
     private void bumpAndNotify() {
         stateVersion++;
         lock.notifyAll();
     }
 
+    /**
+     * Sleeps for the given duration, restoring the interrupt flag if interrupted.
+     *
+     * @param ms milliseconds to sleep
+     */
     private void sleepBriefly(long ms) {
         try { Thread.sleep(ms); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
     }
@@ -559,6 +722,11 @@ public class GameController extends BaseTUIController {
     // Log + diffs (called under lock)
     // ------------------------------------------------------------------
 
+    /**
+     * Appends an entry to the recent-events log, evicting the oldest beyond {@link #LOG_LIMIT}.
+     *
+     * @param entry the log line to add
+     */
     private void appendLog(String entry) {
         recentLog.addLast(entry);
         while (recentLog.size() > LOG_LIMIT) recentLog.removeFirst();
@@ -624,6 +792,12 @@ public class GameController extends BaseTUIController {
         return null;
     }
 
+    /**
+     * Maps a card class kind to a human-readable label used in log lines.
+     *
+     * @param kind the card class kind, may be {@code null}
+     * @return the display label ({@code "card"} if unknown/null)
+     */
     private String kindLabel(ClassKind kind) {
         if (kind == null) return "card";
         return switch (kind) {

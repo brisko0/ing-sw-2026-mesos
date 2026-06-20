@@ -10,22 +10,41 @@ import it.polimi.ingsw.am56.view.TUI.*;
 
 import java.util.List;
 
+/**
+ * TUI lobby screen: shows the players who have joined and the target game size while waiting for the
+ * lobby to fill. It updates the display on each {@link LobbyStateMessage} and, once a
+ * {@link GameSnapshotMessage} arrives, transitions to the in-game {@link GameController} screen.
+ */
 public class LobbyController extends BaseTUIController {
 
     private LobbyStateMessage currentLobbyState;
     private boolean syncRequested = false;
 
+    /**
+     * Creates the lobby screen with the lobby state known at the time of entry.
+     *
+     * @param context      the shared TUI context
+     * @param initialState the lobby state to display first
+     */
     public LobbyController(TUIContext context, LobbyStateMessage initialState) {
         super(context);
         this.currentLobbyState = initialState;
     }
 
+    /**
+     * Draws the lobby and, if it is already full, requests the initial game snapshot.
+     */
     @Override
     public void onEnter() {
         drawLobby();
         maybeRequestSnapshot();
     }
 
+    /**
+     * Updates the lobby with new state, redraws it and possibly requests the initial snapshot.
+     *
+     * @param message the new lobby state
+     */
     @Override
     public void visit(LobbyStateMessage message) {
         this.currentLobbyState = message;
@@ -33,6 +52,11 @@ public class LobbyController extends BaseTUIController {
         maybeRequestSnapshot();
     }
 
+    /**
+     * On receiving the initial game snapshot, transitions to the in-game screen.
+     *
+     * @param message the initial game snapshot
+     */
     @Override
     public void visit(GameSnapshotMessage message) {
         context.changeState(new GameController(context, message));
@@ -62,11 +86,18 @@ public class LobbyController extends BaseTUIController {
         context.getServerAdapter().sendRequest(new GameSyncRequest());
     }
 
+    /**
+     * On disconnection, shows the reconnecting indicator (overriding the default exit behaviour).
+     */
     @Override
     public void handleDisconnect() {
         drawer.printReconnecting();
     }
 
+    /**
+     * On reconnection, shows the reconnected indicator and re-requests the lobby state to refresh the
+     * screen.
+     */
     @Override
     public void handleReconnected() {
         drawer.printReconnected();
@@ -74,6 +105,9 @@ public class LobbyController extends BaseTUIController {
         context.getServerAdapter().sendRequest(new LobbyStateRequest());
     }
 
+    /**
+     * Clears the screen and renders the current lobby (player names, colors and target size).
+     */
     private void drawLobby() {
         drawer.clearScreen();
 

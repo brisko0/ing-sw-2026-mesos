@@ -12,6 +12,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * TUI pre-lobby screen: it queries the server for the current state and then either creates a new game
+ * or joins the existing one. It collects the player's nickname and totem color (validating them against
+ * the names/colors already taken) and sends the matching request, then advances to the
+ * {@link LobbyController} when the lobby state arrives.
+ */
 public class PreLobbyController extends BaseTUIController {
 
     private static final List<String> ALL_COLORS =
@@ -22,10 +28,19 @@ public class PreLobbyController extends BaseTUIController {
     private List<String> takenNicknames = new ArrayList<>();
     private List<String> takenColors = new ArrayList<>();
 
+    /**
+     * Creates the pre-lobby screen bound to the shared context.
+     *
+     * @param context the shared TUI context
+     */
     public PreLobbyController(TUIContext context) {
         super(context);
     }
 
+    /**
+     * Requests the lobby state, waits for the server's reply, then runs the create-game or join-game
+     * flow depending on whether a game already exists.
+     */
     @Override
     public void onEnter() {
         drawer.printMessage("Requesting game state from server...");
@@ -44,6 +59,12 @@ public class PreLobbyController extends BaseTUIController {
         }
     }
 
+    /**
+     * Stores the pre-lobby state received from the server (whether a game exists and the taken
+     * nicknames/colors) and releases the wait in {@link #onEnter()}.
+     *
+     * @param message the pre-lobby state
+     */
     @Override
     public void visit(PreLobbyStateMessage message) {
         this.gameExists = message.isGameAlreadyCreated();
@@ -52,22 +73,36 @@ public class PreLobbyController extends BaseTUIController {
         this.waitingForServer = false;
     }
 
+    /**
+     * Once joined/created and the lobby state arrives, transitions to the lobby screen.
+     *
+     * @param message the lobby state
+     */
     @Override
     public void visit(LobbyStateMessage message) {
         context.changeState(new LobbyController(context, message));
     }
 
+    /**
+     * On disconnection, shows the reconnecting indicator (overriding the default exit behaviour).
+     */
     @Override
     public void handleDisconnect() {
         drawer.printReconnecting();
     }
 
+    /**
+     * On reconnection, shows the reconnected indicator and restarts the pre-lobby flow from scratch.
+     */
     @Override
     public void handleReconnected() {
         drawer.printReconnected();
         context.changeState(new PreLobbyController(context));
     }
 
+    /**
+     * Create-game flow: collects nickname, player count and color, then sends a create-game request.
+     */
     private void handleCreateGame() {
         drawer.printMenuHeader("CREATE GAME — No active game, start a new one");
 
@@ -79,6 +114,10 @@ public class PreLobbyController extends BaseTUIController {
         context.getServerAdapter().sendRequest(new CreateGameRequest(nickname, color, size));
     }
 
+    /**
+     * Join-game flow: collects nickname and color for an existing lobby, then sends an add-player
+     * request.
+     */
     private void handleJoinGame() {
         drawer.printMenuHeader("JOIN GAME — A lobby is open");
 
@@ -89,6 +128,11 @@ public class PreLobbyController extends BaseTUIController {
         context.getServerAdapter().sendRequest(new AddPlayerRequest(nickname, color));
     }
 
+    /**
+     * Prompts repeatedly until the user enters a non-empty nickname that is not already taken.
+     *
+     * @return the chosen nickname
+     */
     private String chooseNickname() {
         while (true) {
             String nickname = inputReader.readString("  Enter your nickname:");
@@ -104,6 +148,11 @@ public class PreLobbyController extends BaseTUIController {
         }
     }
 
+    /**
+     * Shows the palette and prompts repeatedly until the user picks a valid, not-yet-taken color.
+     *
+     * @return the chosen color (uppercase)
+     */
     private String chooseColor() {
         printColorPalette();
         while (true) {
