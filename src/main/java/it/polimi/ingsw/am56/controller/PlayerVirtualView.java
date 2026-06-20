@@ -18,6 +18,21 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Server-side {@link GameObserver} that translates model events into network messages sent to a
+ * client. It sits between the {@link GameModel} and a single {@link ClientConnection}: whenever the
+ * model changes it fires a {@link GameEvent}, and this class reacts by building the right
+ * {@code ServerMessage} (carrying the relevant DTO snapshot) and pushing it over the connection.
+ * <p>
+ * Events are routed through a dispatch map from {@link GameEvent} to a handler {@link Runnable}, so
+ * {@link #onModelChanged(GameEvent)} simply looks the event up and runs its handler. Events without a
+ * registered handler (e.g. {@code ERA_CHANGED}) intentionally produce no message, because their
+ * information already travels inside another update such as a round-ended snapshot.
+ * <p>
+ * The helper methods extract the parts of the model that the client needs as serializable DTOs
+ * (board rows as card-id lists, per-player stats, totem positions), keeping full model objects on the
+ * server side.
+ */
 public class PlayerVirtualView implements GameObserver {
     private final GameModel model;
     private final ClientConnection networkConnection;
@@ -27,6 +42,13 @@ public class PlayerVirtualView implements GameObserver {
 
     private final EndGameService endGameService;
 
+    /**
+     * Creates a virtual view bound to one client connection.
+     *
+     * @param model             the game model to observe
+     * @param networkConnection the connection to the client this view serves
+     * @param endGameService    the service used to obtain the end-of-game message when the game ends
+     */
     public PlayerVirtualView(GameModel model, ClientConnection networkConnection, EndGameService endGameService) {
         this.model = model;
         this.networkConnection = networkConnection;
@@ -49,6 +71,12 @@ public class PlayerVirtualView implements GameObserver {
         eventHandlers.put(GameEvent.PLAYER_DISCONNECTED, this::handlePlayerDisconnected);
     }
 
+    /**
+     * Reacts to a model change by dispatching the event to its registered handler, which sends the
+     * appropriate update message to the client. Events with no registered handler are ignored.
+     *
+     * @param event the event signalled by the model
+     */
     @Override
     public void onModelChanged(GameEvent event) {
         Runnable handler = eventHandlers.get(event);
@@ -63,6 +91,10 @@ public class PlayerVirtualView implements GameObserver {
     // METODI HANDLER
     // =========================================================================
 
+    /**
+     * Sends the pre-lobby state: whether a game has been created and is already in progress, plus the
+     * nicknames and totem colors already taken, so a connecting client knows what it may choose.
+     */
     private void handleLobbyStateSync() {
         List<String> takenNicknames = model.getPlayers().stream().map(Player::getNickname).toList();
         List<String> takenColors    = model.getPlayers().stream().map(Player::getTotemColor).toList();
@@ -76,6 +108,9 @@ public class PlayerVirtualView implements GameObserver {
         );
     }
 
+    /**
+     * Sends the updated lobby state (current players and target game size) after a player joins.
+     */
     private void handlePlayerAdded() {
         List<PlayerDTO> currentPlayers = model.getPlayers().stream()
                 .map(p -> new PlayerDTO(p.getNickname(), p.getTotemColor()))
@@ -83,6 +118,10 @@ public class PlayerVirtualView implements GameObserver {
         networkConnection.sendMessage(new LobbyStateMessage(currentPlayers, model.getGameSize()));
     }
 
+    /**
+     * Sends a full game snapshot when the game starts: board, every player's stats, all totem
+     * positions, the current player, the current state, era and round.
+     */
     private void handleGameStarted() {
         BoardDTO boardDTO = extractBoardDTO();
         List<PlayerStatsDTO> statsDTO = model.getPlayers().stream().map(this::extractPlayerStats).toList();
@@ -98,10 +137,16 @@ public class PlayerVirtualView implements GameObserver {
         networkConnection.sendMessage(new GameSnapshotMessage(snapshot));
     }
 
+    /**
+     * Sends the updated positions of all totems after one has been placed.
+     */
     private void handleTotemPlaced() {
         networkConnection.sendMessage(new TotemsStateMessage(extractAllTotemPositions()));
     }
 
+    /**
+     * On a turn change, sends the new current player's stats and then the new current player itself.
+     */
     private void handleTurnChanged() {
         Player current = model.getCurrentPlayer();
         networkConnection.sendMessage(new PlayerStatsUpdateMessage(extractPlayerStats(current)));
@@ -110,17 +155,28 @@ public class PlayerVirtualView implements GameObserver {
         ));
     }
 
+    /**
+     * Sends the new game state (turn phase) after the model's state changes.
+     */
     private void handleStateChanged() {
         networkConnection.sendMessage(new GameStateUpdateMessage(
                 new GameStateDTO(model.getCurrentState().getState())
         ));
     }
 
+    /**
+     * After a card is picked, sends the updated board (the rows changed) and the current player's
+     * updated stats.
+     */
     private void handleCardPicked() {
         networkConnection.sendMessage(new BoardUpdatedMessage(extractBoardDTO()));
         networkConnection.sendMessage(new PlayerStatsUpdateMessage(extractPlayerStats(model.getCurrentPlayer())));
     }
 
+    /**
+     * At the end of a round, sends an end-round snapshot (board, all players' stats, current player,
+     * era and round) summarizing the situation after the round resolved.
+     */
     private void handleRoundEnded() {
         BoardDTO boardDTO = extractBoardDTO();
         List<PlayerStatsDTO> statsDTO = model.getPlayers().stream().map(this::extractPlayerStats).toList();
@@ -134,11 +190,19 @@ public class PlayerVirtualView implements GameObserver {
         networkConnection.sendMessage(new EndRoundUpdateMessage(endSnap));
     }
 
+    /**
+     * When totems are reset, sends the current player's updated stats and the refreshed totem
+     * positions.
+     */
     private void handleTotemReset() {
         networkConnection.sendMessage(new PlayerStatsUpdateMessage(extractPlayerStats(model.getCurrentPlayer())));
         networkConnection.sendMessage(new TotemsStateMessage(extractAllTotemPositions()));
     }
 
+    /**
+     * After an event card resolves, sends the id of the resolved event together with its per-player
+     * outcomes (food and points deltas), built from the deltas recorded by the model.
+     */
     private void handleEventResolved() {
         Map<String, int[]> deltas = model.getLastEventDeltas();
         List<EventOutcomeDTO> outcomes = new ArrayList<>();
@@ -151,6 +215,10 @@ public class PlayerVirtualView implements GameObserver {
         networkConnection.sendMessage(new EventResolvedMessage(model.getLastResolvedEventId(), outcomes));
     }
 
+    /**
+     * Sends the end-of-game message obtained from the {@link EndGameService}; if it is not yet
+     * available, logs an error and sends nothing.
+     */
     private void handleGameEnded() {
         GameEndedMessage msg = endGameService.getEndGameMessage();
         if (msg != null) {
@@ -160,6 +228,9 @@ public class PlayerVirtualView implements GameObserver {
         }
     }
 
+    /**
+     * Notifies the client that the game was aborted because a player disconnected.
+     */
     private void handlePlayerDisconnected() {
         networkConnection.sendMessage(new GameAbortedMessage());
     }
@@ -168,6 +239,14 @@ public class PlayerVirtualView implements GameObserver {
     // HELPER METHODS
     // =========================================================================
 
+    /**
+     * Builds a {@link BoardDTO} from the current board, representing each row and the offer tiles by
+     * id/letter rather than by full card objects. The event-card id list is the subset of the tribe
+     * rows whose card type is {@link CardType#EVENT}, and the order-tile count is how many order tiles
+     * remain.
+     *
+     * @return the board snapshot to send to the client
+     */
     private BoardDTO extractBoardDTO() {
         List<Integer> upperBuilds = model.getBoard().getUpperRowBuildings().stream().map(Card::getCardId).toList();
         List<Integer> lowerBuilds = model.getBoard().getLowerRowBuildings().stream().map(Card::getCardId).toList();
@@ -187,6 +266,12 @@ public class PlayerVirtualView implements GameObserver {
         return new BoardDTO(upperBuilds, lowerBuilds, upperTribe, lowerTribe, offerLetters, orderCount, eventIds);
     }
 
+    /**
+     * Collects the positions of every placed totem: one entry per player on an order tile (located by
+     * its order-tile id) and one per player on an offer tile (located by its letter).
+     *
+     * @return the totem positions to send to the client
+     */
     private List<TotemPositionDTO> extractAllTotemPositions() {
         List<TotemPositionDTO> totemsDTO = new ArrayList<>();
         model.getPlayerToOrderTile().forEach((player, orderTile) ->
@@ -198,6 +283,17 @@ public class PlayerVirtualView implements GameObserver {
         return totemsDTO;
     }
 
+    /**
+     * Builds the {@link PlayerStatsDTO} for the given player: food, points, each character type's card
+     * ids, the sale/discount and shaman-star bonuses and the invention count. It also computes, from
+     * the current game situation, whether the player may pick an upper/lower card (from the offer tile
+     * they occupy, or — for upper only — during {@code EXTRA_UPPER_CARD_PICKING} when it is their
+     * turn) and which board buildings they can currently afford (food at least the cost minus their
+     * building discount), plus the ids of the buildings they already own.
+     *
+     * @param p the player whose stats to extract
+     * @return the stats snapshot to send to the client
+     */
     private PlayerStatsDTO extractPlayerStats(Player p) {
         var stats = p.getStats();
 
