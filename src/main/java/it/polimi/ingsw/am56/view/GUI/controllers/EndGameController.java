@@ -16,6 +16,16 @@ import javafx.stage.Stage;
 
 import java.util.List;
 
+/**
+ * Controller for the end-game screen. It renders two rankings side by side — the just-played
+ * match standings and the global leaderboard for games of the same size — from the
+ * {@link GameEndedMessage}, and lets the user close the application.
+ * <p>
+ * The whole UI is scaled to fit the window: the layout is designed against a fixed
+ * 1280×720 base and {@link #scaleUI()} rescales it on resize. The local player's row is
+ * highlighted, and in the global leaderboard the view shows the top entries plus the local
+ * player's row when they fall outside the top five.
+ */
 public class EndGameController {
 
     @FXML private StackPane rootPane;
@@ -30,6 +40,10 @@ public class EndGameController {
 
     private String localPlayerNickname;
 
+    /**
+     * Hooks resize listeners on the root pane so the UI is rescaled whenever the window's width
+     * or height changes. Invoked automatically by JavaFX after the FXML is loaded.
+     */
     @FXML
     public void initialize() {
         rootPane.widthProperty().addListener((obs, oldVal, newVal) -> scaleUI());
@@ -48,6 +62,11 @@ public class EndGameController {
         Platform.exit();
     }
 
+    /**
+     * Uniformly scales the content container to fit the current window, preserving aspect ratio.
+     * The scale factor is the smaller of the width and height ratios against the 1280×720 base
+     * size. No-op until the pane has been laid out (non-zero size).
+     */
     private void scaleUI() {
         if (rootPane.getWidth() == 0 || rootPane.getHeight() == 0) return;
 
@@ -60,6 +79,15 @@ public class EndGameController {
         scalableContainer.setScaleY(scaleFactor);
     }
 
+    /**
+     * Populates the screen from the end-game message. Stores the local player's nickname (used to
+     * highlight their row and decide what to show in the global leaderboard), sets the
+     * game-size labels, and fills both ranking columns. The UI work is posted to the JavaFX
+     * thread via {@link Platform#runLater}.
+     *
+     * @param message       the end-game message carrying the match ranking and global leaderboard
+     * @param localNickname the nickname of the player running this client
+     */
     public void initData(GameEndedMessage message, String localNickname) {
         this.localPlayerNickname = localNickname;
 
@@ -75,6 +103,17 @@ public class EndGameController {
         });
     }
 
+    /**
+     * Fills a ranking column with one row per entry. For the match ranking ({@code isGlobal} false)
+     * every entry is shown. For the global leaderboard ({@code isGlobal} true) the display is
+     * trimmed: if the local player is in the top five, the top five are shown; otherwise the top
+     * three are shown followed by a {@code "..."} separator and the local player's own row. Shows
+     * a placeholder label when there is no data.
+     *
+     * @param container the column to populate (its current children are cleared first)
+     * @param ranking   the ranking entries to display
+     * @param isGlobal  whether this is the global leaderboard (enables the trimming logic)
+     */
     private void populateRanking(VBox container, List<EndGameDTO> ranking, boolean isGlobal) {
         container.getChildren().clear();
 
@@ -118,6 +157,16 @@ public class EndGameController {
         }
     }
 
+    /**
+     * Builds a single ranking row: rank, nickname (with a 👑 next to the match winner), the score
+     * in Prestige Points, and a sub-line that shows the match date for the global leaderboard or
+     * the leftover food for the match ranking. The local player's row gets a dedicated style class.
+     *
+     * @param entry    the ranking entry to render
+     * @param isGlobal whether the row belongs to the global leaderboard (drives the sub-line and
+     *                 suppresses the winner crown)
+     * @return the assembled row node
+     */
     private HBox createRankingRow(EndGameDTO entry, boolean isGlobal) {
         HBox row = new HBox(15);
         row.setAlignment(Pos.CENTER_LEFT);

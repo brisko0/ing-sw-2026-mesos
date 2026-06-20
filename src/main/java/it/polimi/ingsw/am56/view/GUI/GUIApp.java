@@ -9,14 +9,37 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * JavaFX {@link Application} entry point for the GUI client. It opens the first window — the
+ * server-connection choice screen ({@code SocketRmiChoice.fxml}) — and hands the configured
+ * {@link ConnectionFactory} to its controller.
+ * <p>
+ * The factory is injected through the static {@link #setConnectionFactory(ConnectionFactory)}
+ * before {@code launch} is called, because JavaFX instantiates the {@code Application} itself and
+ * does not allow passing constructor arguments.
+ */
 public class GUIApp extends Application {
 
     private static ConnectionFactory connectionFactory;
 
+    /**
+     * Sets the connection factory the GUI will use to open server connections. Must be called
+     * before the application is launched, since JavaFX creates the instance reflectively.
+     *
+     * @param factory the connection factory to inject
+     */
     public static void setConnectionFactory(ConnectionFactory factory) {
         connectionFactory = factory;
     }
 
+    /**
+     * Loads the connection-choice screen, injects the {@link ConnectionFactory} into its
+     * controller, and shows the primary window. The window is resizable with a minimum size, and
+     * closing it terminates the JVM.
+     *
+     * @param primaryStage the primary stage supplied by JavaFX
+     * @throws Exception if the FXML resource cannot be loaded
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GUI/fxml/SocketRmiChoice.fxml"));
@@ -41,6 +64,10 @@ public class GUIApp extends Application {
         primaryStage.show();
     }
 
+    /**
+     * Called by JavaFX when the application shuts down; forces the JVM to exit so no lingering
+     * non-daemon (e.g. network) threads keep the process alive.
+     */
     @Override
     public void stop() {
         System.exit(0);

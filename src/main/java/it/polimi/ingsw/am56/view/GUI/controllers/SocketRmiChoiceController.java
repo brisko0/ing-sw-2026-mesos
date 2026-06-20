@@ -12,6 +12,11 @@ import javafx.scene.control.Label;
 
 import java.io.IOException;
 
+/**
+ * Controller for the first GUI screen, where the user chooses how to connect to the server
+ * (RMI or socket) and enters the host/port. On a successful connection it builds a
+ * {@link ConnectionManager} for the chosen transport and swaps the scene to the pre-lobby.
+ */
 public class SocketRmiChoiceController {
 
     @FXML private StackPane rootPane; // Ci serve per ottenere la Scena attuale
@@ -26,10 +31,21 @@ public class SocketRmiChoiceController {
     private ConnectionFactory connectionFactory;
     private ServerAdapter serverAdapter;
 
+    /**
+     * Injects the factory used to open the actual RMI/socket connections.
+     *
+     * @param factory the connection factory to use
+     */
     public void setConnectionFactory(ConnectionFactory factory) {
         this.connectionFactory = factory;
     }
 
+    /**
+     * Pre-fills the host and port fields from the {@code MESOS_SERVER_IP}, {@code MESOS_RMI_PORT}
+     * and {@code MESOS_SOCKET_PORT} environment variables, falling back to local defaults
+     * ({@code 127.0.0.1}, {@code 1099}, {@code 12345}). Invoked automatically by JavaFX after
+     * the FXML is loaded.
+     */
     @FXML
     public void initialize() {
         String ip   = System.getenv().getOrDefault("MESOS_SERVER_IP",    "127.0.0.1");
@@ -42,6 +58,11 @@ public class SocketRmiChoiceController {
         socketPortField.setText(sPort);
     }
 
+    /**
+     * Handles the "connect via RMI" action: reads the RMI host/port, opens an RMI connection
+     * through the factory, wraps it in a {@link ConnectionManager} and proceeds to the lobby.
+     * Any failure is reported inline via {@link #showError(String)} without leaving the screen.
+     */
     @FXML
     private void handleRmiConnect() {
         String ip = rmiIpField.getText().trim();
@@ -57,6 +78,12 @@ public class SocketRmiChoiceController {
         }
     }
 
+    /**
+     * Handles the "connect via socket" action: reads the socket host/port, opens a socket
+     * connection through the factory, wraps it in a {@link ConnectionManager} and proceeds to the
+     * lobby. Any failure is reported inline via {@link #showError(String)} without leaving the
+     * screen.
+     */
     @FXML
     private void handleSocketConnect() {
         String ip = socketIpField.getText().trim();
@@ -72,6 +99,13 @@ public class SocketRmiChoiceController {
         }
     }
 
+    /**
+     * Shows an error message on the screen and hides it again after about three seconds. The
+     * delayed hide runs on a background thread and re-enters the JavaFX thread via
+     * {@link javafx.application.Platform#runLater}.
+     *
+     * @param message the error text to display
+     */
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
@@ -84,7 +118,11 @@ public class SocketRmiChoiceController {
         }).start();
     }
 
-    // --- Metodo per cambiare scena ---
+    /**
+     * Switches to the pre-lobby screen, reusing the current window: it loads {@code PreLobby.fxml},
+     * passes the freshly built {@link ServerAdapter} to its controller, and replaces the current
+     * scene's root with the new view.
+     */
     private void goToLobby() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GUI/fxml/PreLobby.fxml"));
