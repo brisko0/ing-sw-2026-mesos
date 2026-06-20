@@ -23,6 +23,10 @@ import java.util.Map;
  */
 public class CardCatalog {
 
+    /**
+     * Visual/logical kind of a card: the six character types, plus {@code BUILDING}, {@code EVENT} and
+     * {@code UNKNOWN} (used as a neutral fallback for ids the catalog does not know).
+     */
     public enum ClassKind {
         COLLECTOR, HUNTER, BUILDER, SHAMAN, ARTIST, INVENTOR,
         BUILDING, EVENT, UNKNOWN
@@ -52,6 +56,10 @@ public class CardCatalog {
     /** "numPlayers:slot" -> {foodEffect, pointsEffect}. */
     private final Map<String, int[]> orderTiles = new HashMap<>();
 
+    /**
+     * Builds the catalog by reading the five JSON resources once. Load failures are swallowed; any
+     * id missing afterwards resolves to a neutral default at lookup time.
+     */
     public CardCatalog() {
         loadCharacterCards("/json/characterCards.json");
         loadBuildingCards("/json/buildingCards.json");
@@ -64,10 +72,14 @@ public class CardCatalog {
     // Card lookups
     // ------------------------------------------------------------------
 
+    /** @param cardId the card id
+     *  @return the card's {@link ClassKind}, or {@link ClassKind#UNKNOWN} if unknown. */
     public ClassKind kindOf(int cardId) {
         return kinds.getOrDefault(cardId, ClassKind.UNKNOWN);
     }
 
+    /** @param cardId the card id
+     *  @return the card's era, or {@code 0} if unknown. */
     public int eraOf(int cardId) {
         return eras.getOrDefault(cardId, 0);
     }
@@ -126,12 +138,19 @@ public class CardCatalog {
     // Loaders
     // ------------------------------------------------------------------
 
+    /**
+     * Loads character cards, recording each card's kind and era plus the single salient stat for the
+     * types that have one (shaman stars, builder discount, inventor index, hunter food).
+     *
+     * @param resourcePath the classpath resource to read
+     */
     private void loadCharacterCards(String resourcePath) {
         forEachEntry(resourcePath, obj -> {
             int id = obj.get("cardId").getAsInt();
             String type = optStr(obj, "classType", "");
             kinds.put(id, mapCharacterType(type));
             eras.put(id, optInt(obj, "era", 0));
+            // Each Personaggio carries a single salient stat shown inside its card box.
             switch (type) {
                 case "SHAMAN" -> shamanStars.put(id, optInt(obj, "shamanStars", 0));
                 case "BUILDER" -> builderSale.put(id, optInt(obj, "buildingSale", 0));
@@ -150,6 +169,11 @@ public class CardCatalog {
         return NONE;
     }
 
+    /**
+     * Loads building cards, recording kind, era, cost, points and a one-line effect description.
+     *
+     * @param resourcePath the classpath resource to read
+     */
     private void loadBuildingCards(String resourcePath) {
         forEachEntry(resourcePath, obj -> {
             int id = obj.get("cardId").getAsInt();
@@ -161,6 +185,11 @@ public class CardCatalog {
         });
     }
 
+    /**
+     * Loads event cards, recording kind, era and a one-line effect description.
+     *
+     * @param resourcePath the classpath resource to read
+     */
     private void loadEventCards(String resourcePath) {
         forEachEntry(resourcePath, obj -> {
             int id = obj.get("cardId").getAsInt();
@@ -170,12 +199,22 @@ public class CardCatalog {
         });
     }
 
+    /**
+     * Loads offer tiles, mapping each tile letter to its {food, upperCards, lowerCards} action.
+     *
+     * @param resourcePath the classpath resource to read
+     */
     private void loadOfferTiles(String resourcePath) {
         forEachEntry(resourcePath, obj -> offerTiles.put(
                 optStr(obj, "letter", "?").toUpperCase(),
                 new int[] { optInt(obj, "food", 0), optInt(obj, "upperCards", 0), optInt(obj, "lowerCards", 0) }));
     }
 
+    /**
+     * Loads order-of-turn tiles, mapping each "numPlayers:slot" key to its {foodEffect, pointsEffect}.
+     *
+     * @param resourcePath the classpath resource to read
+     */
     private void loadOrderTiles(String resourcePath) {
         forEachEntry(resourcePath, obj -> orderTiles.put(
                 optInt(obj, "numPlayers", 0) + ":" + optInt(obj, "orderTileId", 0),
@@ -186,6 +225,12 @@ public class CardCatalog {
     // One-line effect builders (rulebook wording, kept terse for the terminal)
     // ------------------------------------------------------------------
 
+    /**
+     * Builds the terse, rulebook-flavoured effect line for a building from its JSON entry.
+     *
+     * @param obj the building's JSON object
+     * @return the one-line effect description
+     */
     private String buildingEffect(JsonObject obj) {
         return switch (optStr(obj, "classType", "")) {
             case "FoodPerSet" -> "+" + optInt(obj, "bonusFood", 0)
@@ -212,6 +257,13 @@ public class CardCatalog {
         };
     }
 
+    /**
+     * Builds the terse, rulebook-flavoured effect line for an event from its JSON entry (marking final
+     * events).
+     *
+     * @param obj the event's JSON object
+     * @return the one-line effect description
+     */
     private String eventEffect(JsonObject obj) {
         boolean isFinal = obj.has("isFinal") && obj.get("isFinal").getAsBoolean();
         String suffix = isFinal ? " [finale]" : "";
@@ -233,6 +285,12 @@ public class CardCatalog {
     // Small helpers
     // ------------------------------------------------------------------
 
+    /**
+     * Maps a character {@code classType} string to its {@link ClassKind}.
+     *
+     * @param type the JSON class-type string
+     * @return the matching kind, or {@link ClassKind#UNKNOWN}
+     */
     private ClassKind mapCharacterType(String type) {
         return switch (type) {
             case "COLLECTOR" -> ClassKind.COLLECTOR;
@@ -245,6 +303,10 @@ public class CardCatalog {
         };
     }
 
+    /**
+     * @param type the character class-type string
+     * @return the Italian singular name of the character type (used in effect lines)
+     */
     private String charSingular(String type) {
         return switch (type) {
             case "COLLECTOR" -> "Raccoglitore";
@@ -257,18 +319,49 @@ public class CardCatalog {
         };
     }
 
+    /**
+     * Reads an int field, returning {@code def} if absent or null.
+     *
+     * @param obj the JSON object
+     * @param key the field name
+     * @param def the fallback value
+     * @return the field value or {@code def}
+     */
     private int optInt(JsonObject obj, String key, int def) {
         return obj.has(key) && !obj.get(key).isJsonNull() ? obj.get(key).getAsInt() : def;
     }
 
+    /**
+     * Reads a boolean field, returning {@code def} if absent or null.
+     *
+     * @param obj the JSON object
+     * @param key the field name
+     * @param def the fallback value
+     * @return the field value or {@code def}
+     */
     private boolean optBool(JsonObject obj, String key, boolean def) {
         return obj.has(key) && !obj.get(key).isJsonNull() ? obj.get(key).getAsBoolean() : def;
     }
 
+    /**
+     * Reads a string field, returning {@code def} if absent or null.
+     *
+     * @param obj the JSON object
+     * @param key the field name
+     * @param def the fallback value
+     * @return the field value or {@code def}
+     */
     private String optStr(JsonObject obj, String key, String def) {
         return obj.has(key) && !obj.get(key).isJsonNull() ? obj.get(key).getAsString() : def;
     }
 
+    /**
+     * Parses the JSON array at the given resource and feeds each object entry to {@code sink}. Missing
+     * resources and parse errors are ignored (best-effort load).
+     *
+     * @param resourcePath the classpath resource to read
+     * @param sink         the consumer invoked for each JSON object in the array
+     */
     private void forEachEntry(String resourcePath, java.util.function.Consumer<JsonObject> sink) {
         var stream = getClass().getResourceAsStream(resourcePath);
         if (stream == null) return;
@@ -280,6 +373,7 @@ public class CardCatalog {
                 if (el.isJsonObject()) sink.accept(el.getAsJsonObject());
             }
         } catch (Exception ignored) {
+            // Best-effort load; unknown ids fall back to neutral defaults at render time.
         }
     }
 }

@@ -97,19 +97,27 @@ public class TUIDrawer {
 
     private final CardCatalog catalog;
 
+    /** Creates a drawer with a freshly loaded {@link CardCatalog}. */
     public TUIDrawer() { this(new CardCatalog()); }
 
+    /**
+     * Creates a drawer backed by the given card catalog.
+     *
+     * @param catalog the card catalog used to look up card/tile info while rendering
+     */
     public TUIDrawer(CardCatalog catalog) { this.catalog = catalog; }
 
     // ------------------------------------------------------------------
     // Top-level primitives
     // ------------------------------------------------------------------
 
+    /** Clears the terminal screen and scrollback. */
     public void clearScreen() {
         System.out.print("\033[H\033[2J\033[3J");
         System.out.flush();
     }
 
+    /** Prints the centered, two-tone block-letter MESOS title banner. */
     public void printTitle() {
         // 47×6 block-letter MESOS, top 3 rows parchment, bottom 3 rows clay.
         String[] block = {
@@ -131,29 +139,41 @@ public class TUIDrawer {
         System.out.println();
     }
 
+    /** Prints a plain message line.
+     *  @param message the text to print */
     public void printMessage(String message) {
         System.out.println(message);
     }
 
+    /** Prints an error line in red.
+     *  @param error the error text */
     public void printError(String error) {
         System.out.println(" " + ansi("✖ ERROR:", BOLD_RED) + "  " + ansi(error, "\033[31m"));
     }
 
+    /** Prints a success line in green.
+     *  @param message the success text */
     public void printSuccess(String message) {
         System.out.println(" " + ansi("✔", BOLD_GREEN) + "  " + ansi(message, "\033[32m"));
     }
 
+    /** Prints a prompt line introducing an action.
+     *  @param prompt the prompt text */
     public void printPrompt(String prompt) {
         System.out.println();
         System.out.println(" " + ansi("▶", GOLD) + "  " + ansi(prompt, B_PARCHMENT));
     }
 
+    /** Prints a dashed sub-header line.
+     *  @param text the sub-header text */
     public void printSubHeader(String text) {
         System.out.println();
         System.out.println(" " + ansi(repeat('─', 4) + " " + text + " " + repeat('─', WIDTH - 7 - text.length()),
                 PARCHMENT_DIM));
     }
 
+    /** Prints a boxed menu header.
+     *  @param title the header title */
     public void printMenuHeader(String title) {
         openBox(title, PARCHMENT);
         closeBox();
@@ -163,6 +183,14 @@ public class TUIDrawer {
     // Lobby
     // ------------------------------------------------------------------
 
+    /**
+     * Renders the lobby: each joined player (colored dot, name, "creator" tag on the first) and an
+     * empty "waiting" slot for each missing player up to the maximum.
+     *
+     * @param playerNames  the joined players' nicknames
+     * @param playerColors the joined players' totem colors (may be {@code null}/shorter)
+     * @param maxPlayers   the target number of players
+     */
     public void printLobbyState(List<String> playerNames, List<String> playerColors, int maxPlayers) {
         String header = "LOBBY  " + ansi("▸", PARCHMENT_DIM) + " " + "Waiting (" + playerNames.size()
                 + "/" + maxPlayers + ")";
@@ -186,6 +214,15 @@ public class TUIDrawer {
     // In-game header
     // ------------------------------------------------------------------
 
+    /**
+     * Renders the in-game header box: era, round, current phase and whose turn it is.
+     *
+     * @param era                the current era
+     * @param round              the current round
+     * @param currentPlayerNick  the current player's nickname
+     * @param currentPlayerColor the current player's totem color
+     * @param phaseLabel         the human-readable phase label
+     */
     public void printGameHeader(int era, int round, String currentPlayerNick,
                                 String currentPlayerColor, String phaseLabel) {
         System.out.println();
@@ -212,6 +249,13 @@ public class TUIDrawer {
     // Board
     // ------------------------------------------------------------------
 
+    /**
+     * Renders the whole board: the four card rows (buildings/tribe, top and bottom), the offer and
+     * order tiles with the totems on them, and a card-effects legend.
+     *
+     * @param board  the board to render
+     * @param totems the totem positions to overlay on the tiles
+     */
     public void printBoard(BoardDTO board, List<TotemPositionDTO> totems) {
         List<Integer> eventIds = board.eventCardIds() != null ? board.eventCardIds() : List.of();
 
@@ -252,6 +296,13 @@ public class TUIDrawer {
         System.out.println();
     }
 
+    /**
+     * Prints one labelled group of card-effect lines.
+     *
+     * @param label    the group label (e.g. "Buildings")
+     * @param ids      the card ids in the group
+     * @param eventIds the ids that are event cards (rendered as such)
+     */
     private void legendGroup(String label, List<Integer> ids, List<Integer> eventIds) {
         if (ids == null || ids.isEmpty()) return;
         System.out.println("  " + ansi(label, D_STONE));
@@ -277,6 +328,13 @@ public class TUIDrawer {
         return left + right;
     }
 
+    /**
+     * Renders one row of mini cards under a fixed-width label so cards line up vertically across rows.
+     *
+     * @param label    the row label
+     * @param ids      the card ids to render in the row
+     * @param eventIds the ids that are event cards
+     */
     private void printCardRow(String label, List<Integer> ids, List<Integer> eventIds) {
         // Label takes the same 20-char column for every row so the cards line up vertically.
         String labelChunk = "  " + ansi(padRightPlain(label, 20), B_PARCHMENT);
@@ -371,15 +429,31 @@ public class TUIDrawer {
     // Player dashboards
     // ------------------------------------------------------------------
 
+    /**
+     * Renders a player's stats: a full boxed dashboard for the local player, or a compact one-line
+     * summary for opponents.
+     *
+     * @param stats     the player's stats
+     * @param isLocal   {@code true} to render the local player's full dashboard
+     * @param isCurrent {@code true} if this player has the current turn (shown with a marker)
+     */
     public void printPlayerDashboard(PlayerStatsDTO stats, boolean isLocal, boolean isCurrent) {
         if (isLocal) printLocalDashboard(stats, isCurrent);
         else printOpponentLine(stats, isCurrent);
     }
 
+    /** Prints the header above the opponents' one-line summaries. */
     public void printOpponentsHeader() {
         System.out.println("  " + ansi("OPPONENTS", B_PARCHMENT));
     }
 
+    /**
+     * Renders the local player's full dashboard: title with food/points, the owned cards grouped by
+     * category, the sale/star/invention bonuses and the pick availability/affordable buildings.
+     *
+     * @param stats     the local player's stats
+     * @param isCurrent {@code true} if it is this player's turn
+     */
     private void printLocalDashboard(PlayerStatsDTO stats, boolean isCurrent) {
         String colorSgr = colorSgrFor(stats.color());
         String marker = isCurrent ? ansi("★", GOLD) : " ";
@@ -417,6 +491,13 @@ public class TUIDrawer {
         System.out.println();
     }
 
+    /**
+     * Renders one opponent as a single line: turn marker, name and color, food/points and a per-type
+     * card-count summary.
+     *
+     * @param stats     the opponent's stats
+     * @param isCurrent {@code true} if it is this opponent's turn
+     */
     private void printOpponentLine(PlayerStatsDTO stats, boolean isCurrent) {
         String colorSgr = colorSgrFor(stats.color());
         String marker = isCurrent ? ansi("★", GOLD) : " ";
@@ -471,6 +552,11 @@ public class TUIDrawer {
     // Recent-events log + legend
     // ------------------------------------------------------------------
 
+    /**
+     * Renders the recent-events log under a header; prints nothing if there are no entries.
+     *
+     * @param entries the log lines to show (oldest first)
+     */
     public void printRecentLog(List<String> entries) {
         if (entries == null || entries.isEmpty()) return;
         String header = "─ Recent events ";
@@ -481,6 +567,7 @@ public class TUIDrawer {
         System.out.println();
     }
 
+    /** Prints the legend explaining the card icons and the in-card stat notation. */
     public void printLegend() {
         System.out.println("  " + ansi("LEGEND", D_INK)
                 + "  " + ansi("✿", COL_COLLECTOR) + " Collector"
@@ -499,6 +586,8 @@ public class TUIDrawer {
                 + "  " + ansi("cost/pts", BOLD) + " building");
     }
 
+    /** Prints an inline notice that an event card was resolved.
+     *  @param eventCardId the id of the resolved event card */
     public void printEventNotice(int eventCardId) {
         System.out.println("  " + ansi("✦  Event resolved: card #" + eventCardId, B_EVENT));
     }
@@ -507,6 +596,13 @@ public class TUIDrawer {
     // End-game (podium + leaderboards)
     // ------------------------------------------------------------------
 
+    /**
+     * Renders the end-game screen: the podium, the full match ranking (highlighting the local player
+     * and the winner) and the global leaderboard for this game size.
+     *
+     * @param msg       the game-ended message carrying the rankings
+     * @param localNick the local player's nickname, highlighted in the tables
+     */
     public void printEndGame(GameEndedMessage msg, String localNick) {
         clearScreen();
         printTitle();
@@ -549,6 +645,12 @@ public class TUIDrawer {
         System.out.println();
     }
 
+    /**
+     * Renders the top-three podium from the ranking.
+     *
+     * @param ranking   the match ranking (best first)
+     * @param localNick the local player's nickname, marked "(you)"
+     */
     private void printPodium(List<EndGameDTO> ranking, String localNick) {
         if (ranking.isEmpty()) return;
 
@@ -573,6 +675,13 @@ public class TUIDrawer {
         System.out.println();
     }
 
+    /**
+     * Formats a podium entry's name and score, marking the local player.
+     *
+     * @param e         the ranking entry, may be {@code null}
+     * @param localNick the local player's nickname
+     * @return the formatted name line (a dash if {@code e} is null)
+     */
     private String podiumName(EndGameDTO e, String localNick) {
         if (e == null) return ansi("—", D_STONE);
         String you = e.nickname().equals(localNick) ? "  " + ansi("(you)", B_GOLD) : "";
@@ -583,22 +692,26 @@ public class TUIDrawer {
     // Disconnect / abort banners
     // ------------------------------------------------------------------
 
+    /** Prints the banner shown when the game is aborted due to a disconnection. */
     public void printAborted() {
         System.out.println();
         System.out.println(" " + ansi("✖ Game aborted: a player disconnected.", BOLD_RED));
         System.out.println();
     }
 
+    /** Prints the banner shown when the server connection is lost and the client exits. */
     public void printServerDown() {
         System.out.println();
         System.out.println(" " + ansi("✖ Server connection lost. Exiting.", BOLD_RED));
         System.out.println();
     }
 
+    /** Prints the indicator shown while attempting to reconnect. */
     public void printReconnecting() {
         System.out.println(" " + ansi("⟳ Connection lost, reconnecting...", BOLD_YELLOW));
     }
 
+    /** Prints the indicator shown once reconnected. */
     public void printReconnected() {
         System.out.println(" " + ansi("✔ Reconnected.", BOLD_GREEN));
     }
@@ -607,6 +720,14 @@ public class TUIDrawer {
     // Offer / Order formatters
     // ------------------------------------------------------------------
 
+    /**
+     * Formats the offer tiles row: each tile's letter (colored by the totem on it, if any) followed by
+     * its compact action label.
+     *
+     * @param letters the offer-tile letters
+     * @param totems  the totem positions used to color occupied tiles
+     * @return the rendered offer-tiles string
+     */
     private String formatOfferTiles(List<String> letters, List<TotemPositionDTO> totems) {
         if (letters == null || letters.isEmpty()) return ansi("(none)", D_STONE);
         StringBuilder sb = new StringBuilder();
@@ -637,6 +758,14 @@ public class TUIDrawer {
         return s.toString();
     }
 
+    /**
+     * Formats the order-of-turn tiles row: one numbered slot per tile (colored by the totem on it, if
+     * any) followed by its food/points effect for the current table size.
+     *
+     * @param orderTileCount the number of order slots
+     * @param totems         the totem positions used to color occupied slots
+     * @return the rendered order-tiles string
+     */
     private String formatOrderTiles(int orderTileCount, List<TotemPositionDTO> totems) {
         List<TotemPositionDTO> orderTotems = new ArrayList<>();
         if (totems != null) {
@@ -664,6 +793,7 @@ public class TUIDrawer {
             } else {
                 sb.append(label);
             }
+            // Slot food/points effect depends on the table size (== number of order slots).
             String effect = orderEffectLabel(total, i);
             if (!effect.isEmpty()) sb.append(" ").append(ansi(effect, D_STONE));
         }
@@ -680,6 +810,11 @@ public class TUIDrawer {
         return s.toString();
     }
 
+    /**
+     * @param letter the offer-tile letter
+     * @param totems the totem positions
+     * @return the color of the totem on that offer tile, or {@code null} if none
+     */
     private String totemColorAtOffer(String letter, List<TotemPositionDTO> totems) {
         if (totems == null) return null;
         for (TotemPositionDTO t : totems) {
@@ -690,6 +825,12 @@ public class TUIDrawer {
         return null;
     }
 
+    /**
+     * Formats a list of ids as bracketed, two-digit entries (a dash if empty).
+     *
+     * @param ids the ids to format
+     * @return the rendered id list
+     */
     private String formatIdList(List<Integer> ids) {
         if (ids == null || ids.isEmpty()) return ansi("—", D_STONE);
         StringBuilder sb = new StringBuilder();
@@ -703,6 +844,8 @@ public class TUIDrawer {
     // Lookups
     // ------------------------------------------------------------------
 
+    /** @param kind the card kind
+     *  @return the single-character icon for that kind ({@code "?"} if unknown) */
     public String iconFor(ClassKind kind) {
         return switch (kind) {
             case COLLECTOR -> "✿";
@@ -717,6 +860,8 @@ public class TUIDrawer {
         };
     }
 
+    /** @param kind the card kind
+     *  @return the human-readable label for that kind ({@code "card"} if unknown) */
     public String labelFor(ClassKind kind) {
         return switch (kind) {
             case COLLECTOR -> "Collector";
@@ -731,6 +876,8 @@ public class TUIDrawer {
         };
     }
 
+    /** @param kind the card kind
+     *  @return the SGR escape coloring that kind */
     private String colorFor(ClassKind kind) {
         return switch (kind) {
             case COLLECTOR -> COL_COLLECTOR;
@@ -745,6 +892,8 @@ public class TUIDrawer {
         };
     }
 
+    /** @param color the totem color name (case-insensitive)
+     *  @return the bold SGR escape for that color (bold white for null/unknown) */
     public String colorSgrFor(String color) {
         if (color == null) return BOLD_WHITE;
         return switch (color.toUpperCase()) {
@@ -760,6 +909,8 @@ public class TUIDrawer {
         };
     }
 
+    /** @param v the boolean value
+     *  @return a green check for {@code true}, a red cross for {@code false} */
     private String boolBadge(boolean v) {
         return v ? ansi("✓", BOLD_GREEN) : ansi("✗", BOLD_RED);
     }
@@ -768,6 +919,12 @@ public class TUIDrawer {
     // Box helpers
     // ------------------------------------------------------------------
 
+    /**
+     * Prints the top border of a box with an inline title.
+     *
+     * @param title     the box title
+     * @param borderSgr the SGR escape coloring the border
+     */
     private void openBox(String title, String borderSgr) {
         String stripped = stripAnsi(title);
         int titleLen = stripped.length();
@@ -778,6 +935,11 @@ public class TUIDrawer {
                 + " " + ansi(repeat('─', Math.max(0, dashes - 1)) + TR, borderSgr));
     }
 
+    /**
+     * Prints one content row of a box, padded to the box width.
+     *
+     * @param content the row content (may contain ANSI escapes)
+     */
     private void boxRow(String content) {
         String stripped = stripAnsi(content);
         int pad = WIDTH - 2 - stripped.length();
@@ -785,10 +947,12 @@ public class TUIDrawer {
         System.out.println(" " + V + " " + content + repeat(' ', pad) + V);
     }
 
+    /** Prints a horizontal separator row inside a box. */
     private void boxSep() {
         System.out.println(" " + V + repeat('─', WIDTH - 2) + V);
     }
 
+    /** Prints the bottom border of a box. */
     private void closeBox() {
         System.out.println(" " + BL + repeat('─', WIDTH - 2) + BR);
     }
@@ -807,10 +971,20 @@ public class TUIDrawer {
         return sgr + body + RESET;
     }
 
+    /** @param c the character to repeat
+     *  @param n the number of repetitions
+     *  @return {@code c} repeated {@code n} times (empty if {@code n <= 0}) */
     private String repeat(char c, int n) {
         return n <= 0 ? "" : String.valueOf(c).repeat(n);
     }
 
+    /**
+     * Left-pads a string so its visible content is centered in {@code width} columns (ANSI-aware).
+     *
+     * @param s     the string (may contain ANSI escapes)
+     * @param width the target visible width
+     * @return the centered string
+     */
     private String center(String s, int width) {
         int len = stripAnsi(s).length();
         if (len >= width) return s;
@@ -818,6 +992,13 @@ public class TUIDrawer {
         return " ".repeat(left) + s;
     }
 
+    /**
+     * Right-pads a string to {@code width} visible columns (ANSI-aware).
+     *
+     * @param s     the string (may contain ANSI escapes)
+     * @param width the target visible width
+     * @return the padded string
+     */
     private String padRight(String s, int width) {
         int len = stripAnsi(s).length();
         int pad = width - len;
@@ -825,6 +1006,13 @@ public class TUIDrawer {
         return s + " ".repeat(pad);
     }
 
+    /**
+     * Right-pads a plain (ANSI-free) string to {@code width} characters.
+     *
+     * @param s     the plain string
+     * @param width the target width
+     * @return the padded string
+     */
     private String padRightPlain(String s, int width) {
         int pad = width - s.length();
         return pad <= 0 ? s : s + " ".repeat(pad);
@@ -853,5 +1041,27 @@ public class TUIDrawer {
      */
     private String stripAnsi(String s) {
         return s.replaceAll("\\u001B\\[[;\\d]*[A-Za-z]", "");
+    }
+
+    // ------------------------------------------------------------------
+    // Legacy compatibility
+    // ------------------------------------------------------------------
+
+    /** @deprecated Use {@link #printLobbyState(List, List, int)}. */
+    @Deprecated
+    public void printLobbyState(List<String> playerNames, int maxPlayers) {
+        printLobbyState(playerNames, null, maxPlayers);
+    }
+
+    /** @deprecated Use {@link #printPlayerDashboard(PlayerStatsDTO, boolean, boolean)}. */
+    @Deprecated
+    public void printPlayerStats(PlayerStatsDTO stats) {
+        printPlayerDashboard(stats, false, false);
+    }
+
+    /** @deprecated Use {@link #printBoard(BoardDTO, List)}. */
+    @Deprecated
+    public void printBoard(BoardDTO board) {
+        printBoard(board, List.of());
     }
 }
