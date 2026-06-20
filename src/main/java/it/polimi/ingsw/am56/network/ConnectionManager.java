@@ -6,6 +6,19 @@ import it.polimi.ingsw.am56.core.UpdateHandler;
 import it.polimi.ingsw.am56.network.message.request.ClientRequest;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 
+/**
+ * Client-side wrapper around the active server connection that adds transparent automatic
+ * reconnection. It implements both {@link ServerAdapter} (so the client code keeps sending requests
+ * through it as if it were the real adapter) and {@link UpdateHandler} (so it intercepts the updates,
+ * errors and disconnections coming from the underlying {@link RmiClient}/{@code SocketClient}).
+ * <p>
+ * Normal traffic is simply forwarded: requests go to the current adapter, while updates and errors are
+ * relayed to the registered downstream handler. On a disconnection it notifies the downstream handler
+ * and then spins up a background thread that keeps recreating the connection (via the
+ * {@link ConnectionFactory}, every {@code RETRY_DELAY_MS}) until it succeeds, after which it swaps in
+ * the new adapter and signals reconnection. The {@code reconnecting} flag guards against starting more
+ * than one reconnection loop at a time.
+ */
 public class ConnectionManager implements ServerAdapter, UpdateHandler {
 
     private static final int RETRY_DELAY_MS = 2000;
@@ -20,6 +33,16 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
 
     private volatile boolean reconnecting = false;
 
+    /**
+     * Creates a connection manager wrapping an already established adapter and registers itself as
+     * that adapter's update handler, so it can intercept incoming traffic and drive reconnection.
+     *
+     * @param ip             the server host, used when recreating the connection
+     * @param port           the server port, used when recreating the connection
+     * @param useRmi         {@code true} to reconnect over RMI, {@code false} to reconnect over socket
+     * @param factory        the factory used to create new connections on reconnection
+     * @param initialAdapter the adapter for the currently open connection
+     */
     public ConnectionManager(String ip, int port, boolean useRmi,
                              ConnectionFactory factory, ServerAdapter initialAdapter) {
         this.ip = ip;
@@ -34,6 +57,11 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
     // ServerAdapter — i controller chiamano questi metodi normalmente
     // -------------------------------------------------------------------------
 
+    /**
+     * Forwards a client request to the current underlying adapter (no-op if none is set).
+     *
+     * @param request the request to send to the server
+     */
     @Override
     public void sendRequest(ClientRequest request) {
         if (currentAdapter != null) {
@@ -41,6 +69,12 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
         }
     }
 
+    /**
+     * Registers the downstream handler that should receive the updates, errors and connection events
+     * relayed by this manager.
+     *
+     * @param handler the downstream update handler
+     */
     @Override
     public void setUpdateHandler(UpdateHandler handler) {
         this.activeHandler = handler;
@@ -50,6 +84,11 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
     // UpdateHandler — intercetta i messaggi dal SocketClient/RmiClient sottostante
     // -------------------------------------------------------------------------
 
+    /**
+     * Relays an update received from the underlying connection to the downstream handler.
+     *
+     * @param message the update received from the server
+     */
     @Override
     public void handleUpdate(ServerMessage message) {
         if (activeHandler != null) {
@@ -57,6 +96,11 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
         }
     }
 
+    /**
+     * Relays an error received from the underlying connection to the downstream handler.
+     *
+     * @param message the error message received from the server
+     */
     @Override
     public void handleError(String message) {
         if (activeHandler != null) {
@@ -64,6 +108,13 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
         }
     }
 
+    /**
+     * Handles the loss of the underlying connection by notifying the downstream handler and starting a
+     * background loop that retries the connection (over RMI or socket, per {@code useRmi}) every
+     * {@code RETRY_DELAY_MS} until it succeeds; on success the new adapter is installed and the
+     * downstream handler is told it has reconnected. Re-entrant calls while already reconnecting are
+     * ignored.
+     */
     @Override
     public void handleDisconnect() {
         if (reconnecting) return;
