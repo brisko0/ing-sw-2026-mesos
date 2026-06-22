@@ -4,6 +4,8 @@ import it.polimi.ingsw.am56.network.message.classesDTO.PlayerDTO;
 import it.polimi.ingsw.am56.network.message.request.AddPlayerRequest;
 import it.polimi.ingsw.am56.network.message.request.CreateGameRequest;
 import it.polimi.ingsw.am56.network.message.request.LobbyStateRequest;
+import it.polimi.ingsw.am56.network.message.request.ReconnectRequest;
+import it.polimi.ingsw.am56.network.message.update.GameSnapshotMessage;
 import it.polimi.ingsw.am56.network.message.update.LobbyStateMessage;
 import it.polimi.ingsw.am56.network.message.update.PreLobbyStateMessage;
 
@@ -15,10 +17,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * TUI pre-lobby screen: it queries the server for the current state and then either creates a new game
- * or joins the existing one. It collects the player's nickname and totem color (validating them against
- * the names/colors already taken) and sends the matching request, then advances to the
- * {@link LobbyController} when the lobby state arrives.
+ * TUI pre-lobby screen: it queries the server for the current state and then runs one of three flows
+ * depending on that state — create a new game, join an open lobby, or <em>reconnect</em> to a game that
+ * is already in progress (the persistence/resume case, e.g. after a server restart). It collects the
+ * player's nickname (and, when creating/joining, the totem color), validating them against the
+ * names/colors already taken, and sends the matching request. It then advances to the
+ * {@link LobbyController} when a lobby state arrives, or straight to the {@link GameController} when a
+ * game snapshot arrives (the reply to a successful reconnect).
  */
 public class PreLobbyController extends BaseTUIController {
 
@@ -27,6 +32,7 @@ public class PreLobbyController extends BaseTUIController {
 
     private volatile boolean waitingForServer = true;
     private volatile boolean gameExists = false;
+    private volatile boolean gameInProgress = false;
     private boolean joinRequestSent = false;
     private volatile List<String> takenNicknames = new ArrayList<>();
     private volatile List<String> takenColors = new ArrayList<>();
@@ -41,8 +47,8 @@ public class PreLobbyController extends BaseTUIController {
     }
 
     /**
-     * Requests the lobby state, waits for the server's reply, then runs the create-game or join-game
-     * flow depending on whether a game already exists.
+     * Requests the lobby state, waits for the server's reply, then runs the reconnect, join or create
+     * flow: reconnect if a game is already in progress, join if a lobby is open, otherwise create.
      */
     @Override
     public void onEnter() {
@@ -55,7 +61,9 @@ public class PreLobbyController extends BaseTUIController {
             } catch (InterruptedException ignored) {}
         }
 
-        if (gameExists) {
+        if (gameInProgress) {
+            handleReconnect();
+        } else if (gameExists) {
             handleJoinGame();
         } else {
             handleCreateGame();
@@ -71,6 +79,7 @@ public class PreLobbyController extends BaseTUIController {
     @Override
     public void visit(PreLobbyStateMessage message) {
         this.gameExists = message.isGameAlreadyCreated();
+        this.gameInProgress = message.isGameInProgress();
         this.takenNicknames = message.takenNicknames();
         this.takenColors = message.takenColors();
         this.waitingForServer = false;
@@ -113,6 +122,17 @@ public class PreLobbyController extends BaseTUIController {
     }
 
     /**
+     * Reply to a successful {@link ReconnectRequest}: the server re-syncs the in-progress game by
+     * broadcasting a snapshot, so we jump straight into the in-game screen.
+     *
+     * @param message the game snapshot
+     */
+    @Override
+    public void visit(GameSnapshotMessage message) {
+        context.changeState(new GameController(context, message));
+    }
+
+    /**
      * On disconnection, shows the reconnecting indicator (overriding the default exit behaviour).
      */
     @Override
@@ -121,12 +141,20 @@ public class PreLobbyController extends BaseTUIController {
     }
 
     /**
-     * On reconnection, shows the reconnected indicator and restarts the pre-lobby flow from scratch.
+     * On reconnection, refreshes the pre-lobby state on <em>this same</em> controller — it must not
+     * create a new {@code PreLobbyController}. The pre-lobby flow reads input with a blocking scanner
+     * on the main thread: if a player is mid-prompt (e.g. choosing a totem color) when the server
+     * drops, that flow is still parked on {@code System.in}. Re-entering a fresh controller here (on
+     * the reconnect thread) would start a <em>second</em> flow reading the same scanner, so the two
+     * would fight over the input and the original one would be orphaned, leaving the player stuck.
+     * Instead we just re-request the state: {@link #visit(PreLobbyStateMessage)} updates the fields
+     * (releasing {@link #onEnter()} if it is still waiting, and refreshing {@link #gameExists} /
+     * {@link #gameInProgress}) and the already-running flow proceeds against the reconnected server.
      */
     @Override
     public void handleReconnected() {
         drawer.printReconnected();
-        context.changeState(new PreLobbyController(context));
+        context.getServerAdapter().sendRequest(new LobbyStateRequest());
     }
 
     /**
@@ -177,6 +205,29 @@ public class PreLobbyController extends BaseTUIController {
         context.setLocalNickname(nickname);
         joinRequestSent = true;
         context.getServerAdapter().sendRequest(new AddPlayerRequest(nickname, color));
+    }
+
+    /**
+     * Reconnect flow (persistence / resume): a game is already in progress, so the player cannot create
+     * or join — they can only rejoin with the <em>same nickname</em> they originally played with. It
+     * collects that nickname and sends a {@link ReconnectRequest}; on success the server replies with a
+     * game snapshot, handled by {@link #visit(GameSnapshotMessage)}. If the nickname does not belong to
+     * the running game the server replies with an error (shown by the base controller) and the player
+     * can relaunch to try again.
+     */
+    private void handleReconnect() {
+        drawer.printMenuHeader("RECONNECT — A game is already in progress");
+        drawer.printMessage("  Usa lo stesso nickname con cui avevi iniziato la partita.");
+
+        String nickname;
+        while (true) {
+            nickname = inputReader.readString("  Enter your nickname:");
+            if (!nickname.isEmpty()) break;
+            drawer.printError("Nickname cannot be empty.");
+        }
+
+        context.setLocalNickname(nickname);
+        context.getServerAdapter().sendRequest(new ReconnectRequest(nickname));
     }
 
     /**
