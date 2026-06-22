@@ -1,5 +1,6 @@
 package it.polimi.ingsw.am56.view.TUI.controllers;
 
+import it.polimi.ingsw.am56.network.message.classesDTO.PlayerDTO;
 import it.polimi.ingsw.am56.network.message.request.AddPlayerRequest;
 import it.polimi.ingsw.am56.network.message.request.CreateGameRequest;
 import it.polimi.ingsw.am56.network.message.request.LobbyStateRequest;
@@ -11,6 +12,7 @@ import it.polimi.ingsw.am56.view.TUI.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * TUI pre-lobby screen: it queries the server for the current state and then either creates a new game
@@ -23,10 +25,11 @@ public class PreLobbyController extends BaseTUIController {
     private static final List<String> ALL_COLORS =
             Arrays.asList("BLACK", "CYAN", "RED", "WHITE", "YELLOW");
 
-    private boolean waitingForServer = true;
-    private boolean gameExists = false;
-    private List<String> takenNicknames = new ArrayList<>();
-    private List<String> takenColors = new ArrayList<>();
+    private volatile boolean waitingForServer = true;
+    private volatile boolean gameExists = false;
+    private boolean joinRequestSent = false;
+    private volatile List<String> takenNicknames = new ArrayList<>();
+    private volatile List<String> takenColors = new ArrayList<>();
 
     /**
      * Creates the pre-lobby screen bound to the shared context.
@@ -74,13 +77,39 @@ public class PreLobbyController extends BaseTUIController {
     }
 
     /**
-     * Once joined/created and the lobby state arrives, transitions to the lobby screen.
+     * Transitions to the lobby screen — but only once <em>this</em> client has actually joined.
+     * {@link LobbyStateMessage} is broadcast to every connected client whenever <em>any</em> player
+     * joins or creates the game, so a client still sitting in the pre-lobby (no nickname chosen yet,
+     * not logged in) would otherwise be pulled into the game without having joined. We therefore
+     * advance only after this client has actually sent its own join/create request and its nickname
+     * appears among the lobby's players; otherwise the broadcast concerns other players and is ignored.
      *
      * @param message the lobby state
      */
     @Override
     public void visit(LobbyStateMessage message) {
-        context.changeState(new LobbyController(context, message));
+        String localNickname = context.getLocalNickname();
+        boolean localPlayerJoined = localNickname != null && message.players().stream()
+                .anyMatch(p -> p.nickname().equalsIgnoreCase(localNickname));
+
+        if (joinRequestSent && localPlayerJoined) {
+            context.changeState(new LobbyController(context, message));
+            return;
+        }
+
+        // Una partita esiste ora (creata da un altro client) ma questo client non vi ha ancora
+        // aderito: aggiorna nickname/colori occupati e, se eravamo nel flusso di creazione,
+        // segnala una sola volta che ormai si può solo unirsi (JOIN).
+        this.takenNicknames = message.players().stream()
+                .map(PlayerDTO::nickname).collect(Collectors.toList());
+        this.takenColors = message.players().stream()
+                .map(PlayerDTO::color).collect(Collectors.toList());
+
+        if (!gameExists) {
+            this.gameExists = true;
+            drawer.printMessage("\n⚠  Una partita è appena stata creata da un altro giocatore: "
+                    + "non puoi più crearne una. Completa il campo in corso per passare al JOIN.");
+        }
     }
 
     /**
@@ -102,16 +131,37 @@ public class PreLobbyController extends BaseTUIController {
 
     /**
      * Create-game flow: collects nickname, player count and color, then sends a create-game request.
+     * <p>
+     * Because another client can create the game while we sit at one of these (blocking) prompts,
+     * after every input step we re-check whether a game now exists ({@link #gameExists}, raised by
+     * {@link #visit(LobbyStateMessage)}). If so the create option is no longer valid, so we abandon
+     * the create flow and switch to {@link #redirectToJoinGame()} — the user can only join now,
+     * mirroring the GUI greying out "create game".
      */
     private void handleCreateGame() {
         drawer.printMenuHeader("CREATE GAME — No active game, start a new one");
 
         String nickname = chooseNickname();
+        if (gameExists) { redirectToJoinGame(); return; }
+
         int size = inputReader.readIntWithRange("  Number of players (2-5):", 2, 5);
+        if (gameExists) { redirectToJoinGame(); return; }
+
         String color = chooseColor();
+        if (gameExists) { redirectToJoinGame(); return; }
 
         context.setLocalNickname(nickname);
+        joinRequestSent = true;
         context.getServerAdapter().sendRequest(new CreateGameRequest(nickname, color, size));
+    }
+
+    /**
+     * Abandons the create-game flow and runs the join-game flow instead, used when a game gets
+     * created by another client while this client was still creating one.
+     */
+    private void redirectToJoinGame() {
+        drawer.printMessage("Una partita è già attiva: passaggio a JOIN GAME.");
+        handleJoinGame();
     }
 
     /**
@@ -125,6 +175,7 @@ public class PreLobbyController extends BaseTUIController {
         String color = chooseColor();
 
         context.setLocalNickname(nickname);
+        joinRequestSent = true;
         context.getServerAdapter().sendRequest(new AddPlayerRequest(nickname, color));
     }
 
