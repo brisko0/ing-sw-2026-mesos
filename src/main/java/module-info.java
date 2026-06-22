@@ -10,9 +10,6 @@ module it.polimi.ingsw.am56 {
     requires org.postgresql.jdbc;
 
     // Configurazione JavaFX
-    opens it.polimi.ingsw.am56 to javafx.fxml;
-    exports it.polimi.ingsw.am56;
-
     exports it.polimi.ingsw.am56.view.GUI to javafx.graphics;
     opens it.polimi.ingsw.am56.view.GUI to javafx.fxml;
 
