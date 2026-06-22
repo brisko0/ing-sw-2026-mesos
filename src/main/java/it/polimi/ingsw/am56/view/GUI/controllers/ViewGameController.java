@@ -115,6 +115,9 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
     private final Queue<Integer> eventAnimationQueue = new LinkedList<>();
     private final Queue<Runnable> deferredActionsQueue = new LinkedList<>();
 
+    // viewOrder originali salvati mentre la carta evento spotlight è in primo piano
+    private final Map<Node, Double> spotlightSavedViewOrders = new HashMap<>();
+
     // --- SEMAFORI PER LE ANIMAZIONI ---
     private boolean isAnimatingEvent = false;
     private boolean isAnimatingBoard = false;
@@ -1802,13 +1805,19 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
             return;
         }
 
-        eventSlot.setViewOrder(-100.0);
+        bringSpotlightToFront(eventSlot);
 
         var startBounds = eventSlot.localToScene(eventSlot.getBoundsInLocal());
-        var rootBounds = rootPane.localToScene(rootPane.getBoundsInLocal());
+        var rootOrigin = rootPane.localToScene(0, 0);
 
-        double centerX = (rootBounds.getWidth() / 2) - (startBounds.getMinX() - rootBounds.getMinX() + startBounds.getWidth() / 2);
-        double centerY = (rootBounds.getHeight() / 2) - (startBounds.getMinY() - rootBounds.getMinY() + startBounds.getHeight() / 2);
+        // Centro reale della finestra: si usa la dimensione del rootPane, non getBoundsInLocal(),
+        // che si gonfia quando un figlio (es. il tooltip che segue il cursore) sporge oltre il
+        // bordo, spostando il "centro" calcolato e facendo finire l'animazione troppo in basso.
+        double viewportCenterX = rootOrigin.getX() + rootPane.getWidth() / 2;
+        double viewportCenterY = rootOrigin.getY() + rootPane.getHeight() / 2;
+
+        double centerX = viewportCenterX - (startBounds.getMinX() + startBounds.getWidth() / 2);
+        double centerY = viewportCenterY - (startBounds.getMinY() + startBounds.getHeight() / 2);
 
         TranslateTransition translateUp = new TranslateTransition(Duration.millis(700), eventSlot);
         translateUp.setToX(centerX);
@@ -1843,11 +1852,45 @@ public class ViewGameController implements UpdateHandler, MessageVisitor {
         SequentialTransition fullSequence = new SequentialTransition(moveUp, readPause, moveDown);
 
         fullSequence.setOnFinished(e -> {
-            eventSlot.setViewOrder(0.0);
+            restoreSpotlightViewOrder();
             finishEventAnimationAndCheckQueue();
         });
 
         fullSequence.play();
+    }
+
+    /**
+     * Brings a spotlighted event card to the front of the whole board for the duration of its
+     * animation. JavaFX {@code viewOrder} only reorders a node among its direct siblings, so lifting
+     * the card alone is not enough when it lives in the upper row (which is painted under the central
+     * tiles and the lower rows): the card would animate <em>behind</em> the board. To fix that, the
+     * card and every ancestor up to (but excluding) {@link #rootPane} are pushed to the front, so the
+     * card's branch wins at every nesting level. The previous {@code viewOrder}s are saved so
+     * {@link #restoreSpotlightViewOrder()} can put them back. Events animate one at a time, so a
+     * single saved-state map is sufficient.
+     *
+     * @param eventSlot the event card node being spotlighted
+     */
+    private void bringSpotlightToFront(Node eventSlot) {
+        spotlightSavedViewOrders.clear();
+        Node current = eventSlot;
+        while (current != null && current != rootPane) {
+            spotlightSavedViewOrders.put(current, current.getViewOrder());
+            current.setViewOrder(-100.0);
+            current = current.getParent();
+        }
+    }
+
+    /**
+     * Restores the {@code viewOrder} of the spotlighted card and its ancestors to the values saved by
+     * {@link #bringSpotlightToFront(Node)}, returning the board to its normal stacking once the event
+     * animation is over.
+     */
+    private void restoreSpotlightViewOrder() {
+        for (Map.Entry<Node, Double> entry : spotlightSavedViewOrders.entrySet()) {
+            entry.getKey().setViewOrder(entry.getValue());
+        }
+        spotlightSavedViewOrders.clear();
     }
 
     // ==========================================
