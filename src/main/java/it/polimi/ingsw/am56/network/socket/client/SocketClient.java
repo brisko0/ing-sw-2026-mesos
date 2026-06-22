@@ -66,7 +66,9 @@ public class SocketClient implements ServerAdapter {
     }
 
     /**
-     * Serializes and sends a request to the server over the socket. A failure is logged.
+     * Serializes and sends a request to the server over the socket. A send failure is swallowed
+     * here: the loss of connection is detected and reported by the listener thread (which then
+     * drives the reconnection), so logging it would only spam the client console.
      *
      * @param request the request to send
      */
@@ -79,7 +81,6 @@ public class SocketClient implements ServerAdapter {
                 out.flush();
             }
         } catch (IOException e) {
-            System.err.println("Impossibile inviare la richiesta.");
         }
     }
 
@@ -100,7 +101,6 @@ public class SocketClient implements ServerAdapter {
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {
-                System.err.println("[SOCKET] Connessione persa: " + e.getMessage());
                 active = false;
                 try {
                     socket.close();

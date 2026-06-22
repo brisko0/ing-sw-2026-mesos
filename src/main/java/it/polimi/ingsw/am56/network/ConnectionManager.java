@@ -152,9 +152,6 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
         if (reconnecting) return;
         reconnecting = true;
 
-        System.out.println("[CONNECTION MANAGER] Server disconnesso. Riconnessione ogni "
-                + RETRY_DELAY_MS + "ms...");
-
         if (activeHandler != null) {
             activeHandler.handleDisconnect();
         }
@@ -169,7 +166,6 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
                     newAdapter.setUpdateHandler(this);
                     this.currentAdapter = newAdapter;
                     this.reconnecting = false;
-                    System.out.println("[CONNECTION MANAGER] Riconnesso al server!");
                     if (activeHandler != null) {
                         activeHandler.handleReconnected();
                     }
@@ -177,7 +173,8 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
                     Thread.currentThread().interrupt();
                     return;
                 } catch (Exception ignored) {
-                    System.out.println("[CONNECTION MANAGER] Server non raggiungibile, riprovo...");
+                    // riconnessione fallita: si riprova silenziosamente al giro successivo.
+                    // Il feedback all'utente è già mostrato dalla view (printReconnecting).
                 }
             }
         }, "reconnect-thread").start();

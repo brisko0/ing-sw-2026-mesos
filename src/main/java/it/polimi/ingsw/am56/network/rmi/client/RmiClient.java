@@ -97,7 +97,6 @@ public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi, Se
     private void triggerDisconnect() {
         if (!heartbeatActive) return;
         heartbeatActive = false;
-        System.err.println("[RMI CLIENT] Server non raggiungibile (heartbeat).");
         if (updateHandler != null) updateHandler.handleDisconnect();
     }
 
@@ -125,7 +124,6 @@ public class RmiClient extends UnicastRemoteObject implements VirtualViewRmi, Se
                 serverStub.sendRequest(request, this);
         } catch (RemoteException e) {
             heartbeatActive = false;
-            System.err.println("[CLIENT] Impossibile inviare la richiesta al server.");
             if (updateHandler != null)
                 updateHandler.handleDisconnect();
         }
