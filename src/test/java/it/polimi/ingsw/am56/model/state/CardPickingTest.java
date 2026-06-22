@@ -3,6 +3,7 @@ package it.polimi.ingsw.am56.model.state;
 import it.polimi.ingsw.am56.model.GameModel;
 import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.card.buildingCard.AddPointsEndGame;
+import it.polimi.ingsw.am56.model.card.buildingCard.ExtraUpperCardAfterActions;
 import it.polimi.ingsw.am56.model.card.characterCard.ArtistCharCard;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import org.junit.jupiter.api.BeforeEach;
@@ -156,5 +157,28 @@ class CardPickingTest {
         gameModel.setState(new TotemPlacement(gameModel));
 
         assertThrows(InvalidActionException.class, () -> { gameModel.pickUpCard(gameModel.getCurrentPlayer(), gameModel.getBoard().getUpperRowCharEv().getFirst()); });
+    }
+
+    @Test
+    void lastPlayerTriggersExtraUpperPickTest() {
+        Player p0 = gameModel.getPlayers().getFirst();
+
+        p0.getStats().getBuildingCards().add(new ExtraUpperCardAfterActions(99, 1, 1, 0, 0));
+
+        var ot = gameModel.getPlayerToOfferTile().get(p0);
+        p0.setPickedUpper(ot.getUpperCards());
+        p0.setPickedLower(ot.getLowerCards());
+
+        gameModel.getBoard().getUpperRowCharEv().clear();
+        gameModel.getBoard().getUpperRowCharEv().add(new ArtistCharCard(2, 1, 1));
+        gameModel.getBoard().getLowerRowCharEv().clear();
+        gameModel.getBoard().getLowerRowBuildings().clear();
+
+        gameModel.getBoard().getOrderTiles().getFirst().setIsFree(true);
+
+        gameModel.setState(new CardPicking(gameModel));
+
+        assertEquals(State.EXTRA_UPPER_CARD_PICKING, gameModel.getCurrentState().getState());
+        assertEquals(p0, gameModel.getCurrentPlayer());
     }
 }
