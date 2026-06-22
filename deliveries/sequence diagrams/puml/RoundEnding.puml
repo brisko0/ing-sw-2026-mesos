@@ -1,0 +1,69 @@
+@startuml
+autonumber
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 170
+
+participant "RoundEnding\n(GameState)" as State
+participant "GameModel" as Model
+participant "Board" as Board
+participant "EventCard" as Event
+participant "PlayerVirtualView\n(Observer)" as Observer
+
+== Phase 7: Round Ending ==
+note over State: entered automatically from CardPicking /\nExtraUpperCardPicking once all totems are back.
+[-> State: onEntry()
+activate State
+State -> Model: endRound()
+activate Model
+
+' 1. Resolve the events on the board
+Model -> Model: resolveEvents(includeUpperRow = currentRound == 10)
+note right of Model
+  Collects events from the lower row (plus the upper row on round 10),
+  ordered with SUSTENANCE last, then by era. For each, records the
+  per-player food/points before and after to build the deltas.
+end note
+loop for each EventCard (sustenance last)
+    Model -> Event: resolveBuildingsEffects(model)
+    Model -> Event: resolveEffect(model)
+    Model -> Observer: onModelChanged(EVENT_RESOLVED)
+    Observer -> Observer: EventResolvedMessage(eventId, per-player outcomes)
+end
+
+' 2. Slide the board down and refill the upper row
+Model -> Board: endRound(gameSize, eraToCharEvdeck[currentEra])
+
+' 3. Era roll-over
+opt currentEra < 3 AND upperRowCharEv.size() < gameSize + 4
+    note over Model: the current era's deck is exhausted,\nthe next era begins.
+    Model -> Model: currentEra++
+    Model -> Board: endEra(gameSize, charEvDeck, buildingsDeck, currentEra)
+    Model -> Observer: onModelChanged(ERA_CHANGED)
+    note right of Observer: no dedicated message:\nthe change travels inside the\nROUND_ENDED snapshot.
+end
+
+' 4. Advance the round counter and notify
+Model -> Model: currentRound++
+Model -> Observer: onModelChanged(ROUND_ENDED)
+Observer -> Observer: EndRoundUpdateMessage(board, all stats, era, round)
+Model --> State: return
+deactivate Model
+
+' 5. Next state
+alt currentRound == 11
+    note over State: 10 rounds played: end the game.
+    State -> Model: setState(new GameEnding(model))
+    note over Model: see GameEnding diagram
+else next round
+    State -> Model: setState(new TotemPlacement(model))
+    Model -> Observer: onModelChanged(STATE_CHANGED)
+    Observer -> Observer: GameStateUpdateMessage(TOTEM_PLACEMENT)
+    State -> Model: setCurrentPlayerOrder()
+    Model -> Observer: onModelChanged(TURN_CHANGED)
+    Observer -> Observer: PlayerStatsUpdateMessage + CurrentPlayerUpdateMessage
+end
+
+[<-- State
+deactivate State
+@enduml

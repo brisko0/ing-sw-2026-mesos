@@ -1,0 +1,80 @@
+@startuml
+autonumber
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 170
+
+actor "User\n(Active Player)" as User
+participant "Client View\n(MessageVisitor)" as View
+participant "Server\n(VirtualServerRmi /\nSocketClientHandler)" as Server
+participant "GameController" as Controller
+participant "GameModel" as Model
+participant "TotemPlacement\n(GameState)" as State
+participant "PlayerVirtualView\n(Observer)" as Observer
+
+== Phase 5: Totem Placement ==
+User -> View: select offer tile 'C'\nclick "Place Totem"
+
+alt Valid move (success)
+
+    View -> Server: sendRequest(TotemMoveRequest("Alice","C"))
+    activate Server
+    Server -> Controller: moveTotem("Alice","C")\n<<via request.executeOnServer>>
+    activate Controller
+    note right of Controller: resolves the Player and the\nOfferTile by letter, then delegates.
+    Controller -> Model: handleTotemPlacement(player, tile)
+    activate Model
+    Model -> State: handleTotemPlacement(player, tile)
+    activate State
+    note right of State: validates it is the player's turn\nand that the tile is free.
+
+    State -> Model: executeTotemPlacement(player, tile)
+    note right of Model: binds player -> offer tile (tile not free),\nfrees the order tile the player was on.
+    Model -> Observer: onModelChanged(TOTEM_PLACED)
+    Observer -> View: TotemsStateMessage
+    View -> View: accept -> visit(TotemsStateMessage)
+
+    alt Players still have to place (playerToOrderTile not empty)
+        State -> Model: setCurrentPlayerOrder()
+        Model -> Observer: onModelChanged(TURN_CHANGED)
+        Observer -> View: PlayerStatsUpdateMessage + CurrentPlayerUpdateMessage
+        View -> View: accept -> visit(...)
+    else Everyone has placed
+        State -> Model: setCurrentPlayerOffer()
+        Model -> Observer: onModelChanged(TURN_CHANGED)
+        Observer -> View: PlayerStatsUpdateMessage + CurrentPlayerUpdateMessage
+        State -> Model: setState(new CardPicking(model))
+        Model -> Observer: onModelChanged(STATE_CHANGED)
+        Observer -> View: GameStateUpdateMessage(CARD_PICKING)
+        note over Model: CardPicking.onEntry() runs checkTurnFlow()\n(see CardPick diagram).
+    end
+
+    State --> Model: return
+    deactivate State
+    Model --> Controller: return
+    deactivate Model
+    Controller --> Server: return
+    deactivate Controller
+    Server --> View: return
+    deactivate Server
+    User <-- View: totem rendered on tile 'C'
+
+else InvalidActionException (not your turn / tile already taken)
+
+    View -> Server: sendRequest(TotemMoveRequest(...))
+    activate Server
+    Server -> Controller: moveTotem(...)
+    activate Controller
+    Controller -> Model: handleTotemPlacement(...)
+    activate Model
+    Model --> Controller: throws InvalidActionException
+    deactivate Model
+    Controller --> Server: throws InvalidActionException
+    deactivate Controller
+    Server -> View: ErrorMessage(reason)
+    deactivate Server
+    View -> View: accept -> visit(ErrorMessage)
+    User <-- View: error popup ("Not your turn!" / "Tile occupied!")
+
+end
+@enduml

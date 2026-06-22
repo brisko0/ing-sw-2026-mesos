@@ -1,0 +1,60 @@
+@startuml
+autonumber
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 170
+
+participant "GameEnding\n(GameState)" as State
+participant "GameModel" as Model
+participant "PlayerStats" as Stats
+participant "BuildingCard" as Building
+participant "PersistenceManager" as Persistence
+participant "EndGameService\n(Observer)" as EndGame
+participant "LeaderboardDAO\n(DatabaseManager)" as Dao
+participant "PlayerVirtualView\n(Observer)" as Observer
+
+== Phase 8: Game Ending & Scoring ==
+note over State: entered from RoundEnding when currentRound == 11
+[-> State: onEntry()
+activate State
+State -> Model: endGameActions()
+activate Model
+
+' 1. Final scoring
+loop for each Player
+    Model -> Stats: addPoints(builderPoints)
+    Model -> Stats: addPoints(inventors * distinctInventions)
+    Model -> Stats: addPoints(10 * (artists / 2))
+    loop for each BuildingCard owned
+        Model -> Building: onGameEnding(model, player)
+    end
+end
+
+' 2. Drop the save: a cleanly finished game must not be resumed
+Model -> Persistence: deleteSave()
+
+' 3. Notify the end of the game
+Model -> EndGame: onModelChanged(GAME_ENDED)
+activate EndGame
+Model -> Observer: onModelChanged(GAME_ENDED)
+deactivate Model
+
+note right of EndGame: FA Database: persist this match and\nread back the all-time leaderboard.
+EndGame -> Model: computeRanking() (points desc, then food; shared win on tie)
+EndGame -> Dao: saveMatchResults(gameSize, results, today)
+EndGame -> Dao: getGlobalLeaderboard(gameSize)
+activate Dao
+Dao --> EndGame: ranked leaderboard
+deactivate Dao
+EndGame -> EndGame: cache GameEndedMessage(matchRanking, leaderboard, gameSize)
+deactivate EndGame
+
+activate Observer
+Observer -> EndGame: getEndGameMessage()
+Observer -> Observer: GameEndedMessage -> every client
+deactivate Observer
+
+[<-- State
+deactivate State
+note over State: terminal state; further actions are rejected by GameState defaults.
+@enduml
