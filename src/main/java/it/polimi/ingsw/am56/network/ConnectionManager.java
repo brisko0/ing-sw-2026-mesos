@@ -4,6 +4,9 @@ import it.polimi.ingsw.am56.core.ConnectionFactory;
 import it.polimi.ingsw.am56.core.ServerAdapter;
 import it.polimi.ingsw.am56.core.UpdateHandler;
 import it.polimi.ingsw.am56.network.message.request.ClientRequest;
+import it.polimi.ingsw.am56.network.message.update.GameAbortedMessage;
+import it.polimi.ingsw.am56.network.message.update.GameEndedMessage;
+import it.polimi.ingsw.am56.network.message.update.MessageVisitor;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 
 /**
@@ -18,6 +21,10 @@ import it.polimi.ingsw.am56.network.message.update.ServerMessage;
  * {@link ConnectionFactory}, every {@code RETRY_DELAY_MS}) until it succeeds, after which it swaps in
  * the new adapter and signals reconnection. The {@code reconnecting} flag guards against starting more
  * than one reconnection loop at a time.
+ * <p>
+ * Reconnection is skipped after a terminal message: when a {@code GameAbortedMessage} or
+ * {@code GameEndedMessage} is seen, the game is over, so the connection drop that follows (e.g. the
+ * server shutting down on an abort) is expected and must not trigger a retry loop.
  */
 public class ConnectionManager implements ServerAdapter, UpdateHandler {
 
@@ -32,6 +39,24 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
     private UpdateHandler activeHandler;
 
     private volatile boolean reconnecting = false;
+
+    private volatile boolean terminated = false;
+
+    /**
+     * Visitor used by {@link #handleUpdate(ServerMessage)} to detect terminal notifications without
+     * switching on the message type: it raises the {@link #terminated} flag on a
+     * {@link GameAbortedMessage} or {@link GameEndedMessage} and ignores every other message.
+     */
+    private final MessageVisitor terminalDetector = new MessageVisitor() {
+        @Override
+        public void visit(GameAbortedMessage message) {
+            terminated = true;
+        }
+        @Override
+        public void visit(GameEndedMessage message) {
+            terminated = true;
+        }
+    };
 
     /**
      * Creates a connection manager wrapping an already established adapter and registers itself as
@@ -85,12 +110,15 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
     // -------------------------------------------------------------------------
 
     /**
-     * Relays an update received from the underlying connection to the downstream handler.
+     * Relays an update received from the underlying connection to the downstream handler. Before
+     * relaying, the message is inspected for a terminal notification (game aborted or ended): if it
+     * is one, reconnection is disabled so the connection drop that follows is not retried.
      *
      * @param message the update received from the server
      */
     @Override
     public void handleUpdate(ServerMessage message) {
+        message.accept(terminalDetector);
         if (activeHandler != null) {
             activeHandler.handleUpdate(message);
         }
@@ -114,9 +142,13 @@ public class ConnectionManager implements ServerAdapter, UpdateHandler {
      * {@code RETRY_DELAY_MS} until it succeeds; on success the new adapter is installed and the
      * downstream handler is told it has reconnected. Re-entrant calls while already reconnecting are
      * ignored.
+     * <p>
+     * If a terminal message (game aborted or ended) has already been received, the drop is expected
+     * and this call returns immediately without reconnecting: there is nothing left to come back to.
      */
     @Override
     public void handleDisconnect() {
+        if (terminated) return;
         if (reconnecting) return;
         reconnecting = true;
 
