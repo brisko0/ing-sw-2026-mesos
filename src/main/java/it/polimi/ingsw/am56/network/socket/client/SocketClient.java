@@ -4,6 +4,7 @@ import it.polimi.ingsw.am56.core.ServerAdapter;
 import it.polimi.ingsw.am56.core.UpdateHandler;
 
 import it.polimi.ingsw.am56.network.message.request.ClientRequest;
+import it.polimi.ingsw.am56.network.message.request.PingRequest;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 
 import java.io.IOException;
@@ -17,20 +18,25 @@ import java.net.Socket;
  * thread that reads incoming {@link ServerMessage}s and forwards them to the registered
  * {@link UpdateHandler}.
  * <p>
- * If reading fails (the connection is lost), the listener closes the socket and notifies the update
- * handler of the disconnection, so the {@code ConnectionManager} can attempt to reconnect.
+ * To detect a half-open connection (network drop with no FIN/RST) it arms a read timeout and runs a
+ * heartbeat that pings the server, mirroring the RMI heartbeat. If reading fails or times out (the
+ * connection is lost), the listener closes the socket and notifies the update handler of the
+ * disconnection, so the {@code ConnectionManager} can attempt to reconnect.
  */
-// implementa ServerAdapter invece di NetworkClient
 public class SocketClient implements ServerAdapter {
     private final Socket socket;
     private final ObjectOutputStream out;
     private final ObjectInputStream in;
 
     private UpdateHandler updateHandler;
+    private volatile boolean active = true;
+
+    private static final int HEARTBEAT_INTERVAL_MS = 2000;
+    private static final int READ_TIMEOUT_MS = 6000;
 
     /**
-     * Opens a socket connection to the server, sets up the object streams and starts the listener
-     * thread.
+     * Opens a socket connection to the server, sets up the object streams, arms the read timeout used
+     * to detect a half-open connection, and starts the listener and heartbeat threads.
      *
      * @param host the server host
      * @param port the server's socket port
@@ -43,7 +49,10 @@ public class SocketClient implements ServerAdapter {
         this.out.flush();
         this.in = new ObjectInputStream(socket.getInputStream());
 
+        socket.setSoTimeout(READ_TIMEOUT_MS);
+
         startListening();
+        startHeartbeat();
     }
 
     /**
@@ -51,7 +60,6 @@ public class SocketClient implements ServerAdapter {
      *
      * @param handler the update handler
      */
-    // metodo per registrare la GUI
     @Override
     public void setUpdateHandler(UpdateHandler handler) {
         this.updateHandler = handler;
@@ -62,13 +70,14 @@ public class SocketClient implements ServerAdapter {
      *
      * @param request the request to send
      */
-    // deve accettare solo ClientRequests non object
     @Override
     public void sendRequest(ClientRequest request) {
         try {
-            out.writeObject(request);
-            out.reset();
-            out.flush();
+            synchronized (out) {
+                out.writeObject(request);
+                out.reset();
+                out.flush();
+            }
         } catch (IOException e) {
             System.err.println("Impossibile inviare la richiesta.");
         }
@@ -76,8 +85,8 @@ public class SocketClient implements ServerAdapter {
 
     /**
      * Starts the background thread that continuously reads server messages from the socket and
-     * forwards them to the update handler; on a read failure it closes the socket and reports the
-     * disconnection.
+     * forwards them to the update handler; on a read failure or timeout it closes the socket and
+     * reports the disconnection.
      */
     private void startListening() {
         new Thread(() -> {
@@ -92,7 +101,7 @@ public class SocketClient implements ServerAdapter {
                 }
             } catch (IOException | ClassNotFoundException e) {
                 System.err.println("[SOCKET] Connessione persa: " + e.getMessage());
-                // Chiude il socket (e a cascata gli stream in/out) per non lasciarlo appeso.
+                active = false;
                 try {
                     socket.close();
                 } catch (IOException ignored) {}
@@ -101,5 +110,25 @@ public class SocketClient implements ServerAdapter {
                 }
             }
         }).start();
+    }
+
+    /**
+     * Starts the daemon thread that sends a {@link PingRequest} to the server on a fixed interval, so
+     * the server's read timeout can detect a half-open connection from this client.
+     */
+    private void startHeartbeat() {
+        Thread t = new Thread(() -> {
+            while (active) {
+                try {
+                    Thread.sleep(HEARTBEAT_INTERVAL_MS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+                if (active) sendRequest(new PingRequest());
+            }
+        }, "socket-client-heartbeat");
+        t.setDaemon(true);
+        t.start();
     }
 }

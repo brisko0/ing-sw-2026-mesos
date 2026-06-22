@@ -35,4 +35,6 @@ public interface MessageVisitor {
     default void visit(GameAbortedMessage message) {}
     /** Handles an error reported for a rejected action. */
     default void visit(ErrorMessage message) {}
+    /** Handles a heartbeat ping; carries no information and is ignored by every client. */
+    default void visit(PingMessage message) {}
 }

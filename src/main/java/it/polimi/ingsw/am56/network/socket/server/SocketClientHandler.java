@@ -3,6 +3,7 @@ package it.polimi.ingsw.am56.network.socket.server;
 import it.polimi.ingsw.am56.controller.GameController;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
 import it.polimi.ingsw.am56.network.message.update.ErrorMessage;
+import it.polimi.ingsw.am56.network.message.update.PingMessage;
 import it.polimi.ingsw.am56.network.message.update.ServerMessage;
 import it.polimi.ingsw.am56.network.message.request.ClientRequest;
 import it.polimi.ingsw.am56.network.ClientConnection;
@@ -19,18 +20,24 @@ import java.net.Socket;
  * {@link ClientConnection} methods serialize outgoing updates and errors back over the socket.
  * <p>
  * Writes are synchronized on the output stream so the read loop and the observer pushing updates do not
- * interleave on the wire. A read or write failure disconnects the client: the socket is closed and the
- * controller is notified so it can decide whether to abort the game.
+ * interleave on the wire. To detect a half-open connection (network drop with no FIN/RST) it arms a read
+ * timeout and runs a heartbeat that pings the client; a read/write failure or a read timeout disconnects
+ * the client: the socket is closed and the controller is notified so it can decide whether to abort the
+ * game. This mirrors the RMI heartbeat.
  */
 public class SocketClientHandler implements Runnable, ClientConnection {
     private final Socket socket;
     private final GameController controller;
     private final ObjectOutputStream out;
     private final ObjectInputStream in;
-    private boolean active = true;
+    private volatile boolean active = true;
+
+    private static final int HEARTBEAT_INTERVAL_MS = 2000;
+    private static final int READ_TIMEOUT_MS = 6000;
 
     /**
-     * Creates a handler for an accepted client socket and sets up its object streams.
+     * Creates a handler for an accepted client socket, sets up its object streams, arms the read
+     * timeout used to detect a half-open connection and starts the heartbeat toward the client.
      *
      * @param socket     the accepted client socket
      * @param controller the game controller that executes the client's requests
@@ -43,6 +50,31 @@ public class SocketClientHandler implements Runnable, ClientConnection {
         this.out = new ObjectOutputStream(socket.getOutputStream());
         this.out.flush();
         this.in = new ObjectInputStream(socket.getInputStream());
+
+        // Se entro READ_TIMEOUT_MS non arriva nulla (nemmeno un ping del client), readObject lancia
+        // SocketTimeoutException: così una connessione half-open viene rilevata invece di restare appesa.
+        socket.setSoTimeout(READ_TIMEOUT_MS);
+        startHeartbeat();
+    }
+
+    /**
+     * Starts the daemon thread that pushes a {@link PingMessage} to the client on a fixed interval, so
+     * the client's own read timeout can detect a half-open connection toward this server.
+     */
+    private void startHeartbeat() {
+        Thread t = new Thread(() -> {
+            while (active) {
+                try {
+                    Thread.sleep(HEARTBEAT_INTERVAL_MS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+                if (active) sendMessage(new PingMessage());
+            }
+        }, "socket-server-heartbeat");
+        t.setDaemon(true);
+        t.start();
     }
 
     /**
