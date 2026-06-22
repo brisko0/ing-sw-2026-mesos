@@ -115,12 +115,11 @@ class BoardTest {
 
     @Test
     void shouldFillUpperBuildings() {
-        int numBuildings = buildingDeck.getRemainingCards().size();
         assertTrue(board.getUpperRowBuildings().isEmpty());
 
-        board.fillUpperBuildings(gameSize, buildingDeck);
+        board.fillUpperBuildings(gameSize, buildingDeck, 1);
 
-        assertEquals(numBuildings, board.getUpperRowBuildings().size());
+        assertEquals(2, board.getUpperRowBuildings().size());
         for (Card card : board.getUpperRowBuildings()) {
             assertEquals(CardType.BUILDING, card.getCardType());
         }
@@ -176,7 +175,7 @@ class BoardTest {
         ShamanStarsBonus shamanStarsBonus = new ShamanStarsBonus(1, 1, 1, 1, 1, 1);
         board.getUpperRowBuildings().add(shamanStarsBonus);
 
-        board.endEra(gameSize, charEvDeck, buildingDeck);
+        board.endEra(gameSize, charEvDeck, buildingDeck, 2);
 
         assertEquals(gameSize + 4, board.getUpperRowCharEv().size());
 

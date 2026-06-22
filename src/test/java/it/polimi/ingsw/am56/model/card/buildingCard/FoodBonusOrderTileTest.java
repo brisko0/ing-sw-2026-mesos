@@ -25,8 +25,8 @@ class FoodBonusOrderTileTest {
             gameModel.getPlayers().add(new Player("a", "r"));
         }
         foodBonusOrderTile = new FoodBonusOrderTile(1, 1, 1, 1, 0, 1);
-        orderTile1 = new OrderTile(1, 1, 0, 1, true);
-        orderTile2 = new OrderTile(1, 0, 0, 1, true);
+        orderTile1 = new OrderTile(1, 1, 0, 1);
+        orderTile2 = new OrderTile(1, 0, 0, 1);
     }
 
     @Test
