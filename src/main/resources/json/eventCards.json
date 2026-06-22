@@ -72,17 +72,8 @@
     "losePoints": 5
   },
   {
-    "classType": "SHAMAN",
-    "cardId": 93,
-    "era": 3,
-    "minPlayers": 2,
-    "isFinal":  true,
-    "winPoints": 15,
-    "losePoints": 7
-  },
-  {
     "classType": "SUSTENANCE",
-    "cardId": 94,
+    "cardId": 93,
     "era": 1,
     "minPlayers": 2,
     "isFinal":  false,
@@ -90,7 +81,7 @@
   },
   {
     "classType": "SUSTENANCE",
-    "cardId": 95,
+    "cardId": 94,
     "era": 2,
     "minPlayers": 2,
     "isFinal":  false,
@@ -98,10 +89,19 @@
   },
   {
     "classType": "SUSTENANCE",
-    "cardId": 96,
+    "cardId": 95,
     "era": 3,
     "minPlayers": 2,
     "isFinal": true,
     "losePointsPerChar": 3
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 96,
+    "era": 3,
+    "minPlayers": 2,
+    "isFinal":  true,
+    "winPoints": 15,
+    "losePoints": 7
   }
 ]
