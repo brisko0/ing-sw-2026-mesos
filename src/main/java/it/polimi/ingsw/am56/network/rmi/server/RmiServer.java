@@ -67,13 +67,21 @@ public class RmiServer extends UnicastRemoteObject implements VirtualServerRmi {
 
     /**
      * Registers a new RMI client: starts a {@link RmiClientHandler} for it and attaches a
-     * {@link PlayerVirtualView} as a model observer so the client receives game updates.
+     * {@link PlayerVirtualView} as a model observer so the client receives game updates. The
+     * connection is refused (the call throws) once the game is in progress and no reconnection window
+     * is open — see {@link GameController#acceptsNewConnections()} — so outsiders cannot join a game
+     * that has already started.
      *
      * @param clientStub the joining client's remote view stub
-     * @throws RemoteException if the remote call fails
+     * @throws RemoteException if the remote call fails, or if the game is in progress and no new
+     *                         connections are being accepted
      */
     @Override
     public void addClient(VirtualViewRmi clientStub) throws RemoteException {
+        if (!controller.acceptsNewConnections()) {
+            throw new RemoteException("Partita già in corso: non è possibile collegarsi.");
+        }
+
         RmiClientHandler rmiConnection = new RmiClientHandler(clientStub, controller);
         new Thread(rmiConnection).start();
         PlayerVirtualView virtualView =

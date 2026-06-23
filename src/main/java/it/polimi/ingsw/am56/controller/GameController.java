@@ -6,6 +6,7 @@ import it.polimi.ingsw.am56.model.Player;
 import it.polimi.ingsw.am56.model.board.OfferTile;
 import it.polimi.ingsw.am56.model.card.Card;
 import it.polimi.ingsw.am56.model.exceptions.InvalidActionException;
+import it.polimi.ingsw.am56.model.state.State;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -77,6 +78,25 @@ public class GameController {
             try { Thread.sleep(500); } catch (InterruptedException ignored) {}
             System.exit(0);
         }).start();
+    }
+
+    /**
+     * Tells whether the server may register a brand-new client connection right now. Connections are
+     * accepted while the lobby is still filling (so players can join) and while a reconnection window
+     * is open (so previously-connected players can come back after a server restart), but are refused
+     * once the game is in progress. This stops outsiders from connecting mid-game, which otherwise let
+     * them resume under an existing player's nickname, or abort the whole game for everyone else just
+     * by closing their terminal even though they were never actually playing.
+     *
+     * @return {@code true} if a new connection may be registered, {@code false} if it must be refused
+     */
+    public boolean acceptsNewConnections() {
+        synchronized (model) {
+            boolean started = model.getGameSize() != -1
+                    && model.getCurrentState().getState() != State.PLAYERS_FILLING;
+            boolean reconnectWindowOpen = expectedReconnects != null;
+            return !started || reconnectWindowOpen;
+        }
     }
 
     /**

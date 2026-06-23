@@ -42,8 +42,11 @@ public class SocketServer {
 
     /**
      * Accept loop: blocks waiting for clients and, for each one, starts its {@link SocketClientHandler}
-     * thread and attaches a {@link PlayerVirtualView} observer. Per-connection errors are logged and
-     * do not stop the loop.
+     * thread and attaches a {@link PlayerVirtualView} observer. Connections arriving once the game is
+     * in progress (and no reconnection window is open) are refused — the socket is closed immediately —
+     * so outsiders cannot join a game that has already started; see
+     * {@link GameController#acceptsNewConnections()}. Per-connection errors are logged and do not stop
+     * the loop.
      */
     public void start() {
         System.out.println("[SOCKET SERVER] In ascolto sulla porta " + serverSocket.getLocalPort());
@@ -52,6 +55,14 @@ public class SocketServer {
             try {
                 // Il server si blocca qui finché non si connette qualcuno
                 Socket clientSocket = serverSocket.accept();
+
+                // rifiuta i nuovi collegamenti a partita iniziata (fuori da una finestra di
+                // riconnessione): chiude subito il socket, così outsider non entrano a gioco avviato.
+                if (!controller.acceptsNewConnections()) {
+                    clientSocket.close();
+                    continue;
+                }
+
                 System.out.println("[SOCKET SERVER] Nuovo client connesso!");
 
                 // 1. Creiamo il "Tubo di Rete" specifico per Socket
