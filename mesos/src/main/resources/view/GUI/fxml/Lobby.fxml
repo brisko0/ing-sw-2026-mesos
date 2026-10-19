@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+
+<StackPane fx:id="rootPane" prefHeight="576.0" prefWidth="1024.0"
+           stylesheets="@../css/lobby_style.css" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="it.polimi.ingsw.am56.view.GUI.controllers.LobbyController">
+
+    <ImageView fitWidth="${rootPane.width}" fitHeight="${rootPane.height}" preserveRatio="false">
+        <Image url="@../images/background_empty2.png" />
+    </ImageView>
+
+    <GridPane alignment="CENTER">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="20"/>
+            <ColumnConstraints percentWidth="60" halignment="CENTER"/>
+            <ColumnConstraints percentWidth="20"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints percentHeight="15"/>
+            <RowConstraints percentHeight="70" valignment="CENTER"/>
+            <RowConstraints percentHeight="15"/>
+        </rowConstraints>
+
+        <GridPane fx:id="lobbyBox" styleClass="lobby-panel" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="12"/> <ColumnConstraints percentWidth="76" halignment="CENTER"/>
+                <ColumnConstraints percentWidth="12"/> </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="20"/> <RowConstraints percentHeight="60" valignment="TOP"/> <RowConstraints percentHeight="10" valignment="BOTTOM"/> <RowConstraints percentHeight="10"/> </rowConstraints>
+
+            <VBox fx:id="playerListContainer" spacing="10" alignment="TOP_CENTER"
+                  GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <padding>
+                    <javafx.geometry.Insets top="10" />
+                </padding>
+            </VBox>
+
+            <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <padding>
+                    <javafx.geometry.Insets right="30" bottom="10" />
+                </padding>
+                <Label fx:id="statusLabel" text="In attesa di cacciatori... 1/4" styleClass="status-label"/>
+            </HBox>
+        </GridPane>
+    </GridPane>
+
+    <VBox fx:id="reconnectingOverlay"
+          visible="false"
+          alignment="CENTER"
+          spacing="20"
+          style="-fx-background-color: rgba(0,0,0,0.65);">
+        <Label text="Connessione al server persa"
+               style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+        <Label text="Riconnessione in corso... Se non riprende, chiudi."
+               style="-fx-font-size: 16px; -fx-text-fill: #cccccc;"/>
+        <Button text="Chiudi" onAction="#handleAbortClose"
+                style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: #555555; -fx-background-radius: 8; -fx-padding: 10 26 10 26; -fx-cursor: hand;"/>
+    </VBox>
+
+    <VBox fx:id="gameAbortedOverlay"
+          visible="false"
+          alignment="CENTER"
+          spacing="20"
+          style="-fx-background-color: rgba(0,0,0,0.75);">
+        <Label text="Partita annullata"
+               style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+        <Label text="Un giocatore si è disconnesso."
+               style="-fx-font-size: 16px; -fx-text-fill: #cccccc;"/>
+        <Button text="Chiudi" onAction="#handleAbortClose"
+                style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: #b33900; -fx-background-radius: 8; -fx-padding: 10 26 10 26; -fx-cursor: hand;"/>
+    </VBox>
+
+</StackPane>

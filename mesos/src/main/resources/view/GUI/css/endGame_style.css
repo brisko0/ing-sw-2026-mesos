@@ -1,0 +1,132 @@
+/* ==================================================== */
+/* PANNELLI CON IMMAGINE DI BACKGROUND                  */
+/* ==================================================== */
+
+.match-panel {
+    -fx-background-image: url("../images/endGame/gameLeaderboard.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    /* ORDINE: TOP - RIGHT - BOTTOM - LEFT */
+    /* Valori aumentati drasticamente per restare DENTRO i bordi */
+    -fx-padding: 190 120 100 120;
+}
+
+.global-panel {
+    -fx-background-image: url("../images/endGame/leaderboard.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    /* ORDINE: TOP - RIGHT - BOTTOM - LEFT */
+    -fx-padding: 190 120 100 120;
+}
+
+/* ==================================================== */
+/* RIGHE GIOCATORI (Stile Registro Pulito)              */
+/* ==================================================== */
+.ranking-row {
+    -fx-background-color: transparent; /* Nessuno sfondo colorato */
+    -fx-border-color: rgba(61, 31, 20, 0.15); /* Linea divisoria sottilissima sotto */
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 15 5 15 5; /* Rimosso l'eccesso di padding laterale */
+}
+
+/* Riga speciale per il giocatore locale (Niente sfondo, spicca il testo) */
+.ranking-row-local {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(179, 57, 0, 0.3); /* Linea inferiore intonata al testo */
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 15 5 15 5;
+}
+
+/* ==================================================== */
+/* TESTI DENTRO LE RIGHE (Dimensioni Coerenti)          */
+/* ==================================================== */
+
+.rank-label, .name-label, .score-label {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 18px; /* Dimensione identica per tutto */
+    -fx-font-weight: normal; /* Rimosso l'effetto super-bold cartonato */
+    -fx-text-fill: #3d1f14; /* Colore "inchiostro" scuro */
+}
+
+/* Diamo solo un filo di importanza in più al punteggio per leggibilità */
+.score-label {
+    -fx-font-weight: bold;
+}
+
+.sub-label {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: rgba(61, 31, 20, 0.6);
+}
+
+/* ==================================================== */
+/* HIGHLIGHT GIOCATORE LOCALE                           */
+/* ==================================================== */
+/* Sfruttiamo il CSS per colorare le label dentro la riga speciale,
+   senza bisogno di modificare il codice Java! */
+
+.ranking-row-local .rank-label,
+.ranking-row-local .name-label,
+.ranking-row-local .score-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #b33900; /* Un rosso/ruggine elegante che risalta sulla pergamena */
+}
+
+.ranking-row-local .sub-label {
+    -fx-text-fill: rgba(179, 57, 0, 0.7);
+}
+
+/* ==================================================== */
+/* SCROLLPANE TOTALMENTE TRASPARENTE                    */
+/* ==================================================== */
+/* Forza la rimozione di tutti gli sfondi grigi/bianchi
+   tipici dei componenti JavaFX di default */
+
+.transparent-scroll {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-padding: 0;
+}
+
+.transparent-scroll .viewport,
+.transparent-scroll .content {
+    -fx-background-color: transparent;
+}
+
+/* ==================================================== */
+/* SOTTOTITOLO GAME SIZE                                */
+/* ==================================================== */
+.gamesize-label {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: rgba(61, 31, 20, 0.65); /* Inchiostro leggermente sbiadito */
+    -fx-padding: 0 0 15 0; /* Spazio inferiore per separarlo dalla classifica */
+    -fx-letter-spacing: 1px;
+}
+
+/* ==================================================== */
+/* PULSANTE ESCI                                        */
+/* ==================================================== */
+.exit-button {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-color: #b33900;
+    -fx-background-radius: 8;
+    -fx-padding: 10 26 10 26;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 8, 0, 0, 3);
+}
+
+.exit-button:hover {
+    -fx-background-color: #d24400;
+}
+
+.exit-button:pressed {
+    -fx-background-color: #8f2d00;
+}

@@ -1,0 +1,589 @@
+[
+  {
+    "classType": "SHAMAN",
+    "cardId": 1,
+    "era": 1,
+    "minPlayers": 5,
+    "shamanStars": 2
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 2,
+    "era": 1,
+    "minPlayers": 2,
+    "shamanStars": 2
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 3,
+    "era": 1,
+    "minPlayers": 2,
+    "shamanStars": 1
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 4,
+    "era": 1,
+    "minPlayers": 4,
+    "shamanStars": 1
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 5,
+    "era": 2,
+    "minPlayers": 2,
+    "shamanStars": 2
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 6,
+    "era": 2,
+    "minPlayers": 2,
+    "shamanStars": 2
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 7,
+    "era": 2,
+    "minPlayers": 5,
+    "shamanStars": 1
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 8,
+    "era": 2,
+    "minPlayers": 5,
+    "shamanStars": 2
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 9,
+    "era": 3,
+    "minPlayers": 3,
+    "shamanStars": 2
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 10,
+    "era": 3,
+    "minPlayers": 2,
+    "shamanStars": 3
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 11,
+    "era": 3,
+    "minPlayers": 2,
+    "shamanStars": 2
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 12,
+    "era": 3,
+    "minPlayers": 2,
+    "shamanStars": 3
+  },
+  {
+    "classType": "SHAMAN",
+    "cardId": 13,
+    "era": 3,
+    "minPlayers": 4,
+    "shamanStars": 2
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 14,
+    "era": 1,
+    "minPlayers": 2,
+    "providesFood": true
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 15,
+    "era": 1,
+    "minPlayers": 2,
+    "providesFood": true
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 16,
+    "era": 1,
+    "minPlayers": 2,
+    "providesFood": false
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 17,
+    "era": 1,
+    "minPlayers": 3,
+    "providesFood": false
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 18,
+    "era": 1,
+    "minPlayers": 3,
+    "providesFood": false
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 19,
+    "era": 2,
+    "minPlayers": 2,
+    "providesFood": false
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 20,
+    "era": 2,
+    "minPlayers": 2,
+    "providesFood": false
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 21,
+    "era": 2,
+    "minPlayers": 3,
+    "providesFood": true
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 22,
+    "era": 2,
+    "minPlayers": 2,
+    "providesFood": true
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 23,
+    "era": 2,
+    "minPlayers": 4,
+    "providesFood": true
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 24,
+    "era": 2,
+    "minPlayers": 5,
+    "providesFood": false
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 25,
+    "era": 3,
+    "minPlayers": 5,
+    "providesFood": true
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 26,
+    "era": 3,
+    "minPlayers": 2,
+    "providesFood": false
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 27,
+    "era": 3,
+    "minPlayers": 2,
+    "providesFood": false
+  },
+  {
+    "classType": "HUNTER",
+    "cardId": 28,
+    "era": 3,
+    "minPlayers": 2,
+    "providesFood": true
+  },
+  {
+    "classType": "BUILDER",
+    "cardId": 29,
+    "era": 1,
+    "minPlayers": 2,
+    "buildingSale": 1,
+    "builderPoints": 3
+  },
+  {
+    "classType": "BUILDER",
+    "cardId": 30,
+    "era": 1,
+    "minPlayers": 2,
+    "buildingSale": 2,
+    "builderPoints": 0
+  },
+  {
+    "classType": "BUILDER",
+    "cardId": 31,
+    "era": 1,
+    "minPlayers": 5,
+    "buildingSale": 2,
+    "builderPoints": 1
+  },
+  {
+    "classType": "BUILDER",
+    "cardId": 32,
+    "era": 1,
+    "minPlayers": 2,
+    "buildingSale": 1,
+    "builderPoints": 2
+  },
+  {
+    "classType": "BUILDER",
+    "cardId": 33,
+    "era": 2,
+    "minPlayers": 2,
+    "buildingSale": 1,
+    "builderPoints": 4
+  },
+  {
+    "classType": "BUILDER",
+    "cardId": 34,
+    "era": 2,
+    "minPlayers": 2,
+    "buildingSale": 2,
+    "builderPoints": 1
+  },
+  {
+    "classType": "BUILDER",
+    "cardId": 35,
+    "era": 2,
+    "minPlayers": 3,
+    "buildingSale": 1,
+    "builderPoints": 2
+  },
+  {
+    "classType": "BUILDER",
+    "cardId": 36,
+    "era": 2,
+    "minPlayers": 2,
+    "buildingSale": 2,
+    "builderPoints": 3
+  },
+  {
+    "classType": "BUILDER",
+    "cardId": 37,
+    "era": 3,
+    "minPlayers": 2,
+    "buildingSale": 1,
+    "builderPoints": 5
+  },
+  {
+    "classType": "BUILDER",
+    "cardId": 38,
+    "era": 3,
+    "minPlayers": 2,
+    "buildingSale": 2,
+    "builderPoints": 3
+  },
+  {
+    "classType": "BUILDER",
+    "cardId": 39,
+    "era": 3,
+    "minPlayers": 5,
+    "buildingSale": 1,
+    "builderPoints": 4
+  },
+  {
+    "classType": "BUILDER",
+    "cardId": 40,
+    "era": 3,
+    "minPlayers": 2,
+    "buildingSale": 2,
+    "builderPoints": 2
+  },
+  {
+    "classType": "COLLECTOR",
+    "cardId": 41,
+    "era": 1,
+    "minPlayers": 2,
+    "feedingSale": 3
+  },
+  {
+    "classType": "COLLECTOR",
+    "cardId": 42,
+    "era": 1,
+    "minPlayers": 2,
+    "feedingSale": 3
+  },
+  {
+    "classType": "COLLECTOR",
+    "cardId": 43,
+    "era": 1,
+    "minPlayers": 3,
+    "feedingSale": 3
+  },
+  {
+    "classType": "COLLECTOR",
+    "cardId": 44,
+    "era": 1,
+    "minPlayers": 5,
+    "feedingSale": 3
+  },
+  {
+    "classType": "COLLECTOR",
+    "cardId": 45,
+    "era": 2,
+    "minPlayers": 2,
+    "feedingSale": 3
+  },
+  {
+    "classType": "COLLECTOR",
+    "cardId": 46,
+    "era": 2,
+    "minPlayers": 3,
+    "feedingSale": 3
+  },
+  {
+    "classType": "COLLECTOR",
+    "cardId": 47,
+    "era": 2,
+    "minPlayers": 4,
+    "feedingSale": 3
+  },
+  {
+    "classType": "COLLECTOR",
+    "cardId": 48,
+    "era": 2,
+    "minPlayers": 5,
+    "feedingSale": 3
+  },
+  {
+    "classType": "COLLECTOR",
+    "cardId": 49,
+    "era": 3,
+    "minPlayers": 5,
+    "feedingSale": 3
+  },
+  {
+    "classType": "COLLECTOR",
+    "cardId": 50,
+    "era": 3,
+    "minPlayers": 4,
+    "feedingSale": 3
+  },
+  {
+    "classType": "COLLECTOR",
+    "cardId": 51,
+    "era": 3,
+    "minPlayers": 2,
+    "feedingSale": 3
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 52,
+    "era": 1,
+    "minPlayers": 2
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 53,
+    "era": 1,
+    "minPlayers": 2
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 54,
+    "era": 1,
+    "minPlayers": 2
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 55,
+    "era": 1,
+    "minPlayers": 3
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 56,
+    "era": 1,
+    "minPlayers": 4
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 57,
+    "era": 2,
+    "minPlayers": 3
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 58,
+    "era": 2,
+    "minPlayers": 2
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 59,
+    "era": 2,
+    "minPlayers": 2
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 60,
+    "era": 2,
+    "minPlayers": 2
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 61,
+    "era": 3,
+    "minPlayers": 5
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 62,
+    "era": 3,
+    "minPlayers": 2
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 63,
+    "era": 3,
+    "minPlayers": 2
+  },
+  {
+    "classType": "ARTIST",
+    "cardId": 64,
+    "era": 3,
+    "minPlayers": 2
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 65,
+    "era": 1,
+    "minPlayers": 2,
+    "invention": "PELLE"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 66,
+    "era": 1,
+    "minPlayers": 2,
+    "invention": "CANOA"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 67,
+    "era": 1,
+    "minPlayers": 2,
+    "invention": "MICROLITO"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 68,
+    "era": 1,
+    "minPlayers": 2,
+    "invention": "PANE"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 69,
+    "era": 1,
+    "minPlayers": 4,
+    "invention": "CORDA"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 70,
+    "era": 1,
+    "minPlayers": 4,
+    "invention": "FLAUTO"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 71,
+    "era": 1,
+    "minPlayers": 4,
+    "invention": "MORTAIO"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 72,
+    "era": 2,
+    "minPlayers": 2,
+    "invention": "STATUETTA"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 73,
+    "era": 2,
+    "minPlayers": 4,
+    "invention": "AMO"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 74,
+    "era": 2,
+    "minPlayers": 2,
+    "invention": "CORDA"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 75,
+    "era": 2,
+    "minPlayers": 2,
+    "invention": "FLAUTO"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 76,
+    "era": 2,
+    "minPlayers": 2,
+    "invention": "MORTAIO"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 77,
+    "era": 2,
+    "minPlayers": 2,
+    "invention": "PELLE"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 78,
+    "era": 3,
+    "minPlayers": 4,
+    "invention": "ORNAMENTI"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 79,
+    "era": 3,
+    "minPlayers": 3,
+    "invention": "CANOA"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 80,
+    "era": 3,
+    "minPlayers": 3,
+    "invention": "MICROLITO"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 81,
+    "era": 3,
+    "minPlayers": 2,
+    "invention": "STATUETTA"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 82,
+    "era": 3,
+    "minPlayers": 2,
+    "invention": "AMO"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 83,
+    "era": 3,
+    "minPlayers": 2,
+    "invention": "ORNAMENTI"
+  },
+  {
+    "classType": "INVENTOR",
+    "cardId": 84,
+    "era": 3,
+    "minPlayers": 2,
+    "invention": "PANE"
+  }
+]

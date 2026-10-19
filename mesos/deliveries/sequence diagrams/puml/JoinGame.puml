@@ -1,0 +1,101 @@
+@startuml
+autonumber
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 170
+
+actor "User\n(Joining Player)" as User
+participant "Client View\n(MessageVisitor)" as View
+participant "Server\n(VirtualServerRmi /\nSocketClientHandler)" as Server
+participant "GameController" as Controller
+participant "GameModel\n(+ GameState)" as Model
+participant "PlayerVirtualView\n(Observer)" as Observer
+
+note over Server, Observer
+  Each request routes itself via request.executeOnServer(controller).
+  Updates come back as ServerMessages dispatched on the client by message.accept(view).
+end note
+
+== Phase 3: Pre-lobby query ==
+User -> View: connects (observer already registered)
+View -> Server: sendRequest(LobbyStateRequest())
+activate Server
+Server -> Controller: checkLobbyState()
+activate Controller
+Controller -> Model: syncLobbyState()
+activate Model
+Model -> Observer: onModelChanged(LOBBY_STATE_SYNC)
+Observer -> View: PreLobbyStateMessage(takenNicknames, takenColors, inProgress)
+View -> View: accept -> visit(PreLobbyStateMessage)
+Model --> Controller: return
+deactivate Model
+Controller --> Server: return
+deactivate Controller
+Server --> View: return
+deactivate Server
+
+== Phase 4: Join ==
+User -> View: enter nickname & color\nclick "Join Game"
+
+alt Valid join (success)
+
+    View -> Server: sendRequest(AddPlayerRequest("Bob","BLUE"))
+    activate Server
+    Server -> Controller: addPlayer("Bob","BLUE")
+    activate Controller
+    Controller -> Model: addPlayer(new Player("Bob","BLUE"))
+    activate Model
+
+    note right of Model: PlayersFilling.addPlayer checks unique\nnickname/color and that the lobby is not full.
+    Model -> Observer: onModelChanged(PLAYER_ADDED)
+    Observer -> View: LobbyStateMessage(players, gameSize)
+    View -> View: accept -> visit(LobbyStateMessage)
+
+    opt Lobby is full (players.size() == gameSize)
+        note over Model
+          setUpPlayers: shuffle seats, give initial food (2 / 3 / 3 / 4 / 4),
+          bind each player to a starting order tile.
+        end note
+        Model -> Model: setState(new TotemPlacement(model))
+        Model -> Observer: onModelChanged(STATE_CHANGED)
+        Observer -> View: GameStateUpdateMessage(TOTEM_PLACEMENT)
+        View -> View: accept -> visit(GameStateUpdateMessage)
+
+        Model -> Model: setCurrentPlayerOrder()
+        Model -> Observer: onModelChanged(TURN_CHANGED)
+        Observer -> View: PlayerStatsUpdateMessage + CurrentPlayerUpdateMessage
+        View -> View: accept -> visit(...)
+        note over View, Observer
+          No snapshot is pushed here (only STATE_CHANGED + TURN_CHANGED). The creator
+          (first player) sends one GameSyncRequest -> sendGameState() ->
+          GAME_STARTED -> GameSnapshotMessage, broadcast by the server to every client.
+        end note
+    end
+
+    Model --> Controller: return
+    deactivate Model
+    Controller --> Server: return
+    deactivate Controller
+    Server --> View: return
+    deactivate Server
+    User <-- View: updated lobby / game board
+
+else InvalidActionException (nickname or color taken, lobby full, game already started)
+
+    View -> Server: sendRequest(AddPlayerRequest("Bob","BLUE"))
+    activate Server
+    Server -> Controller: addPlayer("Bob","BLUE")
+    activate Controller
+    Controller -> Model: addPlayer(...)
+    activate Model
+    Model --> Controller: throws InvalidActionException
+    deactivate Model
+    Controller --> Server: throws InvalidActionException
+    deactivate Controller
+    Server -> View: ErrorMessage(reason)
+    deactivate Server
+    View -> View: accept -> visit(ErrorMessage)
+    User <-- View: error popup ("Nickname already in use!")
+
+end
+@enduml

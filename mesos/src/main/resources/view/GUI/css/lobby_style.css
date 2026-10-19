@@ -1,0 +1,30 @@
+.lobby-panel {
+    -fx-background-image: url("../images/lobby/BoxLobby.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+.player-row {
+    -fx-background-color: rgba(61, 31, 20, 0.08);
+    -fx-background-radius: 10;
+    -fx-padding: 5 25 5 25;
+    -fx-max-width: 600;
+    -fx-border-color: rgba(61, 31, 20, 0.15);
+    -fx-border-width: 0 0 1 0;
+}
+
+.player-text {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3d1f14;
+}
+
+.status-label {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3d1f14;
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+    -fx-background-radius: 15;
+    -fx-padding: 5 15 5 15;
+}

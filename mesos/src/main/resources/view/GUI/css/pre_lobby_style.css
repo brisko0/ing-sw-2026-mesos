@@ -1,0 +1,101 @@
+/* pannello create */
+.create-panel {
+    -fx-background-image: url("../images/pre_lobby/CreateBlock.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+/* pannello join */
+.join-panel {
+    -fx-background-image: url("../images/pre_lobby/JoinBlock.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+/* bottone create */
+.create-button {
+    -fx-background-color: transparent;
+    -fx-background-image: url("../images/pre_lobby/CreateButton.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+
+    -fx-pref-width: 180;
+    -fx-pref-height: 50;
+    -fx-max-width: 180;
+    -fx-max-height: 50;
+
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+}
+
+/* bottone join */
+.join-button {
+    -fx-background-color: transparent;
+    -fx-background-image: url("../images/pre_lobby/JoinButton.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+
+    -fx-pref-width: 180;
+    -fx-pref-height: 50;
+    -fx-max-width: 180;
+    -fx-max-height: 50;
+
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+}
+
+
+.create-button:hover, .join-button:hover {
+    -fx-opacity: 0.85;
+}
+
+.create-button:pressed, .join-button:pressed {
+    -fx-opacity: 0.7;
+    -fx-translate-y: 2px;
+}
+
+/* TextField */
+.mesos-input {
+    -fx-background-color: transparent;
+    -fx-background-image: url("../images/TextField.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+
+    -fx-max-width: 350;
+    -fx-pref-height: 50;
+
+    -fx-border-width: 0;
+    -fx-text-fill: #3d1f14;
+    -fx-prompt-text-fill: rgba(61, 31, 20, 0.6);
+    -fx-font-size: 16px;
+
+    -fx-alignment: center-left;
+    -fx-padding: 0 10 0 15;
+}
+
+/* per i totem */
+
+.totem-container {
+    -fx-alignment: center;
+    -fx-spacing: 10;
+}
+
+.totem-choice {
+    -fx-opacity: 0.5;
+    -fx-cursor: hand;
+    -fx-transition: opacity 0.2s; /* Se supportato dalla versione di JavaFX */
+}
+
+.totem-choice:hover {
+    -fx-opacity: 1.0;
+}
+
+.totem-selected {
+    -fx-opacity: 1.0;
+    -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.8), 10, 0, 0, 0);
+}

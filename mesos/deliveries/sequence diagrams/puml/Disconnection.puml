@@ -1,0 +1,62 @@
+@startuml
+autonumber
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 170
+
+participant "Heartbeat\n(server-side)" as Heartbeat
+participant "ClientConnection\n(SocketClientHandler /\nRmiClientHandler)" as Conn
+participant "GameController" as Controller
+participant "GameModel" as Model
+participant "PlayerVirtualView\n(Observer, per client)" as Observer
+participant "PersistenceManager" as Persistence
+participant "Remaining Client\n(ConnectionManager + View)" as Client
+
+== Disconnection handling (base requirement: terminate + notify) ==
+note over Heartbeat, Conn
+  A dropped client is detected by the heartbeat: a socket read timeout, or a failed
+  RMI ping. Either way the server-side connection disconnects exactly once.
+end note
+Heartbeat -> Conn: disconnect()
+activate Conn
+Conn -> Controller: handleDisconnect()
+activate Controller
+
+note right of Controller: synchronized(model)
+Controller -> Model: notifyDisconnection()
+activate Model
+Model -> Observer: onModelChanged(PLAYER_DISCONNECTED)
+activate Observer
+Observer -> Client: GameAbortedMessage
+deactivate Observer
+deactivate Model
+
+Controller -> Persistence: deleteSave()
+note right of Controller: the aborted game must not be resumed.
+
+Controller -> Controller: terminate the aborted game
+Controller --> Conn: return
+deactivate Controller
+deactivate Conn
+
+== Client side ==
+Client -> Client: handleUpdate(GameAbortedMessage)
+note right of Client
+  ConnectionManager's terminalDetector sets terminated = true,
+  then relays the message.
+end note
+Client -> Client: accept -> visit(GameAbortedMessage): show "game aborted" screen
+
+... the connection to the server is closed ...
+Client -> Client: handleDisconnect()
+note right of Client
+  terminated == true -> reconnection is skipped: the drop is expected,
+  there is nothing left to come back to.
+end note
+
+note over Heartbeat, Client
+  Different from an UNEXPECTED server crash (no GameAbortedMessage): there
+  terminated stays false, so the client keeps retrying and, once the server
+  restarts and reloads its save, the player reconnects (FA Persistence).
+end note
+@enduml

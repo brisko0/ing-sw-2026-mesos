@@ -1,0 +1,89 @@
+@startuml
+autonumber
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 170
+
+actor "User\n(Host/Creator)" as User
+participant "Client View\n(MessageVisitor)" as View
+participant "Server\n(VirtualServerRmi /\nSocketClientHandler)" as Server
+participant "GameController" as Controller
+participant "GameModel\n(+ GameState)" as Model
+participant "PlayerVirtualView\n(Observer)" as Observer
+
+note over Server, Observer
+  Command pattern: a request routes itself via request.executeOnServer(controller).
+  Updates travel back as ServerMessages pushed by the observer over RMI/socket;
+  the client applies each with message.accept(view) -> view.visit(...).
+end note
+
+== Phase 1: Connection ==
+User -> View: Start app, choose Socket/RMI, enter server address
+activate View
+View -> Server: register (RMI: addClient(stub) / Socket: accept)
+activate Server
+create Observer
+Server -> Observer: new PlayerVirtualView(model, connection, endGameService)
+Server -> Model: addObserver(observer)
+Server --> View: connection established
+deactivate Server
+
+== Phase 2: Game Creation ==
+User -> View: enter nickname, color, gameSize\nclick "Create Game"
+
+alt Valid inputs (success)
+
+    View -> Server: sendRequest(CreateGameRequest("Alice","RED",4))
+    activate Server
+    Server -> Controller: createGame("Alice","RED",4)\n<<via request.executeOnServer>>
+    activate Controller
+
+    ' 1. Build the game
+    Controller -> Model: initializeGame(4)
+    activate Model
+    note right of Model
+      Builds the Board, the per-era character/event and building decks,
+      fills the lower char row and era-1 upper rows, then saves a snapshot.
+    end note
+    Model -> Observer: onModelChanged(LOBBY_STATE_SYNC)
+    Observer -> View: PreLobbyStateMessage
+    View -> View: accept -> visit(PreLobbyStateMessage)
+    Model --> Controller: return
+    deactivate Model
+
+    ' 2. Add the creator
+    Controller -> Model: addPlayer(new Player("Alice","RED"))
+    activate Model
+    note right of Model: PlayersFilling.addPlayer validates the\nnickname/color, then executeAddPlayer.
+    Model -> Observer: onModelChanged(PLAYER_ADDED)
+    Observer -> View: LobbyStateMessage
+    View -> View: accept -> visit(LobbyStateMessage)
+    Model --> Controller: return
+    deactivate Model
+
+    Controller --> Server: return
+    deactivate Controller
+    Server --> View: return
+    deactivate Server
+    User <-- View: shows the lobby (waiting for players)
+
+else InvalidActionException (e.g. gameSize out of [2,5], nickname/color taken)
+
+    View -> Server: sendRequest(CreateGameRequest(...))
+    activate Server
+    Server -> Controller: createGame(...)
+    activate Controller
+    Controller -> Model: initializeGame(size) / addPlayer(...)
+    activate Model
+    Model --> Controller: throws InvalidActionException
+    deactivate Model
+    Controller --> Server: throws InvalidActionException
+    deactivate Controller
+    Server -> View: ErrorMessage(reason)
+    deactivate Server
+    View -> View: accept -> visit(ErrorMessage)
+    User <-- View: error popup
+
+end
+deactivate View
+@enduml

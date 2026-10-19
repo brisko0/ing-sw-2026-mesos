@@ -1,0 +1,101 @@
+@startuml
+autonumber
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 170
+
+actor "User\n(Active Player)" as User
+participant "Client View\n(MessageVisitor)" as View
+participant "Server\n(VirtualServerRmi /\nSocketClientHandler)" as Server
+participant "GameController" as Controller
+participant "GameModel" as Model
+participant "CardPicking\n(GameState)" as State
+participant "Card" as Card
+participant "PlayerVirtualView\n(Observer)" as Observer
+
+== Phase 6: Card Picking ==
+User -> View: select a card, click "Pick Card"
+
+alt Valid pick (success)
+
+    View -> Server: sendRequest(CardPickRequest("Alice", 99))
+    activate Server
+    Server -> Controller: cardPick("Alice", 99)\n<<via request.executeOnServer>>
+    activate Controller
+    Controller -> Model: card = board.getCardById(99)
+    Controller -> Model: pickUpCard(player, card)
+    activate Model
+    Model -> State: pickUpCard(player, card)
+    activate State
+    note right of State
+      Validates: it is the player's turn, the card is on the board,
+      it is not an Event, the row quota is not exhausted, and the
+      player can afford it (cost - buildingSale).
+    end note
+
+    State -> Model: executeCardPick(player, card, isUpper)
+    Model -> Card: addCardToPlayer(player)
+    Model -> Card: resolveEffect(model)
+    Model -> Card: resolveBuildingsEffects(model)
+    note right of Model: also removes the card from the board\nand increments pickedUpper / pickedLower.
+    Model -> Observer: onModelChanged(CARD_PICKED)
+    Observer -> View: BoardUpdatedMessage + PlayerStatsUpdateMessage
+    View -> View: accept -> visit(...)
+
+    State -> Model: checkTurnFlow()
+    opt Current player can no longer pick (quota full or unaffordable)
+        Model -> Model: resetTotemToOrder()
+        note right of Model
+          Frees the offer tile, places the totem on the first free order
+          tile (fixes next-round seat), applies the offer-tile food bonus,
+          the order-tile bonus/penalty and each building's onOwnTurnEnding.
+        end note
+        Model -> Observer: onModelChanged(TOTEM_RESET)
+        Observer -> View: PlayerStatsUpdateMessage + TotemsStateMessage
+
+        alt Other players still hold an offer tile
+            Model -> Model: setCurrentPlayerOffer()
+            Model -> Observer: onModelChanged(TURN_CHANGED)
+            Observer -> View: PlayerStatsUpdateMessage + CurrentPlayerUpdateMessage
+        else All offer tiles resolved
+            alt A player owns the extra-pick building and can use it
+                Model -> Model: setState(new ExtraUpperCardPicking(model))
+                note over Model: see ExtraUpperCardPick diagram
+            else
+                Model -> Model: setState(new RoundEnding(model))
+                note over Model: see RoundEnding diagram
+            end
+            Model -> Observer: onModelChanged(STATE_CHANGED)
+            Observer -> View: GameStateUpdateMessage
+        end
+    end
+
+    State --> Model: return
+    deactivate State
+    Model --> Controller: return
+    deactivate Model
+    Controller --> Server: return
+    deactivate Controller
+    Server --> View: return
+    deactivate Server
+    User <-- View: card added to the tribe; board refreshed
+
+else InvalidActionException (not your turn / not on board / quota / not enough food / event card)
+
+    View -> Server: sendRequest(CardPickRequest(...))
+    activate Server
+    Server -> Controller: cardPick(...)
+    activate Controller
+    Controller -> Model: pickUpCard(...)
+    activate Model
+    Model --> Controller: throws InvalidActionException
+    deactivate Model
+    Controller --> Server: throws InvalidActionException
+    deactivate Controller
+    Server -> View: ErrorMessage(reason)
+    deactivate Server
+    View -> View: accept -> visit(ErrorMessage)
+    User <-- View: error popup ("Max cards reached!" / "Not enough food")
+
+end
+@enduml

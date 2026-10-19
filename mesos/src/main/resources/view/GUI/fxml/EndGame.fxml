@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="rootPane" prefHeight="720.0" prefWidth="1280.0" stylesheets="@../css/endGame_style.css" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.polimi.ingsw.am56.view.GUI.controllers.EndGameController">
+
+    <ImageView fitWidth="${rootPane.width}" fitHeight="${rootPane.height}" preserveRatio="false">
+        <Image url="@../images/background_empty2.png" />
+    </ImageView>
+
+    <HBox fx:id="scalableContainer" alignment="CENTER" spacing="50" maxWidth="1280" maxHeight="720">
+
+        <VBox styleClass="match-panel" prefWidth="560" prefHeight="680" alignment="TOP_CENTER">
+            <Label fx:id="matchGameSizeLabel" styleClass="gamesize-label"/>
+            <ScrollPane fitToWidth="true" styleClass="transparent-scroll" VBox.vgrow="ALWAYS">
+                <VBox fx:id="matchRankingContainer" spacing="10" />
+            </ScrollPane>
+        </VBox>
+
+        <VBox styleClass="global-panel" prefWidth="560" prefHeight="680" alignment="TOP_CENTER">
+            <Label fx:id="globalGameSizeLabel" styleClass="gamesize-label"/>
+            <ScrollPane fitToWidth="true" styleClass="transparent-scroll" VBox.vgrow="ALWAYS">
+                <VBox fx:id="globalLeaderboardContainer" spacing="10" />
+            </ScrollPane>
+        </VBox>
+
+    </HBox>
+
+    <Button fx:id="exitButton" text="Esci" onAction="#handleExit" styleClass="exit-button"
+            StackPane.alignment="BOTTOM_RIGHT">
+        <StackPane.margin>
+            <Insets bottom="20" right="20"/>
+        </StackPane.margin>
+    </Button>
+</StackPane>

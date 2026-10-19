@@ -1,0 +1,112 @@
+@startuml
+autonumber
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 150
+
+actor "User\n(Active Player)" as User
+participant "ClientApp\n(View)" as Client
+participant "VirtualView\n(Client Proxy)" as Callback
+participant "VirtualServer\n(Server Proxy)" as Server
+participant "GameController" as Controller
+participant "GameModel" as Model
+participant "ClientHandler\n(Observer)" as Handler
+
+== Phase 5: Card Picking ==
+User -> Client: Selects a Card\nClicks "Pick Card"
+
+alt Valid Card Pick (Success)
+
+    Client -> Server: cardPick(CardPickRequest("Alice", 99))
+    activate Server
+    Server -> Controller: cardPick(request)
+    activate Controller
+
+    ' 1. Execution of the card pick
+    Controller -> Model: pickUpCard(player, card)
+    activate Model
+
+    Model -> Model: executeCardPick(player, card, isUpper)
+
+    Model -> Handler: onModelChanged(CARD_PICKED)
+    activate Handler
+    Handler ->> Callback: showUpdate(CardPickedMessage)
+    activate Callback
+    Callback -> Callback: executeOnClient(this)
+    Callback --> User: Renders new card in Player's Hand
+    deactivate Callback
+    deactivate Handler
+
+    ' 2. Turn Flow Check (from your checkTurnFlow method)
+    Model -> Model: checkTurnFlow()
+
+    opt Player cannot pick anymore (Slots/Food empty)
+
+        note over Model: If the current player is done,\nthe turn passes to the next player\non the Offer Tiles.
+
+        Model -> Handler: onModelChanged(TURN_CHANGED)
+        activate Handler
+        Handler ->> Callback: showUpdate(TurnChangedMessage)
+        activate Callback
+        Callback -> Callback: executeOnClient(this)
+        deactivate Callback
+        deactivate Handler
+
+        opt All Players are done picking
+            note over Model: If the Offer Tiles are empty,\nthe Round ends.
+
+            Model -> Model: setState(new RoundEnding(this))
+
+            Model -> Handler: onModelChanged(STATE_CHANGED)
+            activate Handler
+            Handler ->> Callback: showUpdate(StateChangedMessage)
+            activate Callback
+            Callback -> Callback: executeOnClient(this)
+            deactivate Callback
+            deactivate Handler
+
+            Model -> Handler: onModelChanged(ROUND_ENDED)
+            activate Handler
+            Handler ->> Callback: showUpdate(RoundEndedMessage)
+            activate Callback
+            Callback -> Callback: executeOnClient(this)
+            deactivate Callback
+            deactivate Handler
+        end
+    end
+
+    Model --> Controller: return
+    deactivate Model
+
+    Controller --> Server: return
+    deactivate Controller
+    Server --> Client: return
+    deactivate Server
+
+else Exception Thrown (Rule Violation)
+
+    note over Client, Model: Example: "Alice" tries to pick a card not on the board,\nor has reached the row limit.
+
+    Client -> Server: cardPick(request)
+    activate Server
+    Server -> Controller: cardPick(request)
+    activate Controller
+
+    Controller -> Model: validate turn, card availability & limits
+    activate Model
+
+    Model --> Controller: throws InvalidActionException
+    deactivate Model
+
+    Controller --> Server: throws InvalidActionException
+    deactivate Controller
+
+    Server --> Client: throws Exception
+    deactivate Server
+
+    Client -> Client: catch(Exception e)
+    User <-- Client: Displays Error Popup\n"Max cards reached!" or "Card not available"
+
+end
+
+@enduml

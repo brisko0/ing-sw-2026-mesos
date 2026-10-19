@@ -1,0 +1,53 @@
+@startuml
+autonumber
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 150
+
+participant "GameModel" as Model
+participant "Player" as Player
+participant "PlayerStats" as Stats
+participant "BuildingCard" as BuildingCard
+participant "ClientHandler\n(Observer)" as Handler
+
+== Phase 7: Game Ending Scoring ==
+[-> Model: setState(new GameEnding(this))
+activate Model
+note right: Triggered from RoundEnding\nwhen currentRound == 11
+
+Model -> Model: onEntry()
+Model -> Model: endGameActions()
+
+' Final Scoring Loop
+loop For each Player in players
+    Model -> Player: getStats()
+    activate Player
+    Player --> Model: stats
+    deactivate Player
+
+    note right of Model: Calculate base end-game bonuses
+
+    Model -> Stats: addPoints(BuilderPoints)
+    Model -> Stats: addPoints(Inventions * Inventors)
+    Model -> Stats: addPoints(Artists / 2)
+
+    ' New: Building Cards Effects
+    Model -> Stats: getBuildingCards()
+    activate Stats
+    Stats --> Model: List<BuildingCard>
+    deactivate Stats
+
+    loop For each BuildingCard
+        Model -> BuildingCard: onGameEnding(this, p)
+    end
+end
+
+' Final Notification
+Model -> Handler: onModelChanged(GAME_ENDED)
+activate Handler
+note right: Handler crafts a GameEndedMessage\ncontaining the final scores and\npushes it to all clients!
+deactivate Handler
+
+[<-- Model
+deactivate Model
+@enduml
