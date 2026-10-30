@@ -168,7 +168,7 @@ Java 25 · JavaFX 21 · Java RMI · TCP Sockets · Gson · PostgreSQL (JDBC) · 
 
 Developed by a team of 4 students (group AM56):
 
-- **Carlo Briscolini** ([@brisko0](https://github.com/brisko0))
+- **Carlo Briscolini** ([@carlobriscolini](https://github.com/carlobriscolini))
 - Adriano Condulmari
 - Andrea Bonzi
 - Jatinder Dhanda
